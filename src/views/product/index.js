@@ -15,6 +15,7 @@ import {Button, Input, Row, Col, Card, Label, CardHeader, CardTitle, CardBody, C
 
 // ** Store & Actions
 import {useDispatch} from 'react-redux'
+import {selectThemeColors} from '@utils'
 
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
@@ -29,6 +30,7 @@ import {useForm} from "react-hook-form"
 import OrderAdditionModal from "../../@core/components/modal/orderModal/addition"
 import * as DestinationServices from '../../services/destination-resources'
 import * as CustomerServices from '../../services/customer-resources'
+import Select from "react-select";
 
 const moment = require('moment')
 
@@ -50,15 +52,23 @@ const options = {
 
 let prev = 0
 
+const customStyles = {
+    container: provided => ({
+        ...provided,
+        minWidth: 150
+        // minWidth: "100%"
+    })
+}
+
 const CustomHeader = (props) => {
     return (
         <Card className="mb-0">
-            <div className='invoice-list-table-header w-100 py-2 px-2' style={{whiteSpace: 'nowrap'}}>
-                <h3 className='text-primary invoice-logo ms-0 mb-2'>Orders</h3>
+            <Col className='invoice-list-table-header w-100 py-2 px-2' style={{whiteSpace: 'nowrap'}}>
+                <h3 className='text-primary invoice-logo ms-0 mb-2'>Products</h3>
                 <Row>
-                    <Col lg='4' className='d-flex align-items-center'>
+                    <Col lg='5' className='d-flex align-items-center'>
                         <Label className='form-label' for='default-picker'>
-                            PO Number
+                            Product Name
                         </Label>
                         <div className='inputWithButton'>
                             <Input
@@ -66,7 +76,7 @@ const CustomHeader = (props) => {
                                 type='text'
                                 value={props.searchKey}
                                 onChange={props.onChangeNumber}
-                                placeholder='Search PO Number'
+                                placeholder='Product Name'
                                 autoComplete="off"
                             />
                             {props.searchKey.length !== 0 && (
@@ -77,58 +87,55 @@ const CustomHeader = (props) => {
                             )}
                         </div>
                     </Col>
-                    <Col lg='4' className='d-flex align-items-center'>
+                    <Col lg='6' className='d-flex align-items-center'>
                         <Label className='form-label' for='default-picker'>
-                            Customer
+                            Component
                         </Label>
-                        <div className='inputWithButton'>
-                            <Input
-                                type='text'
-                                className='ms-1 w-100'
-                                value={props.customerName}
-                                onChange={props.onChangeCustomer}
-                                placeholder='Search Customer'
-                                autoComplete="off"
-                            />
-                            {props.customerName.length !== 0 && (
-                                <X size={18}
-                                   className='cursor-pointer close-btn'
-                                   onClick={async () => props.onClearCustomer()}
-                                />
-                            )}
-                        </div>
+                        <Select
+                            id='category'
+                            className='react-select ms-1'
+                            classNamePrefix='select'
+                            placeholder='Category'
+                            options={props.categoryList}
+                            theme={selectThemeColors}
+                            value={props.selectedCategory !== "" ? props.categoryList.find((c) => c.value === props.selectedCategory) : null}
+                            isClearable={true}
+                            onChange={props.onChangeCategory}
+                            styles={customStyles}
+                        />
                     </Col>
-                    <Col
-                        lg='4'
-                        className='d-flex align-items-center'
-                    >
 
-                        <Label className='form-label' for='default-picker'>
-                            PO Date
-                        </Label>
-                        <div className='inputWithButton'>
-                            <Flatpickr
-                                className='form-control ms-1 w-100'
-                                value={props.picker}
-                                onChange={props.onFlatPickrChange}
-                                options={options}
-                                placeholder={"Select PO Date"}
-                            />
-                            {props.picker.length !== 0 && (
-                                <X size={18}
-                                   className='cursor-pointer close-btn'
-                                   onClick={async () => props.onClearPicker()}
-                                />
-                            )}
-                        </div>
+                    {/*<Col*/}
+                    {/*    lg='4'*/}
+                    {/*    className='d-flex align-items-center'*/}
+                    {/*>*/}
+
+                    {/*    <Label className='form-label' for='default-picker'>*/}
+                    {/*        PO Date*/}
+                    {/*    </Label>*/}
+                    {/*    <div className='inputWithButton'>*/}
+                    {/*        <Flatpickr*/}
+                    {/*            className='form-control ms-1 w-100'*/}
+                    {/*            value={props.picker}*/}
+                    {/*            onChange={props.onFlatPickrChange}*/}
+                    {/*            options={options}*/}
+                    {/*            placeholder={"Select PO Date"}*/}
+                    {/*        />*/}
+                    {/*        {props.picker.length !== 0 && (*/}
+                    {/*            <X size={18}*/}
+                    {/*               className='cursor-pointer close-btn'*/}
+                    {/*               onClick={async () => props.onClearPicker()}*/}
+                    {/*            />*/}
+                    {/*        )}*/}
+                    {/*    </div>*/}
 
 
-                        {/*<Button onClick={props.onButtonClick} className="ms-1">*/}
-                        {/*    Filter*/}
-                        {/*</Button>*/}
-                    </Col>
+                    {/*    /!*<Button onClick={props.onButtonClick} className="ms-1">*!/*/}
+                    {/*    /!*    Filter*!/*/}
+                    {/*    /!*</Button>*!/*/}
+                    {/*</Col>*/}
                 </Row>
-            </div>
+            </Col>
         </Card>
     )
 }
@@ -150,6 +157,27 @@ const InvoiceList = () => {
     const [picker, setPicker] = useState('')
     const [customerName, setCustomerName] = useState('')
     const [isFetched, setIsFetched] = useState(false)
+
+    const list = [
+        {
+            id:1,
+            name:'Netflix Private Profile',
+            stock:'In Stock',
+            price:'123',
+            tags:'Audio Book, E-Book, Streaming',
+            category:'Education, Streaming',
+            date:new Date()
+        },
+        {
+            id:1,
+            name:'Netflix Private',
+            stock:'In Stock',
+            price:'123',
+            tags:'Audio Book, E-Book, Streaming',
+            category:'Education, Streaming',
+            date:new Date()
+        }
+    ]
 
 
     const [store, setStore] = useState({
@@ -176,19 +204,21 @@ const InvoiceList = () => {
     } = useForm({defaultValues})
 
 
-    const getDatass = (params) => {
-        dispatch(toggleLoading())
-        OrderService.getAllOrders(params.page)
-            // eslint-disable-next-line no-unused-vars
-            .then(res => {
-                if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
-                } else {
-                    customToastMsg(res.data.title, res.status)
-                }
-                dispatch(toggleLoading())
-                setIsFetched(true)
-            })
+    const getDataList = (params) => {
+        // dispatch(toggleLoading())
+        // OrderService.getAllOrders(params.page)
+        //     // eslint-disable-next-line no-unused-vars
+        //     .then(res => {
+        //         if (res.success) {
+        //             setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+        //         } else {
+        //             customToastMsg(res.data.title, res.status)
+        //         }
+        //         dispatch(toggleLoading())
+        //         setIsFetched(true)
+        //     })
+
+        setStore({allData: list, data: list, params, total: 1})
     }
 
     const searchOrder = (params) => {
@@ -241,19 +271,19 @@ const InvoiceList = () => {
             })
     }
 
-    // useEffect(async () => {
-    //     getDatass({
-    //         q: value,
-    //         page: currentPage,
-    //         perPage: rowsPerPage
-    //     })
-    //     await getAllDestinations()
-    //     await getAllCustomers()
-    // }, [])
+    useEffect(async () => {
+        getDataList({
+            q: value,
+            page: currentPage,
+            perPage: rowsPerPage
+        })
+        // await getAllDestinations()
+        // await getAllCustomers()
+    }, [])
 
     const handlePagination = async page => {
         if (searchKey.length === 0 && picker.length === 0 && customerName.length === 0) {
-            await getDatass({
+            await getDataList({
                 q: value,
                 perPage: rowsPerPage,
                 page: page.selected
@@ -348,7 +378,7 @@ const InvoiceList = () => {
                         setCustomerName('')
                         setPicker('')
                         setSearchKey('')
-                        getDatass({
+                        getDataList({
                             q: value,
                             page: 0,
                             perPage: 0
@@ -398,7 +428,7 @@ const InvoiceList = () => {
             const now = new Date().getTime()
             if (now - prev >= 1000) {
                 if (poNumber.length === 0 && date.length === 0 && customer.length === 0) {
-                    await getDatass({
+                    await getDataList({
                         q: value,
                         perPage: rowsPerPage,
                         page: 0
@@ -444,7 +474,10 @@ const InvoiceList = () => {
                     }}
                     onClearPoNumber={() => onSearch('', 'PO_NUMBER')}
                     onClearPicker={() => onSearch('', 'DATE')}
-                    onClearCustomer={() => onSearch('', 'CUSTOMER')}
+
+                    categoryList={[]}
+                    selectedCategory={''}
+                    onChangeCategory={() => onSearch('', 'CATEGORY')}
                 />
                 <Col
                     lg='4'

@@ -10,7 +10,7 @@ import Avatar from '@components/avatar'
 // import { deleteInvoice } from '../apps/invoice/store'
 
 // ** Reactstrap Imports
-import {Button} from 'reactstrap'
+import {Badge, Button} from 'reactstrap'
 
 // ** Third Party Components
 import {
@@ -29,61 +29,37 @@ import {
     ArrowDownCircle, ShoppingCart
 } from 'react-feather'
 import {roundNumber} from "../../utility/Utils"
+
 const moment = require('moment')
 
-// ** Vars
-// const invoiceStatusObj = {
-//   Sent: { color: 'light-secondary', icon: Send },
-//   Paid: { color: 'light-success', icon: CheckCircle },
-//   Draft: { color: 'light-primary', icon: Save },
-//   Downloaded: { color: 'light-info', icon: ArrowDownCircle },
-//   'Past Due': { color: 'light-danger', icon: Info },
-//   'Partial Payment': { color: 'light-warning', icon: PieChart }
-// }
 
-// ** renders client column
-// const renderClient = row => {
-//   const stateNum = Math.floor(Math.random() * 6),
-//     states = ['light-success', 'light-danger', 'light-warning', 'light-info', 'light-primary', 'light-secondary'],
-//     color = states[stateNum]
-//
-//   if (row.avatar.length) {
-//     return <Avatar className='me-50' img={row.avatar} width='32' height='32' />
-//   } else {
-//     return <Avatar color={color} className='me-50' content={row.client ? row.client.name : 'John Doe'} initials />
-//   }
-// }
-
-// ** Table columns
 export const columns = [
     {
-        name: 'PO Number',
-        width: '250px',
+        name: 'name',
+        width: '240px',
         center: true,
         cell: row => (
-            <div className='d-flex align-items-center w-100 justify-content-between'>
-                <span style={{maxWidth:102}}>{row.poNumber}</span>
-                <Button
-                    color='success' outline
-                    tag={Link} to={`/order/order-details/${row.id}/order-details`}
-                    style={{height: 35, paddingTop: 9, paddingBottom: 0}}
-                >
-                    <Eye size={15} style={{marginRight: 5}}/>
-                    View
-                </Button>
+            <div className='align-items-center d-flex w-100'>
+                <img
+                    src={"https://st.depositphotos.com/2274151/3518/i/450/depositphotos_35186549-stock-photo-sample-grunge-red-round-stamp.jpg"}
+                    style={{width: 35, height: 35}}
+                    alt='swiper 1'
+                    className='me-1'
+                />
+                <h6 className='user-name text-truncate' style={{marginTop: 8}}>{row.name}</h6>
             </div>
         )
     },
     {
-        name: 'Customer',
+        name: 'Stock',
         center: true,
-        minWidth: '220px',
+        // minWidth: '220px',
         cell: row => {
-            const name = row.customer.name
             return (
                 <div className='d-flex justify-content-left align-items-center'>
                     <div className='d-flex flex-column'>
-                        <h6 className='user-name text-truncate mb-0'>{name}</h6>
+                        <Badge color='light-success'>{row.stock}</Badge>
+                        {/*<h6 className='user-name text-truncate mb-0'>{row.stock}</h6>*/}
                     </div>
                 </div>
             )
@@ -91,27 +67,27 @@ export const columns = [
     },
     {
         center: true,
-        minWidth: '120px',
-        name: 'PO Date',
-        cell: row => moment(row.poDate).format('YYYY-MM-DD')
+        maxWidth: '80px',
+        name: 'Price $',
+        cell: row => row.price
     },
     {
         center: true,
-        minWidth: '160px',
-        name: <span className="text-center">Total Quantity</span>,
-        cell: row => row.quantity
+        // minWidth: '160px',
+        name: <span className="text-center">Category</span>,
+        cell: row => row.category
     },
     {
         center: true,
-        minWidth: '120px',
-        name: <span className="text-center">Delivery Date</span>,
-        cell: row => moment(row.deliveryDate).format('YYYY-MM-DD')
+        // minWidth: '180px',
+        name: 'Tags',
+        cell: row => row.tags
     },
     {
         center: true,
-        minWidth: '180px',
-        name: 'Destination',
-        cell: row => (row.destination ? row.destination.name : null)
+        // minWidth: '120px',
+        name: <span className="text-center">Date</span>,
+        cell: row => moment(row.date).format('YYYY-MM-DD')
     }
 ]
 
@@ -183,7 +159,8 @@ export const consumption = [
     {
         sortable: false,
         minWidth: '200px',
-        name: <span className="text-center">Articlewise Yarn Consumption <span className="text-lowercase">(kg)</span></span>,
+        name: <span className="text-center">Articlewise Yarn Consumption <span
+            className="text-lowercase">(kg)</span></span>,
         sortField: 'articleWise',
         center: true,
         cell: row => roundNumber(Number(row.articleWeightWithFallout) / 1000) //change to be response entity
