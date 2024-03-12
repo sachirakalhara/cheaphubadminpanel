@@ -1,0 +1,103 @@
+/*================================================================================
+	Item Name: Vuexy - Vuejs, HTML & Laravel Admin Dashboard Template
+	Version: 2.0
+	Author: PIXINVENT
+	Author URL: http://www.themeforest.net/user/pixinvent
+================================================================================
+
+NOTE:
+------
+PLACE HERE YOUR OWN SCSS CODES AND IF NEEDED, OVERRIDE THE STYLES FROM THE OTHER STYLESHEETS.
+WE WILL RELEASE FUTURE UPDATES SO IN ORDER TO NOT OVERWRITE YOUR STYLES IT'S BETTER LIKE THIS.  */
+
+$font-family-sans-serif: 'Montserrat', Helvetica, Arial, serif !default;
+
+.kmbVPi {
+  white-space: normal !important;
+}
+
+.cFSyzy {
+ height: auto!important;
+}
+
+.custom-box-border{
+  border-radius: 8px;
+  box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.1);
+}
+
+//.bIYKQe{
+//  padding: 0px!important;
+//}
+
+.custom-nav-txt{
+  font-size: 1rem!important;
+}
+
+.table-outline{
+  //-webkit-box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.4) !important;
+  //box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.4) !important;
+  //-webkit-transition: all 0.4s ease!important;
+  //-moz-transition: all 0.4s ease!important;
+  //-o-transition: all 0.4s ease!important;
+  //transition: all 0.4s ease!important;
+  border-radius: 8px!important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  border: solid #ccc 1px;
+}
+
+//.rdt_TableHead .rdt_TableHeadRow .rdt_TableCol{
+//  padding: unset!important;
+//}
+
+.react-dataTable .rdt_TableHead .rdt_TableHeadRow {
+  height: 52px!important;
+}
+
+//.react-dataTable .rdt_TableHead .rdt_TableHeadRow .rdt_TableCol {
+//  padding: unset!important;
+//}
+
+.dayContainer{
+  text-align: left!important;
+  -webkit-justify-content: unset!important;
+  justify-content: unset!important;
+}
+
+.flatpickr-day{
+  margin-left: 4px!important;
+}
+
+.flatpickr-day.hidden {
+  visibility: visible!important;
+  display: block!important;
+  opacity: 0!important;
+}
+
+.custom-font-toast{
+  font-family: $font-family-sans-serif !important;
+}
+
+.inputWithButton {
+  position: relative;
+}
+
+.inputWithButton input{
+  width: 70%;
+  padding-right: 60px;
+}
+
+.inputWithButton .close-btn {
+  position: absolute;
+  right: 0;
+  top : 10px;
+}
+
+.text-hover-underline:hover{
+  text-decoration: underline !important;
+  cursor: pointer!important;
+}
+
+.empty-text{
+  color: #A6AFBD!important;
+}
