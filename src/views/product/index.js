@@ -37,8 +37,12 @@ const moment = require('moment')
 const after3Months = new Date(new Date().setMonth(new Date().getMonth() + 3))
 
 const defaultValues = {
-    poNumber: '',
-    customer: '',
+    productName: '',
+    category: '',
+    description: '',
+    price:'',
+    gatewayFee:'',
+    tag:'',
     poDate: moment(new Date()).format('YYYY-MM-DD'),
     deliveryDate: moment(after3Months).format('YYYY-MM-DD'),
     destination: '',
@@ -520,8 +524,8 @@ const InvoiceList = () => {
                 onSubmit={handleSubmit(onSubmit)}
                 control={control}
                 errors={errors}
-                destinationList={destinationList}
-                customersList={customersList}
+                tagList={destinationList}
+                categoryList={customersList}
             />
         </Fragment>
     )

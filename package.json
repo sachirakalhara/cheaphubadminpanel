@@ -96,7 +96,10 @@
     "wnumb": "1.2.0",
     "xlsx": "0.17.3",
     "yarn": "1.21.1",
-    "yup": "0.32.8"
+    "yup": "0.32.8",
+    "file-type": "16.5.3",
+    "react-files": "^2.4.8",
+    "react-easy-crop": "^4.4.1"
   },
   "scripts": {
     "start": "craco start",

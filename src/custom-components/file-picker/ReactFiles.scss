@@ -1,0 +1,128 @@
+@import "./src/assets/scss/common/colors";
+@import './src/assets/scss/common/fonts';
+@import './src/@core/scss/base/bootstrap-extended/include'; // Bootstrap includes
+@import './src/@core/scss/base/components/include'; // Components includes
+
+.cover-photo-wrapper {
+  height: 38px !important;
+
+  .files-dropzone-file {
+    max-width: 180px;
+    margin: auto;
+  }
+
+  .file-wrapper {
+    position: relative;
+    background: #FFFFFF 0% 0% no-repeat padding-box;
+    //border: 3px dashed rgba(34, 36, 38, .15);
+    border: 3px solid white;
+    max-width: 320px;
+    text-align: center;
+    cursor: pointer;
+
+    //margin: auto;
+    width: 180px;
+    height: 200px;
+    //border-radius: 50%;
+    border-radius: 10px;
+    overflow: hidden;
+
+    //box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.41);
+    box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      //border: 1px dashed #85b7d9;
+      span {
+        border: 1px solid #85b7d9;
+        color: #575b63;
+      }
+
+      .p-text {
+        background: rgba(175, 175, 175, 0.9);
+        color: black;
+      }
+    }
+
+    .pro-image {
+      width: 100%;
+      height: 100%;
+      //object-fit: cover;
+      object-fit: contain;
+    }
+
+    .best-fit {
+      object-fit: cover;
+    }
+
+    .p-text {
+      text-align: center;
+      width: 100%;
+
+      padding: 10px 5px;
+      bottom: 0;
+      position: absolute;
+      font-size: 11px;
+      background: rgba(0, 0, 0, 0.48);
+      color: white;
+    }
+  }
+}
+
+.file-picker-mini {
+
+  .file-picker-mini-sub {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    cursor: pointer;
+
+    div {
+      height: 38px;
+      border: 1px solid #D8D6DE;
+      display: flex;
+      align-items: center;
+
+      border-right: 0 !important;
+      border-bottom-left-radius: 6px !important;
+      border-top-left-radius: 6px !important;
+      padding-left: 10px;
+      padding-right: 5px;
+      width: 100%;
+    }
+
+    p {
+      margin: 0 !important;
+      //height: 42px;
+      ////display: flex;
+      //align-items: center;
+
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 1; /* number of lines to show */
+      -webkit-box-orient: vertical;
+    }
+
+    .error {
+      border: 1px solid red;
+    }
+
+    button {
+      border: 1px solid $primary;
+      border-radius: 0 6px 6px 0 !important;
+      background: $primary;
+      color: white;
+      width: 120px;
+      height: 38px;
+      font-family: $font-family-base;
+      font-size: 14px !important;
+      font-weight: 100 !important;
+      line-height: 17px;
+      letter-spacing: 0.4000000059604645px;
+    }
+  }
+
+  .files-dropzone-file {
+    max-width: 100% !important;
+  }
+}
