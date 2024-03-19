@@ -21,7 +21,7 @@ import {
     getCustomDateTimeStamp,
     roundNumber2Decimals
 } from "../../../utility/Utils"
-import ConsumptionModal from "../../../@core/components/modal/stylesModal/ConsumptionModal"
+import ConsumptionModal from "../../../@core/components/modal/categoryModal/ConsumptionModal"
 import {Controller, useForm} from "react-hook-form"
 import * as SupplierService from '../../../services/supplier'
 import * as ColorServices from '../../../services/color-resources'

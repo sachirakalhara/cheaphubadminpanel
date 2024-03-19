@@ -71,7 +71,7 @@ export const callApi = async (apiObject) => {
                 }
             }
             result = {
-                data: response.data,
+                data: response.data === ''?[]:response.data,
                 status: response.data.message === 'Success' || response.data.message === 'OK' ? 1 : 0,
                 success: response.data.message === 'Success' || response.data.message === 'OK' || response.data.message === undefined,
                 message: response.data.message

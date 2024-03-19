@@ -22,15 +22,20 @@ import '@styles/react/apps/app-invoice.scss'
 
 import Flatpickr from "react-flatpickr"
 import * as OrderService from "../../services/order-resources"
-import {customToastMsg, emptyUI, searchValidation} from "../../utility/Utils"
+import {customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile, searchValidation} from "../../utility/Utils"
 
 
 import {toggleLoading} from '@store/loading'
-import {useForm} from "react-hook-form"
+import {Controller, useForm} from "react-hook-form"
 import OrderAdditionModal from "../../@core/components/modal/orderModal/addition"
 import * as DestinationServices from '../../services/destination-resources'
 import * as CustomerServices from '../../services/customer-resources'
 import Select from "react-select";
+import ReactFilesMini from "../../custom-components/file-picker/ReactFiles-Mini";
+import Cropper from "react-easy-crop";
+
+import * as CategoryServices from '../../services/categories';
+import * as TagsServices from '../../services/tags';
 
 const moment = require('moment')
 
@@ -40,13 +45,11 @@ const defaultValues = {
     productName: '',
     category: '',
     description: '',
-    price:'',
-    gatewayFee:'',
-    tag:'',
-    poDate: moment(new Date()).format('YYYY-MM-DD'),
-    deliveryDate: moment(after3Months).format('YYYY-MM-DD'),
-    destination: '',
-    priceTerm: ''
+    price: '',
+    gatewayFee: '',
+    tag: '',
+    productImageName: '',
+    serialDocumentName: ''
 }
 
 const options = {
@@ -64,7 +67,17 @@ const customStyles = {
     })
 }
 
+const CROP_ASPECT_TO_FIRST_IMAGE = 1;
+//value should be <1
+const CROP_ASPECT_TO_SECOND_IMAGE = 3 / 2;
+const CROP_ASPECT_TO_SHARE_URL_IMAGE = 5 / 3
+
+const types = {
+    PRODUCT_IMAGE: 'program-modal-banner'
+}
+
 const CustomHeader = (props) => {
+
     return (
         <Card className="mb-0">
             <Col className='invoice-list-table-header w-100 py-2 px-2' style={{whiteSpace: 'nowrap'}}>
@@ -150,36 +163,48 @@ const InvoiceList = () => {
 
     // ** States
     // eslint-disable-next-line no-unused-vars
-    const [value, setValue] = useState('')
+    const [value1, setValue1] = useState('')
     const [currentPage, setCurrentPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [show, setShow] = useState(false)
     // eslint-disable-next-line no-unused-vars
-    const [destinationList, setDestinationList] = useState([])
-    const [customersList, setCustomersList] = useState([])
+    const [categoryList, setCategoryList] = useState([])
+    const [tagsList, setTagsList] = useState([])
     const [searchKey, setSearchKey] = useState('')
     const [picker, setPicker] = useState('')
     const [customerName, setCustomerName] = useState('')
     const [isFetched, setIsFetched] = useState(false)
 
+
+    const [uploadedProductImage, setUploadedProductImage] = useState(null)
+    const [productImageSrc, setProductImageSrc] = useState('')
+    const [productImageCrop, setProductImageCrop] = useState({x: 0, y: 0})
+    const [productImageCroppedAreaPixels, setProductImageCroppedAreaPixels] = useState(null)
+    const [productCroppedImage, setProductCroppedImage] = useState(null)
+    const [productImageIsCropVisible, setProductImageIsCropVisible] = useState(false)
+    const [productImageZoom, setProductImageZoom] = useState(1)
+    const [productImageName, setProductImageName] = useState('')
+    const [serialDocumentName, setSerialDocumentName] = useState('')
+    const [serialDocument, setSerialDocument] = useState('');
+
     const list = [
         {
-            id:1,
-            name:'Netflix Private Profile',
-            stock:'In Stock',
-            price:'123',
-            tags:'Audio Book, E-Book, Streaming',
-            category:'Education, Streaming',
-            date:new Date()
+            id: 1,
+            name: 'Netflix Private Profile',
+            stock: 'In Stock',
+            price: '123',
+            tags: 'Audio Book, E-Book, Streaming',
+            category: 'Education, Streaming',
+            date: new Date()
         },
         {
-            id:1,
-            name:'Netflix Private',
-            stock:'In Stock',
-            price:'123',
-            tags:'Audio Book, E-Book, Streaming',
-            category:'Education, Streaming',
-            date:new Date()
+            id: 1,
+            name: 'Netflix Private',
+            stock: 'In Stock',
+            price: '123',
+            tags: 'Audio Book, E-Book, Streaming',
+            category: 'Education, Streaming',
+            date: new Date()
         }
     ]
 
@@ -190,7 +215,7 @@ const InvoiceList = () => {
         params: {
             page: currentPage,
             perPage: rowsPerPage,
-            q: value
+            q: value1
         },
         total: 0
     })
@@ -201,9 +226,7 @@ const InvoiceList = () => {
         setError,
         handleSubmit,
         formState: {errors},
-        // eslint-disable-next-line no-unused-vars
-        // setValue,
-        // getValues,
+        setValue,
         reset
     } = useForm({defaultValues})
 
@@ -243,59 +266,60 @@ const InvoiceList = () => {
             })
     }
 
-    const getAllDestinations = async () => {
-        await DestinationServices.getAllDestination()
+    const getAllCategories = async () => {
+        await CategoryServices.getAllCategories()
             .then(res => {
                 if (res.success) {
+                    console.log(res)
                     const list = []
-                    res.data.map(items => {
+                    res.data.category_list.map((items,index) => {
                         list.push({
                             label: items.name,
                             value: items.id
                         })
                     })
-                    setDestinationList(list)
+                    setCategoryList(list)
                 }
             })
     }
 
-    const getAllCustomers = async () => {
-        await CustomerServices.getAllColors()
+    const getAllTags = async () => {
+        await TagsServices.getAllTags()
             .then(res => {
                 if (res.success) {
                     const list = []
-                    res.data.map(item => {
+                    res.data.tag_list.map((item,index) => {
                         list.push({
                             label: item.name,
                             value: item.id
                         })
                     })
-                    setCustomersList(list)
+                    setTagsList(list)
                 }
             })
     }
 
     useEffect(async () => {
         getDataList({
-            q: value,
+            q: value1,
             page: currentPage,
             perPage: rowsPerPage
         })
-        // await getAllDestinations()
-        // await getAllCustomers()
+        await getAllCategories()
+        await getAllTags()
     }, [])
 
     const handlePagination = async page => {
         if (searchKey.length === 0 && picker.length === 0 && customerName.length === 0) {
             await getDataList({
-                q: value,
+                q: value1,
                 perPage: rowsPerPage,
                 page: page.selected
             })
         } else {
             setCurrentPage(0)
             await searchOrder({
-                q: value,
+                q: value1,
                 perPage: rowsPerPage,
                 page: page.selected,
                 poNumber: searchKey,
@@ -333,7 +357,7 @@ const InvoiceList = () => {
 
     const dataToRender = () => {
         const filters = {
-            q: value
+            q: value1
         }
 
         const isFiltered = Object.keys(filters).some(function (k) {
@@ -358,41 +382,42 @@ const InvoiceList = () => {
     }
 
     const onSubmit = async data => {
+        console.log(data)
         if (Object.values(data).every(field => field.length > 0)) {
-            const body = {
-                poNumber: data.poNumber,
-                poDate: `${data.poDate}T00:00:00Z`,
-                quantity: null,
-                deliveryDate: `${data.deliveryDate}T00:00:00Z`,
-                priceTerm: data.priceTerm,
-                customer: {
-                    id: data.customer
-                },
-                destination: {
-                    id: data.destination
-                }
-            }
-            dispatch(toggleLoading())
-            await OrderService.saveOrder(body)
-                .then(res => {
-                    if (res.success) {
-                        customToastMsg("Order added successfully!", 1)
-                        setCurrentPage(0)
-                        setRowsPerPage(0)
-                        setCustomerName('')
-                        setPicker('')
-                        setSearchKey('')
-                        getDataList({
-                            q: value,
-                            page: 0,
-                            perPage: 0
-                        })
-                        setShow(false)
-                    } else {
-                        customToastMsg(res.message, res.status)
-                    }
-                    dispatch(toggleLoading())
-                })
+            // const body = {
+            //     poNumber: data.poNumber,
+            //     poDate: `${data.poDate}T00:00:00Z`,
+            //     quantity: null,
+            //     deliveryDate: `${data.deliveryDate}T00:00:00Z`,
+            //     priceTerm: data.priceTerm,
+            //     customer: {
+            //         id: data.customer
+            //     },
+            //     destination: {
+            //         id: data.destination
+            //     }
+            // }
+            // dispatch(toggleLoading())
+            // await OrderService.saveOrder(body)
+            //     .then(res => {
+            //         if (res.success) {
+            //             customToastMsg("Order added successfully!", 1)
+            //             setCurrentPage(0)
+            //             setRowsPerPage(0)
+            //             setCustomerName('')
+            //             setPicker('')
+            //             setSearchKey('')
+            //             getDataList({
+            //                 q: value,
+            //                 page: 0,
+            //                 perPage: 0
+            //             })
+            //             setShow(false)
+            //         } else {
+            //             customToastMsg(res.message, res.status)
+            //         }
+            //         dispatch(toggleLoading())
+            //     })
 
         } else {
             for (const key in data) {
@@ -402,6 +427,8 @@ const InvoiceList = () => {
                     })
                 }
             }
+
+            console.log(data)
         }
     }
 
@@ -433,13 +460,13 @@ const InvoiceList = () => {
             if (now - prev >= 1000) {
                 if (poNumber.length === 0 && date.length === 0 && customer.length === 0) {
                     await getDataList({
-                        q: value,
+                        q: value1,
                         perPage: rowsPerPage,
                         page: 0
                     })
                 } else {
                     await searchOrder({
-                        q: value,
+                        q: value1,
                         page: 0,
                         perPage: 0,
                         poNumber,
@@ -452,11 +479,68 @@ const InvoiceList = () => {
 
     }
 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    const onCropChange = (crop, type) => {
+        if (type === types.PRODUCT_IMAGE) setProductImageCrop(crop)
+    }
+
+    const onCropComplete = async (croppedArea, croppedAreaPixels, type) => {
+        if (type === types.PRODUCT_IMAGE) await setProductImageCroppedAreaPixels(croppedAreaPixels)
+
+        await cropButtonHandler(type)
+    }
+
+    /*image cropper */
+    const cropButtonHandler = async (type) => {
+        await showCroppedImage(type);
+    }
+
+    const showCroppedImage = async (type) => {
+        const rotation = 0;
+        if (type === types.PRODUCT_IMAGE) {
+            try {
+                const croppedImage = await getCroppedImg(
+                    productImageSrc,
+                    productImageCroppedAreaPixels,
+                    rotation
+                )
+
+                console.log(':::::::::::::::::::::::::::::::::::============================',croppedImage)
+                await setProductCroppedImage(croppedImage)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+    }
+
+    const handleChangeFileShare = async (file, type) => {
+        if (isImageFile(file.name)) {
+            if (type === types.PRODUCT_IMAGE) {
+                console.log(isImageFile(file.name))
+                setProductImageIsCropVisible(true);
+                setProductImageName(file.name);
+                let imageDataUrl = await fileReader(file);
+                console.log(imageDataUrl)
+                setProductImageSrc(imageDataUrl);
+                setValue("productImageName", file.name)
+            }
+        } else {
+            setProductImageIsCropVisible(false);
+        }
+    }
+
+    const onChangeSerialDocValue = async (file) => {
+        setValue("serialDocumentName", file.name)
+        setSerialDocumentName(file.name)
+        setSerialDocument(file);
+    }
+
     return (
         <Fragment>
             <div className='invoice-list-wrapper'>
                 <CustomHeader
-                    value={value}
+                    value={value1}
                     rowsPerPage={rowsPerPage}
                     onChangeNumber={(e) => onSearch(e.target.value, 'PO_NUMBER')}
                     onChangeCustomer={(e) => onSearch(e.target.value, 'CUSTOMER')}
@@ -471,7 +555,7 @@ const InvoiceList = () => {
                     onButtonClick={async () => {
                         setCurrentPage(0)
                         await searchOrder({
-                            q: value,
+                            q: value1,
                             page: 0,
                             perPage: 0
                         })
@@ -524,8 +608,120 @@ const InvoiceList = () => {
                 onSubmit={handleSubmit(onSubmit)}
                 control={control}
                 errors={errors}
-                tagList={destinationList}
-                categoryList={customersList}
+                tagList={tagsList}
+                categoryList={categoryList}
+                renderImageUploader={
+                    <Col md={6} xs={12}>
+                        <Label className='form-label mb-1' for='productImage'>
+                            Product Image <span style={{color: 'red'}}>*</span>
+                        </Label>
+
+                        <Col>
+                            <Row>
+                                <Col>
+
+                                    <Controller
+                                        name='productImageName'
+                                        control={control}
+                                        render={({field}) => (
+                                            <ReactFilesMini  {...field} id='productImageName'
+                                                             pageType
+                                                             disabled={false}
+                                                             sendImageData={async (imageFile, file) => {
+                                                                 await handleChangeFileShare(file, types.PRODUCT_IMAGE);
+                                                             }}
+                                                             invalid={errors.productImageName && true}
+                                                             accepts={["image/png", "image/jpg", "image/jpeg"]}
+                                                             imageFile={productImageName ? productImageName : uploadedProductImage}
+                                            />
+
+                                        )}
+                                    />
+
+                                    {errors.productImageName &&
+                                    <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please choose a product image</span>}
+
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col md={12} lg={12} xs={12}>
+                                    {productImageIsCropVisible && productImageSrc &&(
+                                        <div>
+                                            <div className={'program-modal-image-cropper'}>
+                                                <Cropper
+                                                    image={productImageSrc}
+                                                    crop={productImageCrop}
+                                                    aspect={CROP_ASPECT_TO_FIRST_IMAGE}
+                                                    zoom={productImageZoom}
+                                                    onCropChange={(crop) => {
+                                                        onCropChange(crop, types.PRODUCT_IMAGE)
+                                                    }}
+                                                    onCropComplete={async (croppedArea, croppedAreaPixels) => {
+                                                        await onCropComplete(croppedArea, croppedAreaPixels, types.PRODUCT_IMAGE)
+                                                    }}
+
+                                                />
+                                            </div>
+                                            <div className="program-modal-image-cropper-controller">
+                                                <input
+                                                    disabled={false}
+                                                    type="range"
+                                                    value={productImageZoom}
+                                                    min={1}
+                                                    max={3}
+                                                    step={0.1}
+                                                    aria-labelledby="Zoom"
+                                                    onChange={(e) => {
+                                                        setProductImageZoom(e.target.value)
+                                                    }}
+                                                    className="zoom-range"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </Col>
+                            </Row>
+                            <Row>
+                                {productCroppedImage && productImageSrc &&
+                                <Col lg={12} md={12} sm={12}>
+                                    <img src={productCroppedImage}
+                                         style={{width: '50%'}}
+                                         loading={"lazy"}
+                                         className={'program-modal-image-cropper-output'}
+                                    />
+                                </Col>
+                                }
+                            </Row>
+                        </Col>
+
+                    </Col>
+                }
+
+                renderAttachmentUploader={
+                    <Col md={6} xs={12}>
+                        <Label className='form-label mb-1' for='serialDocumentName'>
+                            Serial Key <span style={{color: 'red'}}>*</span>
+                        </Label>
+
+                        <Controller
+                            name='serialDocumentName'
+                            control={control}
+                            render={({field}) => (
+                                <ReactFilesMini  {...field} id='serialDocumentName'
+                                                 pageType
+                                                 sendImageData={async (imageFile, file) => {
+                                                     await onChangeSerialDocValue(file);
+                                                 }}
+                                                 accepts={["text/plain"]}
+                                                 invalid={errors.serialDocumentName && true}
+                                />
+
+                            )}
+                        />
+                        {errors.serialDocumentName &&
+                        <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please choose a serial key file</span>}
+                    </Col>
+                }
             />
         </Fragment>
     )

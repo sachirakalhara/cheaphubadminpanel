@@ -4,7 +4,7 @@ import React, {useState, useEffect, Fragment} from 'react'
 
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
-import {Calendar, ChevronDown, Edit3, Eye, Home, Plus, Sliders, X} from 'react-feather'
+import {Calendar, ChevronDown, Edit3, Eye, Home, Plus, Sliders, Trash, X} from 'react-feather'
 import DataTable from 'react-data-table-component'
 import {toggleLoading} from '@store/loading'
 
@@ -20,10 +20,11 @@ import '@styles/react/apps/app-invoice.scss'
 import * as MachineService from "../../services/machine-resources"
 import {customToastMsg, emptyUI, getCustomDateTimeStamp, searchValidation} from "../../utility/Utils"
 import {useForm} from "react-hook-form"
-import MachinesModal from "../../@core/components/modal/machinesModal/machinesModal"
+import TagsModal from "../../@core/components/modal/tagsModal/tagsModal"
 import OrderModal from "../../@core/components/modal/orderModal"
 import * as knittingDiaServices from "../../services/knittingDia-resources"
 import {CSVLink} from "react-csv"
+import * as TagsServices from "../../services/tags";
 
 let prev = 0
 
@@ -36,38 +37,14 @@ const CustomHeader = ({
                           onClearKnittingText,
                           csvList,
                           csvAction,
-                          fileName
+                          fileName,
+                          setShow
                       }) => {
     return (
         <Card>
             <div className='invoice-list-table-header w-100 py-2 px-1 m-0' style={{whiteSpace: 'nowrap'}}>
-                <h3 className='text-primary invoice-logo mb-2'>Machinery</h3>
+                <h3 className='text-primary invoice-logo mb-2'>Tags</h3>
                 <Row>
-                    <Col lg='5' className='d-flex align-items-center px-0 px-lg-1'>
-                        <div className='d-flex align-items-center'>
-                            <Label className='form-label' for='default-picker'>
-                                Knitting Diameter
-                            </Label>
-                            <div className='inputWithButton'>
-                                <Input
-                                    id='knittingDiameter'
-                                    className='ms-50 me-2 w-100'
-                                    type='text'
-                                    value={knittingDiameter}
-                                    onChange={onKnittingTextChange}
-                                    placeholder='Search Knitting Diameter'
-                                    autoComplete="off"
-                                />
-                                {knittingDiameter.length !== 0 && (
-                                    <X size={18}
-                                       className='cursor-pointer close-btn'
-                                       onClick={onClearKnittingText}
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    </Col>
-
                     <Col lg='4' className='d-flex align-items-center px-0 px-lg-1'>
                         <div className='d-flex align-items-center'>
                             <Label className='form-label' for='default-picker'>
@@ -80,7 +57,7 @@ const CustomHeader = ({
                                     type='text'
                                     value={name}
                                     onChange={onNameTextChange}
-                                    placeholder='Search Name'
+                                    placeholder='Search Tag Name'
                                     autoComplete="off"
                                 />
                                 {name.length !== 0 && (
@@ -92,26 +69,14 @@ const CustomHeader = ({
                             </div>
                         </div>
                     </Col>
-                    {csvList.length !== 0 && (
-                        <Col lg='3' className='d-flex align-items-center justify-content-end px-0 px-lg-1'>
-                            <CSVLink
-                                headers={[
-                                    {label: "Model Number", key: "modelNumber"},
-                                    {label: "Knitting Diameter", key: "knittingDiameter"},
-                                    {label: "Name", key: "name"},
-                                    {label: "Number", key: "number"}
-                                ]}
-                                target="_blank"
-                                data={csvList}
-                                className="btn btn-primary"
-                                asyncOnClick={true}
-                                onClick={csvAction}
-                                filename={fileName}
-                            >
-                                Export CSV
-                            </CSVLink>
-                        </Col>
-                    )}
+                    <Col
+                        lg='8'
+                        className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1 p-0'
+                    >
+                        <Button onClick={() => setShow(true)}>
+                            <Plus size={15}/> Add Tag
+                        </Button>
+                    </Col>
                 </Row>
             </div>
         </Card>
@@ -120,10 +85,8 @@ const CustomHeader = ({
 }
 
 const defaultValues = {
-    modelNumber: '',
-    knittingDiameter: '',
     name: '',
-    number: ''
+    description: '',
 }
 
 const MachineryList = () => {
@@ -176,34 +139,27 @@ const MachineryList = () => {
 
     const getDatass = (params) => {
         dispatch(toggleLoading())
-        MachineService.getAllMachines(params.page)
-            // eslint-disable-next-line no-unused-vars
+        // MachineService.getAllMachines(params.page)
+        //     // eslint-disable-next-line no-unused-vars
+        //     .then(res => {
+        //         if (res.success) {
+        //             setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+        //         } else {
+        //             customToastMsg(res.data.title, res.status)
+        //         }
+        //         dispatch(toggleLoading())
+        //         setIsFetched(true)
+        //     })
+
+        TagsServices.getAllTags()
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+                    setStore({allData: res.data.tag_list, data: res.data.tag_list, params, total: 0})
                 } else {
                     customToastMsg(res.data.title, res.status)
                 }
                 dispatch(toggleLoading())
                 setIsFetched(true)
-            })
-    }
-
-    const getCsvData = async () => {
-        await MachineService.getMachines()
-            .then(res => {
-                if (res.success) {
-                    const list = []
-                    res.data.map((item) => {
-                        list.push({
-                            modelNumber: item.modelNumber,
-                            knittingDiameter: item?.knittingDiameter.knittingDiameter,
-                            name: item.name,
-                            number: item.number
-                        })
-                    })
-                    setCsvData(list)
-                }
             })
     }
 
@@ -275,7 +231,6 @@ const MachineryList = () => {
             perPage: rowsPerPage,
             status: statusValue
         })
-        await getCsvData()
     }, [])
 
     const handleFilter = val => {
@@ -403,11 +358,7 @@ const MachineryList = () => {
         if (Object.values(data).every(field => field.length > 0)) {
             const body = {
                 name: data.name,
-                modelNumber: data.modelNumber,
-                number: data.number,
-                capacity: "0",
-                machineType: "KNITTING",
-                knittingDiameterId: knittingDiaData.find(obj => obj.id === data.knittingDiameter).id
+                description: data.description
             }
             dispatch(toggleLoading())
             if (isEditMode) {
@@ -436,10 +387,10 @@ const MachineryList = () => {
                         dispatch(toggleLoading())
                     })
             } else {
-                await MachineService.saveNewMachine(body)
+                await TagsServices.createTags(body)
                     .then(res => {
                         if (res.success) {
-                            customToastMsg(res.data, res.status)
+                            customToastMsg("New tag added successfully!", 1)
                             setShow(false)
                             setCurrentPage(0)
                             getDatass({
@@ -481,46 +432,45 @@ const MachineryList = () => {
 
     const columns = [
         {
-            name: 'Model Number',
-            width: '20%',
-            center: true,
-            cell: row => row.modelNumber
-        },
-        {
-            name: 'Knitting Diameter',
-            width: '20%',
-            center: true,
-            cell: row => (row.knittingDiameter !== null ? row.knittingDiameter.knittingDiameter : null)
-        },
-        {
+            name: 'Tag Name',
             width: '30%',
-            name: 'Name',
             center: true,
-            cell: row => row.name
-        },
-        {
-            width: '15%',
-            name: 'Number',
-            center: true,
-            cell: row => row.number
-        },
-        {
-            width: '15%',
-            name: 'Action',
-            center: true,
-            // eslint-disable-next-line no-unused-vars
             cell: row => (
-                <Button
-                    color='success' outline
-                    style={{height: 30, paddingTop: 0, paddingBottom: 0}}
-                    onClick={() => onUpdateHandler(row)}
-                >
-                    <Edit3 size={15} style={{marginRight: 5}}/>
-                    Edit
-                </Button>
+                <div className='d-flex align-items-center w-100 justify-content-around'>
+                    <span style={{maxWidth:90}}>{row.name}</span>
+                </div>
             )
-        }
-
+        },
+        {
+            sortable: false,
+            width: '35%',
+            name: 'Tag Description',
+            center: true,
+            cell: row => row.description
+        },
+        {
+            name: 'Actions',
+            width: '30%',
+            center: true,
+            cell: row => (
+                <div className='d-flex align-items-center w-100 justify-content-evenly'>
+                    <Button
+                        color='success' outline
+                        style={{width:80,padding:5,alignItems:'center'}}
+                    >
+                        <Eye size={15} style={{marginRight: 5,marginBottom:3}}/>
+                        Edit
+                    </Button>
+                    <Button
+                        color='danger' outline
+                        style={{width:100,padding:5,alignItems:'center'}}
+                    >
+                        <Trash size={15} style={{marginRight: 5,marginBottom:3}}/>
+                        Delete
+                    </Button>
+                </div>
+            )
+        },
     ]
 
     const clearTextFields = () => {
@@ -571,7 +521,6 @@ const MachineryList = () => {
                         knittingDiameter: diameter,
                         name: searchName
                     })
-                    getCsvData()
                 } else {
                     searchMachines({
                         sort,
@@ -613,18 +562,8 @@ const MachineryList = () => {
                     csvList={csvData}
                     csvAction={() => setCurrentDateTime(getCustomDateTimeStamp)}
                     fileName={`MachineryReport_${currentDateTime}.csv`}
+                    setShow={setShow}
                 />
-                <Col
-                    lg='4'
-                    className='w-100 actions-right justify-content-end d-flex flex-lg-nowrap flex-wrap pe-1'
-                >
-                    <Button onClick={() => {
-                        clearTextFields()
-                    }} style={{width: 100}}>
-                        <Plus size={15} style={{marginRight: 5}}/>
-                        Add
-                    </Button>
-                </Col>
                 <Card className="mt-2">
                     <div className='invoice-list-dataTable react-dataTable'>
                         <DataTable
@@ -647,7 +586,7 @@ const MachineryList = () => {
                     </div>
                 </Card>
             </div>
-            <MachinesModal
+            <TagsModal
                 show={show}
                 toggle={() => {
                     setShow(!show)
@@ -656,7 +595,6 @@ const MachineryList = () => {
                 onSubmit={handleSubmit(onSubmit)}
                 control={control}
                 errors={errors}
-                list={knittingDiaList}
                 isEditMode={isEditMode}
             />
         </Fragment>

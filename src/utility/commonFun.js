@@ -2,6 +2,7 @@ import FileType from "file-type/browser";
 import {AlertTriangle, Check, X} from "react-feather";
 import React, {Fragment} from "react";
 import {Slide, toast} from "react-toastify";
+import Avatar from '@components/avatar'
 
 
 const ToastContent = ({title, body, assets}) => (
@@ -66,7 +67,7 @@ export const isEmptyObject = (obj) => {
 }
 
 export const onFileError = (error) => {
-    console.log("error")
+    console.log("error:::::::::::")
     notifyMessage(error.message);
 };
 
@@ -87,4 +88,10 @@ export const getRealFileExtension = (e) => {
     }).then(function (result) {
         return result?.mime
     })
+}
+
+// Function to get the real file extension
+export const getRealFileExtensionForTxt = (fileName) => {
+    const extension = fileName.split('.').pop().toLowerCase(); // Get the file extension
+    return extension === 'txt'; // Return true if the extension is 'txt', false otherwise
 }

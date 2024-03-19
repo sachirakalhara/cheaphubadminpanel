@@ -8,7 +8,12 @@ import React, {useState} from 'react';
 import Files from "react-files";
 import * as commonFunc from "../../utility/commonFun";
 import './ReactFiles.scss';
-import {getRealFileExtension, notifyMessage, stringTrimFunction} from "../../utility/commonFun";
+import {
+    getRealFileExtension,
+    getRealFileExtensionForTxt,
+    notifyMessage,
+    stringTrimFunction
+} from "../../utility/commonFun";
 
 
 const App = (props) => {
@@ -18,17 +23,24 @@ const App = (props) => {
         if (files.length !== 0) {
             let fileObj = files[0];
 
-            getRealFileExtension(fileObj).then(res => {
-                if (res){
-                    setFileName(fileObj.name);
-                    props.sendImageData(fileObj.name, fileObj);
-                }else {
-                    notifyMessage("You have uploaded file extension is mismatched with actual file extension");
-                    setFileName('');
-                    props.sendImageData('', {});
-                }
+            const extension = fileObj.name.split('.').pop().toLowerCase();
+            if (extension ==='txt'){
+                setFileName(fileObj.name);
+                props.sendImageData(fileObj.name, fileObj);
+            }else {
+                getRealFileExtension(fileObj).then(res => {
+                    if (res){
+                        setFileName(fileObj.name);
+                        props.sendImageData(fileObj.name, fileObj);
+                    }else {
+                        notifyMessage("You have uploaded file extension is mismatched with actual file extension");
+                        setFileName('');
+                        props.sendImageData('', {});
+                    }
 
-            })
+                })
+            }
+
         }
     };
 
@@ -49,10 +61,10 @@ const App = (props) => {
                 clickable={props.disabled ? !props.disabled : true}
             >
                 <div className={`file-picker-mini-sub`}>
-                    <div className={`${props.error ? 'error' : ''}`}>
+                    <div className={`${props.invalid ? 'error' : ''}`}>
                         <p
                             className={`${props.imageFile && !props.imageFile.startsWith("http") ? 'active-lbl' : ''}`}>
-                            {fileName ? stringTrimFunction(28,fileName) : (props.imageFile && !props.imageFile.startsWith("http")) ? props.imageFile : props.imageFile && props.imageFile.startsWith("http") ? "Choose File (Update)" : props.placeholder !== undefined ? props.placeholder : "Choose File"}
+                            {fileName ? stringTrimFunction(60,fileName) : (props.imageFile && !props.imageFile.startsWith("http")) ? props.imageFile : props.imageFile && props.imageFile.startsWith("http") ? "Choose File (Update)" : props.placeholder !== undefined ? props.placeholder : "Choose File"}
                         </p>
                     </div>
                     <button

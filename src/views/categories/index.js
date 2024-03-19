@@ -31,9 +31,10 @@ import {useForm} from "react-hook-form"
 // import {dataOrder} from "../../@fake-db/apps/orders"
 import {toggleLoading} from '@store/loading'
 
-import AdditionModal from "../../@core/components/modal/stylesModal/AdditionModal"
-import ConsumptionModal from "../../@core/components/modal/stylesModal/ConsumptionModal"
+import AdditionModal from "../../@core/components/modal/categoryModal/AdditionModal"
+import ConsumptionModal from "../../@core/components/modal/categoryModal/ConsumptionModal"
 import * as ColorServices from "../../services/color-resources"
+import * as CategoryServices from "../../services/categories";
 
 let prev = 0
 
@@ -41,21 +42,21 @@ const CustomHeader = (props) => {
     return (
         <Card>
             <div className='invoice-list-table-header w-100 py-2 px-1' style={{whiteSpace: 'nowrap'}}>
-                <h3 className='text-primary invoice-logo ms-0 mb-2'>Styles</h3>
+                <h3 className='text-primary invoice-logo ms-0 mb-2'>Categories</h3>
                 <Row>
                     <Col lg='6' className='d-flex align-items-center px-0 px-lg-1'>
                         <div className='d-flex align-items-center me-2'>
                             <Label className='form-label' for='default-picker'>
-                                Style Number
+                                Category Name
                             </Label>
                             <div className='inputWithButton'>
                                 <Input
-                                    id='StyleNumber'
+                                    id='categoryName'
                                     className='ms-50 me-2 w-100'
                                     type='text'
                                     value={props.searchKey}
                                     onChange={props.onChange}
-                                    placeholder='Search Style Number'
+                                    placeholder='Search Category Name'
                                     autoComplete="off"
                                 />
                                 {props.searchKey.length !== 0 && (
@@ -77,7 +78,7 @@ const CustomHeader = (props) => {
                         className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1 p-0'
                     >
                         <Button onClick={() => props.setShow(true)}>
-                            <Plus size={15}/> Add Style
+                            <Plus size={15}/> Add Category
                         </Button>
                     </Col>
                 </Row>
@@ -87,11 +88,8 @@ const CustomHeader = (props) => {
 }
 
 const defaultValues = {
-    styleNumber: '',
-    styleDescription: '',
-    falloutPercentage: '',
-    baseSize: '',
-    colors: []
+    name: '',
+    description: '',
 }
 
 const StylesList = () => {
@@ -132,10 +130,20 @@ const StylesList = () => {
 
     const getDatass = async (params) => {
         dispatch(toggleLoading())
-        await stylesService.getAllStylesForTable(params.page)
+        // await stylesService.getAllStylesForTable(params.page)
+        //     .then(res => {
+        //         if (res.success) {
+        //             setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+        //         } else {
+        //             customToastMsg(res.data.title, res.status)
+        //         }
+        //         dispatch(toggleLoading())
+        //         setIsFetched(false)
+        //     })
+        await CategoryServices.getAllCategories()
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+                    setStore({allData: res.data.category_list, data: res.data.category_list, params, total: 0})
                 } else {
                     customToastMsg(res.data.title, res.status)
                 }
@@ -158,22 +166,6 @@ const StylesList = () => {
             })
     }
 
-    const getAllColors = async () => {
-        await ColorServices.getAllColors()
-            .then(res => {
-                if (res.success) {
-                    const list = []
-                    res.data.map(item => {
-                        list.push({
-                            label: item.name,
-                            value: item.id
-                        })
-                    })
-                    setColorsList(list)
-                }
-            })
-    }
-
 
     useEffect(async () => {
         await getDatass({
@@ -183,7 +175,6 @@ const StylesList = () => {
             page: currentPage,
             perPage: rowsPerPage
         })
-        await getAllColors()
     }, [])
 
     const handlePagination = async page => {
@@ -254,7 +245,7 @@ const StylesList = () => {
         setSort(sortDirection)
         setSortColumn(column.sortField)
         dispatch(
-            getData({
+            getDatass({
                 q: value,
                 page: currentPage,
                 sort: sortDirection,
@@ -266,25 +257,15 @@ const StylesList = () => {
 
     const onSubmit = async data => {
         if (Object.values(data).every(field => field.length > 0)) {
-            const list = []
-            data.colors.map(item => {
-                list.push({
-                    id: item.value
-                })
-            })
             const body = {
-                styleNumber: data.styleNumber,
-                styleDescription: data.styleDescription,
-                falloutPercentage: data.falloutPercentage,
-                deleted: false,
-                baseSize: data.baseSize,
-                colors: list
+                name: data.name,
+                description: data.description,
             }
             dispatch(toggleLoading())
-            await stylesService.addNewStyle(body)
+            await CategoryServices.createCategory(body)
                 .then(res => {
                     if (res.success) {
-                        customToastMsg("New style added successfully!", res.status)
+                        customToastMsg("New category added successfully!", 1)
                         setShow(false)
                         setCurrentPage(0)
                         setSearchKey('')
@@ -405,7 +386,6 @@ const StylesList = () => {
                     onSubmit={handleSubmit(onSubmit)}
                     control={control}
                     errors={errors}
-                    colorsList={colorsList}
                 />
             </div>
         </Fragment>

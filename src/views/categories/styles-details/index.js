@@ -77,7 +77,7 @@ const InvoicePreview = () => {
             <h4 className='alert-heading'>Style not found</h4>
             <div className='alert-body'>
                 Style with id: {id} doesn't exist. Check list of all Styles:{' '}
-                <Link to='/styles/list'>Styles List</Link>
+                <Link to='/categories/list'>Styles List</Link>
             </div>
         </Alert>
     )

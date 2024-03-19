@@ -186,23 +186,23 @@ const AppRoutes = [
     }
   },
   {
-    path: '/styles/list',
-    component: lazy(() => import('../../views/styles'))
+    path: '/categories/list',
+    component: lazy(() => import('../../views/categories'))
   },
   {
     path: '/styles/styles-details/:id',
-    component: lazy(() => import('../../views/styles/styles-details'))
+    component: lazy(() => import('../../views/categories/styles-details'))
   },
   {
     path: '/styles/styles-details/:id/:subject',
-    component: lazy(() => import('../../views/styles/styles-details')),
+    component: lazy(() => import('../../views/categories/styles-details')),
     meta: {
       navLink: '/styles/styles-details'
     }
   },
   {
-    path: '/machinery/list',
-    component: lazy(() => import('../../views/machinery'))
+    path: '/tags/list',
+    component: lazy(() => import('../../views/tags'))
   },
   {
     path: '/production&Rejections/list',

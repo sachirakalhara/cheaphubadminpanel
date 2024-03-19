@@ -26,7 +26,7 @@ import {
     TrendingUp,
     CheckCircle,
     MoreVertical,
-    ArrowDownCircle, ShoppingCart, Edit3
+    ArrowDownCircle, ShoppingCart, Edit3, Delete
 } from 'react-feather'
 import {roundNumber} from "../../utility/Utils"
 
@@ -57,53 +57,43 @@ import {roundNumber} from "../../utility/Utils"
 // ** Table columns
 export const columns = [
     {
-        name: 'Style Number',
-        sortable: false,
+        name: 'Category Name',
         width: '30%',
         center: true,
-        // selector: row => row.id,
         cell: row => (
             <div className='d-flex align-items-center w-100 justify-content-around'>
-                <span style={{maxWidth:90}}>{row.styleNumber}</span>
-                <Button
-                    color='success' outline
-                    tag={Link} to={`/styles/styles-details/${row.styleId}/components`}
-                    style={{height: 35, paddingTop: 9, paddingBottom: 0}}
-                >
-                    <Eye size={15} style={{marginRight: 5}}/>
-                    View
-                </Button>
+                <span style={{maxWidth:90}}>{row.name}</span>
             </div>
         )
     },
     {
         sortable: false,
-        width: '25%',
-        name: 'Style Description',
+        width: '35%',
+        name: 'Category Description',
         center: true,
         cell: row => row.description
     },
     {
-        sortable: false,
-        width: '25%',
-        name: <span className="text-center">Fallout Percentage (%)</span>,
+        name: 'Actions',
+        width: '30%',
         center: true,
-        cell: row => roundNumber(row.falloutPercentage)
+        cell: row => (
+            <div className='d-flex align-items-center w-100 justify-content-evenly'>
+                <Button
+                    color='success' outline
+                    style={{width:80,padding:5,alignItems:'center'}}
+                >
+                    <Eye size={15} style={{marginRight: 5,marginBottom:3}}/>
+                    Edit
+                </Button>
+                <Button
+                    color='danger' outline
+                    style={{width:100,padding:5,alignItems:'center'}}
+                >
+                    <Trash size={15} style={{marginRight: 5,marginBottom:3}}/>
+                    Delete
+                </Button>
+            </div>
+        )
     },
-    {
-        sortable: false,
-        width: '20%',
-        name: <span className="text-center">Base Size</span>,
-        center: true,
-        cell: row => row.baseSize
-    }
-    // {
-    //     sortable: false,
-    //     minWidth: '550px',
-    //     name: 'Types Of Components',
-    //     center: true,
-    //     cell: row => (
-    //         <span className="text-center">{row.components?.replace(/,/g, '\xa0\xa0\xa0\xa0\xa0\xa0\xa0')}</span>
-    //     )
-    // }
 ]

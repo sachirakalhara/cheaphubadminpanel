@@ -7,7 +7,7 @@ import {Table, Card, Button, Row, Col, Input} from 'reactstrap'
 // ** Icons Imports
 import {Monitor, Coffee, Watch, TrendingUp, TrendingDown, X, Plus, Edit3} from 'react-feather'
 import React, {useEffect, useState} from "react"
-import ComponentModal from "../../../@core/components/modal/stylesModal/ComponentModal"
+import ComponentModal from "../../../@core/components/modal/categoryModal/ComponentModal"
 // eslint-disable-next-line no-unused-vars
 import {customToastMsg, emptyUI} from "../../../utility/Utils"
 // eslint-disable-next-line no-unused-vars

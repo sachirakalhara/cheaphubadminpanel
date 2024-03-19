@@ -23,16 +23,16 @@ export default [
         navLink: '/products/list'
     },
     {
-        id: 'styles',
-        title: 'Styles',
-        icon: <img src={img1} alt="img" height={20} width={20} style={{marginRight:15}}/>,
-        navLink: '/styles/list'
+        id: 'categories',
+        title: 'Categories',
+        icon: <img src={img5} alt="img" height={20} width={20} style={{marginRight:15}}/>,
+        navLink: '/categories/list'
     },
     {
-        id: 'machinery',
-        title: 'Machinery',
+        id: 'tags',
+        title: 'Tags',
         icon: <img src={img2} alt="img" height={20} width={20} style={{marginRight:15}}/>,
-        navLink: '/machinery/list'
+        navLink: '/tags/list'
     },
     {
         id: 'production',

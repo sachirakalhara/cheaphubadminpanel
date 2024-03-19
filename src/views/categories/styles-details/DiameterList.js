@@ -24,7 +24,7 @@ import ReactPaginate from "react-paginate"
 // eslint-disable-next-line no-unused-vars
 import {loadingHandler} from '@store/layout'
 import {useDispatch} from 'react-redux'
-import DiameterModal from "../../../@core/components/modal/stylesModal/DiameterModal"
+import DiameterModal from "../../../@core/components/modal/categoryModal/DiameterModal"
 import * as stylesService from "../../../services/style-resources"
 import * as knittingDiaServices from "../../../services/knittingDia-resources"
 import {toggleLoading} from '@store/loading'

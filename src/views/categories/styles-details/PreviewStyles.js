@@ -50,7 +50,7 @@ const PreviewStyles = ({styleDetails, componentList, components}) => {
             <CardBody className='invoice-padding pb-0'>
                 {/* Header */}
                 <div className='d-flex align-items-center mb-2'>
-                    <Link to='/styles/list'>
+                    <Link to='/categories/list'>
                     <span className='go-back cursor-pointer'><ArrowLeft size={25}/></span>
                     </Link>
                     <h2 className='text-primary invoice-logo ms-1' style={{marginTop: 5}}>Style Details</h2>
