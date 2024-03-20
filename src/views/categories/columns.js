@@ -55,45 +55,4 @@ import {roundNumber} from "../../utility/Utils"
 
 
 // ** Table columns
-export const columns = [
-    {
-        name: 'Category Name',
-        width: '30%',
-        center: true,
-        cell: row => (
-            <div className='d-flex align-items-center w-100 justify-content-around'>
-                <span style={{maxWidth:90}}>{row.name}</span>
-            </div>
-        )
-    },
-    {
-        sortable: false,
-        width: '35%',
-        name: 'Category Description',
-        center: true,
-        cell: row => row.description
-    },
-    {
-        name: 'Actions',
-        width: '30%',
-        center: true,
-        cell: row => (
-            <div className='d-flex align-items-center w-100 justify-content-evenly'>
-                <Button
-                    color='success' outline
-                    style={{width:80,padding:5,alignItems:'center'}}
-                >
-                    <Eye size={15} style={{marginRight: 5,marginBottom:3}}/>
-                    Edit
-                </Button>
-                <Button
-                    color='danger' outline
-                    style={{width:100,padding:5,alignItems:'center'}}
-                >
-                    <Trash size={15} style={{marginRight: 5,marginBottom:3}}/>
-                    Delete
-                </Button>
-            </div>
-        )
-    },
-]
+

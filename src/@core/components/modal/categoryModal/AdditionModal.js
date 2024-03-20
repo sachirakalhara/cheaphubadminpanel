@@ -17,7 +17,7 @@ const AdditionModal = (props) => {
         })
     })
     return (
-        <Modal show={props.show} toggle={props.toggle} headTitle="Add Category" size={'lg'}>
+        <Modal show={props.show} toggle={props.toggle} headTitle={props.isEditMode ? "Update Category" : "Add Category"} size={'lg'}>
             <Row tag='form' className='gy-1 pt-2' onSubmit={props.onSubmit}>
                 <Col md={12} xs={12}>
                     <Label className='form-label mb-1' for='name'>
@@ -51,7 +51,7 @@ const AdditionModal = (props) => {
                 </Col>
                 <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
                     <Button type='submit' className='me-1' color='success'>
-                        Submit
+                        {props.isEditMode ? 'Update' : 'Submit'}
                     </Button>
                     <Button type='reset' color='secondary' outline onClick={props.toggle}>
                         Discard

@@ -7,7 +7,7 @@ import {columns} from './columns'
 
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
-import {Calendar, ChevronDown, Plus, Umbrella, X} from 'react-feather'
+import {Calendar, ChevronDown, Eye, Plus, Trash, Umbrella, X} from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
@@ -26,7 +26,7 @@ import Flatpickr from "react-flatpickr"
 import {Bar} from "react-chartjs-2"
 import * as OrderService from "../../services/order-resources"
 import * as stylesService from "../../services/style-resources"
-import {customToastMsg, emptyUI} from "../../utility/Utils"
+import {customSweetAlert, customToastMsg, emptyUI} from "../../utility/Utils"
 import {useForm} from "react-hook-form"
 // import {dataOrder} from "../../@fake-db/apps/orders"
 import {toggleLoading} from '@store/loading'
@@ -35,6 +35,8 @@ import AdditionModal from "../../@core/components/modal/categoryModal/AdditionMo
 import ConsumptionModal from "../../@core/components/modal/categoryModal/ConsumptionModal"
 import * as ColorServices from "../../services/color-resources"
 import * as CategoryServices from "../../services/categories";
+import * as StyleServices from "../../services/style-resources";
+import TagsModal from "../../@core/components/modal/tagsModal/tagsModal";
 
 let prev = 0
 
@@ -92,7 +94,7 @@ const defaultValues = {
     description: '',
 }
 
-const StylesList = () => {
+const CategoryList = () => {
     // ** Store vars
     const dispatch = useDispatch()
     const {
@@ -100,12 +102,13 @@ const StylesList = () => {
         setError,
         handleSubmit,
         formState: {errors},
-        reset
+        reset,
+        setValue
     } = useForm({defaultValues})
 
     // ** States
     // eslint-disable-next-line no-unused-vars
-    const [value, setValue] = useState('')
+    const [value1, setValue1] = useState('')
     const [sort, setSort] = useState('desc')
     const [sortColumn, setSortColumn] = useState('id')
     const [currentPage, setCurrentPage] = useState(0)
@@ -115,6 +118,8 @@ const StylesList = () => {
     const [searchKey, setSearchKey] = useState('')
     const [colorsList, setColorsList] = useState([])
     const [isFetched, setIsFetched] = useState(false)
+    const [isEditMode, setIsEditMode] = useState(false)
+    const [selectedId, setSelectedId] = useState('')
 
     const [store, setStore] = useState({
         allData: [],
@@ -122,7 +127,7 @@ const StylesList = () => {
         params: {
             page: currentPage,
             perPage: rowsPerPage,
-            q: value
+            q: value1
         },
         total: 0
     })
@@ -145,7 +150,7 @@ const StylesList = () => {
                 if (res.success) {
                     setStore({allData: res.data.category_list, data: res.data.category_list, params, total: 0})
                 } else {
-                    customToastMsg(res.data.title, res.status)
+                    customToastMsg(res.message, res.status)
                 }
                 dispatch(toggleLoading())
                 setIsFetched(false)
@@ -160,7 +165,7 @@ const StylesList = () => {
                 if (res.success) {
                     setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
                 } else {
-                    customToastMsg(res.data.title, res.status)
+                    customToastMsg(res.message, res.status)
                 }
                 dispatch(toggleLoading())
             })
@@ -170,7 +175,7 @@ const StylesList = () => {
     useEffect(async () => {
         await getDatass({
             sort,
-            q: value,
+            q: value1,
             sortColumn,
             page: currentPage,
             perPage: rowsPerPage
@@ -181,7 +186,7 @@ const StylesList = () => {
         if (searchKey.length === 0) {
             await getDatass({
                 sort,
-                q: value,
+                q: value1,
                 sortColumn,
                 perPage: rowsPerPage,
                 page: page.selected
@@ -189,7 +194,7 @@ const StylesList = () => {
         } else {
             await searchData({
                 sort,
-                q: value,
+                q: value1,
                 sortColumn,
                 perPage: rowsPerPage,
                 page: page.selected
@@ -225,7 +230,7 @@ const StylesList = () => {
 
     const dataToRender = () => {
         const filters = {
-            q: value
+            q: value1
         }
 
         const isFiltered = Object.keys(filters).some(function (k) {
@@ -246,7 +251,7 @@ const StylesList = () => {
         setSortColumn(column.sortField)
         dispatch(
             getDatass({
-                q: value,
+                q: value1,
                 page: currentPage,
                 sort: sortDirection,
                 perPage: rowsPerPage,
@@ -262,26 +267,57 @@ const StylesList = () => {
                 description: data.description,
             }
             dispatch(toggleLoading())
-            await CategoryServices.createCategory(body)
-                .then(res => {
-                    if (res.success) {
-                        customToastMsg("New category added successfully!", 1)
-                        setShow(false)
-                        setCurrentPage(0)
-                        setSearchKey('')
-                        getDatass({
-                            sort,
-                            q: value,
-                            sortColumn,
-                            perPage: rowsPerPage,
-                            page: 0
-                        })
-                        reset()
-                    } else {
-                        customToastMsg(res.message, res.status)
-                    }
-                    dispatch(toggleLoading())
+
+            if (isEditMode) {
+
+                Object.assign(body, {
+                    id: selectedId
                 })
+
+                await CategoryServices.updateCategory(body)
+                    .then(res => {
+                        if (res.success) {
+                            customToastMsg("Category updated successfully!", 1)
+                            setShow(false)
+                            setCurrentPage(0)
+                            setSearchKey('')
+                            getDatass({
+                                sort,
+                                q: value1,
+                                sortColumn,
+                                perPage: rowsPerPage,
+                                page: 0
+                            })
+                            reset()
+                        } else {
+                            customToastMsg(res.message, res.status)
+                        }
+                        dispatch(toggleLoading())
+                    })
+            }else {
+                await CategoryServices.createCategory(body)
+                    .then(res => {
+                        if (res.success) {
+                            customToastMsg("New category added successfully!", 1)
+                            setShow(false)
+                            setCurrentPage(0)
+                            setSearchKey('')
+                            getDatass({
+                                sort,
+                                q: value1,
+                                sortColumn,
+                                perPage: rowsPerPage,
+                                page: 0
+                            })
+                            reset()
+                        } else {
+                            customToastMsg(res.message, res.status)
+                        }
+                        dispatch(toggleLoading())
+                    })
+            }
+
+
         } else {
             for (const key in data) {
                 if (data[key].length === 0) {
@@ -306,7 +342,7 @@ const StylesList = () => {
         setSearchKey("")
         await getDatass({
             sort,
-            q: value,
+            q: value1,
             sortColumn,
             page: 0,
             perPage: 0
@@ -318,7 +354,7 @@ const StylesList = () => {
             setCurrentPage(0)
             await searchData({
                 sort,
-                q: value,
+                q: value1,
                 sortColumn,
                 page: 0,
                 perPage: 0
@@ -342,11 +378,64 @@ const StylesList = () => {
 
     }
 
+    const onUpdateHandler = (data) => {
+        setSelectedId(data.id)
+        setValue("name", data.name !== null ? data.name : "")
+        setValue("description", data.description)
+
+        setShow(true)
+        setIsEditMode(true)
+    }
+
+    const columns = [
+        {
+            name: 'Category Name',
+            width: '30%',
+            center: true,
+            cell: row => (
+                <div className='d-flex align-items-center w-100 justify-content-around'>
+                    <span style={{maxWidth:90}}>{row.name}</span>
+                </div>
+            )
+        },
+        {
+            sortable: false,
+            width: '35%',
+            name: 'Category Description',
+            center: true,
+            cell: row => row.description
+        },
+        {
+            name: 'Actions',
+            width: '30%',
+            center: true,
+            cell: row => (
+                <div className='d-flex align-items-center w-100 justify-content-evenly'>
+                    <Button
+                        color='success' outline
+                        style={{width:80,padding:5,alignItems:'center'}}
+                        onClick={()=>onUpdateHandler(row)}
+                    >
+                        <Eye size={15} style={{marginRight: 5,marginBottom:3}}/>
+                        Edit
+                    </Button>
+                    {/*<Button*/}
+                    {/*    color='danger' outline*/}
+                    {/*    style={{width:100,padding:5,alignItems:'center'}}*/}
+                    {/*>*/}
+                    {/*    <Trash size={15} style={{marginRight: 5,marginBottom:3}}/>*/}
+                    {/*    Delete*/}
+                    {/*</Button>*/}
+                </div>
+            )
+        },
+    ]
+
     return (
         <Fragment>
             <div className='invoice-list-wrapper'>
                 <CustomHeader
-                    value={value}
+                    value={value1}
                     rowsPerPage={rowsPerPage}
                     show={show}
                     setShow={setShow}
@@ -386,10 +475,11 @@ const StylesList = () => {
                     onSubmit={handleSubmit(onSubmit)}
                     control={control}
                     errors={errors}
+                    isEditMode={isEditMode}
                 />
             </div>
         </Fragment>
     )
 }
 
-export default StylesList
+export default CategoryList

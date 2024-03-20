@@ -88,14 +88,22 @@ export const callApi = async (apiObject) => {
                     }
                 } else if (error.response.status === 401) {
 
-                    if (apiObject.state === "renewToken") {
-                        result = await {success: false, status: 2, message: error.response.data.message};
-                    }
-                    if (apiObject.state === "login") {
-                        result = await {success: false, status: 0, message: error.response.data.message};
-                    }
+                    // if (apiObject.state === "renewToken") {
+                    //     result = await {success: false, status: 2, message: error.response.data.message};
+                    // }
+                    // if (apiObject.state === "login") {
+                    //     result = await {success: false, status: 0, message: error.response.data.message};
+                    // }
 
                     // result = await renewTokenHandler(apiObject)
+
+                    result = await {
+                        success: false,
+                        status: 0,
+                        message: error.response.data.message,
+                        data: null
+                    }
+
 
                 } else if (error.response.status === 403) {
                     result = await {

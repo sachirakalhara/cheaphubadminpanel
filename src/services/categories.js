@@ -26,3 +26,15 @@ export async function createCategory(data) {
     return await ApiService.callApi(apiObject)
 }
 
+export async function updateCategory(data) {
+    const apiObject = {}
+    apiObject.method = 'PUT'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/category/update`
+    apiObject.body = data
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}

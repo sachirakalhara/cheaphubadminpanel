@@ -18,13 +18,14 @@ import {useDispatch} from 'react-redux'
 import '@styles/react/apps/app-invoice.scss'
 
 import * as MachineService from "../../services/machine-resources"
-import {customToastMsg, emptyUI, getCustomDateTimeStamp, searchValidation} from "../../utility/Utils"
+import {customSweetAlert, customToastMsg, emptyUI, getCustomDateTimeStamp, searchValidation} from "../../utility/Utils"
 import {useForm} from "react-hook-form"
 import TagsModal from "../../@core/components/modal/tagsModal/tagsModal"
 import OrderModal from "../../@core/components/modal/orderModal"
 import * as knittingDiaServices from "../../services/knittingDia-resources"
 import {CSVLink} from "react-csv"
 import * as TagsServices from "../../services/tags";
+import * as StyleServices from "../../services/style-resources";
 
 let prev = 0
 
@@ -156,27 +157,10 @@ const MachineryList = () => {
                 if (res.success) {
                     setStore({allData: res.data.tag_list, data: res.data.tag_list, params, total: 0})
                 } else {
-                    customToastMsg(res.data.title, res.status)
+                    customToastMsg(res.message, res.status)
                 }
                 dispatch(toggleLoading())
                 setIsFetched(true)
-            })
-    }
-
-    const getAllKnittingDia = async () => {
-        await knittingDiaServices.getAllKnittingDia()
-            .then(res => {
-                if (res.success) {
-                    const list = []
-                    res.data.map(item => {
-                        list.push({
-                            value: item.id,
-                            label: item.knittingDiameter
-                        })
-                    })
-                    setKnittingDiaList(list.sort((a, b) => Number(a.label) - Number(b.label)))
-                    setKnittingDiaData(res.data)
-                }
             })
     }
 
@@ -191,7 +175,7 @@ const MachineryList = () => {
                 if (res.success) {
                     setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
                 } else {
-                    customToastMsg(res.data.title, res.status)
+                    customToastMsg(res.message, res.status)
                 }
                 dispatch(toggleLoading())
             })
@@ -222,7 +206,6 @@ const MachineryList = () => {
     }
 
     useEffect(async () => {
-        await getAllKnittingDia()
         getDatass({
             sort,
             q: val,
@@ -363,14 +346,13 @@ const MachineryList = () => {
             dispatch(toggleLoading())
             if (isEditMode) {
                 Object.assign(body, {
-                    deleted: false,
                     id: selectedId
                 })
 
-                await MachineService.updateMachine(body)
+                await TagsServices.updateTags(body)
                     .then(res => {
                         if (res.success) {
-                            customToastMsg(res.data, res.status)
+                            customToastMsg("Tag updated updated successfully!", 1)
                             setShow(false)
                             // setCurrentPage(0)
                             getDatass({
@@ -421,10 +403,8 @@ const MachineryList = () => {
 
     const onUpdateHandler = (data) => {
         setSelectedId(data.id)
-        setValue("modelNumber", data.modelNumber !== null ? data.modelNumber : "")
-        setValue("knittingDiameter", knittingDiaList.find(obj => obj.value === data.knittingDiameter.id).value.toString())
-        setValue("name", data.name)
-        setValue("number", data.number.toString())
+        setValue("name", data.name !== null ? data.name : "")
+        setValue("description", data.description)
 
         setShow(true)
         setIsEditMode(true)
@@ -433,7 +413,7 @@ const MachineryList = () => {
     const columns = [
         {
             name: 'Tag Name',
-            width: '30%',
+            width: '20%',
             center: true,
             cell: row => (
                 <div className='d-flex align-items-center w-100 justify-content-around'>
@@ -449,6 +429,13 @@ const MachineryList = () => {
             cell: row => row.description
         },
         {
+            sortable: false,
+            width: '15%',
+            name: 'Counts',
+            center: true,
+            cell: row => row.count
+        },
+        {
             name: 'Actions',
             width: '30%',
             center: true,
@@ -457,6 +444,7 @@ const MachineryList = () => {
                     <Button
                         color='success' outline
                         style={{width:80,padding:5,alignItems:'center'}}
+                        onClick={()=>onUpdateHandler(row)}
                     >
                         <Eye size={15} style={{marginRight: 5,marginBottom:3}}/>
                         Edit
@@ -464,6 +452,7 @@ const MachineryList = () => {
                     <Button
                         color='danger' outline
                         style={{width:100,padding:5,alignItems:'center'}}
+                        onClick={()=>removeItem(row.id)}
                     >
                         <Trash size={15} style={{marginRight: 5,marginBottom:3}}/>
                         Delete
@@ -541,6 +530,32 @@ const MachineryList = () => {
             }
         }, 1000)
 
+    }
+
+    const removeItem = async (id) => {
+        await customSweetAlert(
+            'Are you sure you want to remove this?',
+            0,
+            async () => {
+                await TagsServices.deleteTags(id)
+                    .then(async res => {
+                        if (res.success) {
+                            customToastMsg(res.data, res.status)
+                            setCurrentPage(0)
+                            await getDatass({
+                                sort,
+                                q: val,
+                                sortColumn,
+                                page: currentPage,
+                                perPage: rowsPerPage,
+                                status: statusValue
+                            })
+                        } else {
+                            customToastMsg(res.message, res.status)
+                        }
+                    })
+            }
+        )
     }
 
     return (

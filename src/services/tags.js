@@ -25,3 +25,29 @@ export async function createTags(data) {
 
     return await ApiService.callApi(apiObject)
 }
+
+export async function deleteTags(id) {
+    const apiObject = {}
+    apiObject.method = 'DELETE'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/tag/${id}`
+    apiObject.body = null
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
+
+export async function updateTags(body) {
+    const apiObject = {}
+    apiObject.method = 'PUT'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/tag/update`
+    apiObject.body = body
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
