@@ -40,18 +40,6 @@ export async function createSubscription(body) {
     return await ApiService.callApi(apiObject)
 }
 
-export async function getAllContributionProducts() {
-    const apiObject = {}
-    apiObject.method = 'POST'
-    apiObject.authentication = true
-    apiObject.isBasicAuth = false
-    apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/package/get-all`
-    apiObject.body = {"all" : 1}
-    apiObject.multipart = false
-
-    return await ApiService.callApi(apiObject)
-}
 export async function getAllSubscriptionPackages(body) {
     const apiObject = {}
     apiObject.method = 'POST'
@@ -77,4 +65,3 @@ export async function createPackage(body) {
 
     return await ApiService.callApi(apiObject)
 }
-

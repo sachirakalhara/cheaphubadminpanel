@@ -2,16 +2,13 @@
 import {Link} from 'react-router-dom'
 import React, {useState, useEffect, Fragment} from 'react'
 
-// ** Table Columns
-import {columns} from '../columns'
-
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import {Calendar, ChevronDown, Plus, X} from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
-import {Button, Input, Row, Col, Card, Label, CardHeader, CardTitle, CardBody, CardSubtitle} from 'reactstrap'
+import {Button, Input, Row, Col, Card, Label, Badge, CardHeader, CardTitle, CardBody, CardSubtitle} from 'reactstrap'
 
 // ** Store & Actions
 import {useDispatch} from 'react-redux'
@@ -38,6 +35,7 @@ import * as CategoryServices from '../../../services/categories';
 import * as TagsServices from '../../../services/tags';
 import BulCreationModal from "../../../@core/components/modal/product/bulk-create-modal";
 import SubscriptionCreationModal from "../../../@core/components/modal/product/subscription-create-modal";
+import * as ContributionProductService from "../../../services/contribution-products";
 
 const moment = require('moment')
 
@@ -234,20 +232,22 @@ const SubscriptionProductList = () => {
 
 
     const getDataList = (params) => {
-        // dispatch(toggleLoading())
-        // OrderService.getAllOrders(params.page)
-        //     // eslint-disable-next-line no-unused-vars
-        //     .then(res => {
-        //         if (res.success) {
-        //             setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
-        //         } else {
-        //             customToastMsg(res.data.title, res.status)
-        //         }
-        //         dispatch(toggleLoading())
-        //         setIsFetched(true)
-        //     })
-
-        setStore({allData: list, data: list, params, total: 1})
+        dispatch(toggleLoading());
+        ContributionProductService.getAllContributionProduct()
+            .then(res => {
+                if (res.success) {
+                    setStore({
+                        allData: res.data,
+                        data: res.data.contribution_product_list,
+                        params,
+                        total: res.data.contribution_product_list.length
+                    });
+                } else {
+                    customToastMsg(res.message, res.status);
+                }
+                dispatch(toggleLoading());
+                setIsFetched(true);
+            });
     }
 
     const searchOrder = (params) => {
@@ -275,7 +275,7 @@ const SubscriptionProductList = () => {
                     console.log(res)
                     const list = []
                     // if (res.data.length>0)
-                        res.data.category_list.map((items,index) => {
+                    res.data.category_list.map((items, index) => {
                         list.push({
                             label: items.name,
                             value: items.id
@@ -292,7 +292,7 @@ const SubscriptionProductList = () => {
                 if (res.success) {
                     const list = []
                     // if (res.data.length>0)
-                        res.data.tag_list.map((item,index) => {
+                    res.data.tag_list.map((item, index) => {
                         list.push({
                             label: item.name,
                             value: item.id
@@ -385,56 +385,6 @@ const SubscriptionProductList = () => {
         }
     }
 
-    const onSubmit = async data => {
-        console.log(data)
-        if (Object.values(data).every(field => field.length > 0)) {
-            // const body = {
-            //     poNumber: data.poNumber,
-            //     poDate: `${data.poDate}T00:00:00Z`,
-            //     quantity: null,
-            //     deliveryDate: `${data.deliveryDate}T00:00:00Z`,
-            //     priceTerm: data.priceTerm,
-            //     customer: {
-            //         id: data.customer
-            //     },
-            //     destination: {
-            //         id: data.destination
-            //     }
-            // }
-            // dispatch(toggleLoading())
-            // await OrderService.saveOrder(body)
-            //     .then(res => {
-            //         if (res.success) {
-            //             customToastMsg("Order added successfully!", 1)
-            //             setCurrentPage(0)
-            //             setRowsPerPage(0)
-            //             setCustomerName('')
-            //             setPicker('')
-            //             setSearchKey('')
-            //             getDataList({
-            //                 q: value,
-            //                 page: 0,
-            //                 perPage: 0
-            //             })
-            //             setShow(false)
-            //         } else {
-            //             customToastMsg(res.message, res.status)
-            //         }
-            //         dispatch(toggleLoading())
-            //     })
-
-        } else {
-            for (const key in data) {
-                if (data[key].length === 0) {
-                    setError(key, {
-                        type: 'required'
-                    })
-                }
-            }
-
-            console.log(data)
-        }
-    }
 
     const onSearch = async (e, type) => {
         setCurrentPage(0)
@@ -510,7 +460,7 @@ const SubscriptionProductList = () => {
                     rotation
                 )
 
-                console.log(':::::::::::::::::::::::::::::::::::============================',croppedImage)
+                console.log(':::::::::::::::::::::::::::::::::::============================', croppedImage)
                 await setProductCroppedImage(croppedImage)
             } catch (e) {
                 console.error(e)
@@ -539,6 +489,36 @@ const SubscriptionProductList = () => {
         setSerialDocumentName(file.name)
         setSerialDocument(file);
     }
+
+    const columns = [
+        {
+            name: 'Name',
+            selector: 'name',
+            sortable: true,
+        },
+        {
+            name: 'Image',
+            cell: row => <img src={row.image} alt={row.name}
+                              style={{width: '40px', height: '40px', borderRadius: '50%'}}/>,
+            sortable: false,
+        },
+        {
+            name: 'Visibility',
+            cell: row => <Badge color={row.visibility === 'onHold' ? 'danger' : 'success'}>{row.visibility}</Badge>,
+            sortable: true,
+        },
+        {
+            name: 'Tag',
+            selector: 'tag_id',
+            cell: row => tagsList.length > 0 ? tagsList.find(obj => obj.value === row.tag_id).label : '', // Assuming tag_id is the tag name
+            sortable: true,
+        },
+        {
+            name: 'View Details',
+            cell: row => <Button color="primary">View</Button>,
+            sortable: false,
+        },
+    ];
 
     return (
         <Fragment>
