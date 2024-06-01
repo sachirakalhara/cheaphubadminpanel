@@ -27,7 +27,7 @@ import {Controller, useForm} from "react-hook-form"
 import Select from "react-select";
 import ReactFilesMini from "../../../../../custom-components/file-picker/ReactFiles-Mini";
 import Cropper from "react-easy-crop";
-import {fileReader, getCroppedImg, isEmpty, isImageFile} from "../../../../../utility/Utils";
+import {customToastMsg, fileReader, getCroppedImg, isEmpty, isImageFile} from "../../../../../utility/Utils";
 import Radio from "../../../../../@core/components/radio/RadioVuexy";
 import cryptoLogo from '@src/assets/images/icons/payments/crypto.webp'
 import stripeLogo from '@src/assets/images/icons/payments/visa-cc.png'
@@ -268,7 +268,11 @@ const BulCreationModal = (props) => {
 
             BulkProductServices.createBulkProduct(data)
                 .then(res => {
-                    console.log(res)
+                    if (res.success){
+                        customToastMsg("Bulk Product was successfully created", 1);
+                    }else {
+                        customToastMsg(res.message, res.status)
+                    }
                 })
 
 

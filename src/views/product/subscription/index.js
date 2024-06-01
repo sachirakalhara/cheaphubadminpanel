@@ -187,27 +187,6 @@ const SubscriptionProductList = () => {
     const [serialDocumentName, setSerialDocumentName] = useState('')
     const [serialDocument, setSerialDocument] = useState('');
 
-    const list = [
-        {
-            id: 1,
-            name: 'Netflix Private Profile',
-            stock: 'In Stock',
-            price: '123',
-            tags: 'Audio Book, E-Book, Streaming',
-            category: 'Education, Streaming',
-            date: new Date()
-        },
-        {
-            id: 1,
-            name: 'Netflix Private',
-            stock: 'In Stock',
-            price: '123',
-            tags: 'Audio Book, E-Book, Streaming',
-            category: 'Education, Streaming',
-            date: new Date()
-        }
-    ]
-
 
     const [store, setStore] = useState({
         allData: [],
@@ -240,7 +219,7 @@ const SubscriptionProductList = () => {
                         allData: res.data,
                         data: res.data.contribution_product_list,
                         params,
-                        total: res.data.contribution_product_list.length
+                        total: 0
                     });
                 } else {
                     customToastMsg(res.message, res.status);
@@ -387,49 +366,49 @@ const SubscriptionProductList = () => {
 
 
     const onSearch = async (e, type) => {
-        setCurrentPage(0)
-        let poNumber = searchKey
-        let date = picker
-        let customer = customerName
-        switch (type) {
-            case 'PO_NUMBER':
-                setSearchKey(e)
-                poNumber = e
-                break
-            case 'DATE':
-                setPicker(e)
-                console.log(e)
-                date = e
-                break
-            case 'CUSTOMER':
-                setCustomerName(e)
-                customer = e
-                break
-        }
-
-        prev = new Date().getTime()
-
-        setTimeout(async () => {
-            const now = new Date().getTime()
-            if (now - prev >= 1000) {
-                if (poNumber.length === 0 && date.length === 0 && customer.length === 0) {
-                    await getDataList({
-                        q: value1,
-                        perPage: rowsPerPage,
-                        page: 0
-                    })
-                } else {
-                    await searchOrder({
-                        q: value1,
-                        page: 0,
-                        perPage: 0,
-                        poNumber,
-                        date,
-                        customer
-                    })
-                }
-            }
-        }, 1000)
+        // setCurrentPage(0)
+        // let poNumber = searchKey
+        // let date = picker
+        // let customer = customerName
+        // switch (type) {
+        //     case 'PO_NUMBER':
+        //         setSearchKey(e)
+        //         poNumber = e
+        //         break
+        //     case 'DATE':
+        //         setPicker(e)
+        //         console.log(e)
+        //         date = e
+        //         break
+        //     case 'CUSTOMER':
+        //         setCustomerName(e)
+        //         customer = e
+        //         break
+        // }
+        //
+        // prev = new Date().getTime()
+        //
+        // setTimeout(async () => {
+        //     const now = new Date().getTime()
+        //     if (now - prev >= 1000) {
+        //         if (poNumber.length === 0 && date.length === 0 && customer.length === 0) {
+        //             await getDataList({
+        //                 q: value1,
+        //                 perPage: rowsPerPage,
+        //                 page: 0
+        //             })
+        //         } else {
+        //             await searchOrder({
+        //                 q: value1,
+        //                 page: 0,
+        //                 perPage: 0,
+        //                 poNumber,
+        //                 date,
+        //                 customer
+        //             })
+        //         }
+        //     }
+        // }, 1000)
 
     }
 

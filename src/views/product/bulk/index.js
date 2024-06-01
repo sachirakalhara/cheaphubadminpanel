@@ -2,16 +2,13 @@
 import {Link} from 'react-router-dom'
 import React, {useState, useEffect, Fragment} from 'react'
 
-// ** Table Columns
-import {columns} from '../columns'
-
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import {Calendar, ChevronDown, Plus, X} from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
-import {Button, Input, Row, Col, Card, Label, CardHeader, CardTitle, CardBody, CardSubtitle} from 'reactstrap'
+import {Button, Input, Row, Col, Card, Label, CardHeader, CardTitle, CardBody, CardSubtitle, Badge} from 'reactstrap'
 
 // ** Store & Actions
 import {useDispatch} from 'react-redux'
@@ -37,6 +34,7 @@ import Cropper from "react-easy-crop";
 
 import * as CategoryServices from '../../../services/categories';
 import * as TagsServices from '../../../services/tags';
+import * as BulkProductService from '../../../services/bulk-products';
 
 const moment = require('moment')
 
@@ -185,27 +183,6 @@ const BulkProductList = () => {
     const [productImageZoom, setProductImageZoom] = useState(1)
     const [productImageName, setProductImageName] = useState('')
 
-    const list = [
-        {
-            id: 1,
-            name: 'Netflix Private Profile',
-            stock: 'In Stock',
-            price: '123',
-            tags: 'Audio Book, E-Book, Streaming',
-            category: 'Education, Streaming',
-            date: new Date()
-        },
-        {
-            id: 1,
-            name: 'Netflix Private',
-            stock: 'In Stock',
-            price: '123',
-            tags: 'Audio Book, E-Book, Streaming',
-            category: 'Education, Streaming',
-            date: new Date()
-        }
-    ]
-
 
     const [store, setStore] = useState({
         allData: [],
@@ -230,9 +207,28 @@ const BulkProductList = () => {
 
 
     const getDataList = (params) => {
+        dispatch(toggleLoading())
+        BulkProductService.getAllBulkProducts(params.page)
+            // eslint-disable-next-line no-unused-vars
+            .then(res => {
+                if (res.success) {
+                    setStore({allData: res.data.product_list.bulk_product_list, data: res.data.product_list.bulk_product_list, params, total: 0})
+                } else {
+                    customToastMsg(res.data.title, res.status)
+                }
+                dispatch(toggleLoading())
+                setIsFetched(true)
+            })
+    }
+
+    const searchOrder = (params) => {
         // dispatch(toggleLoading())
-        // OrderService.getAllOrders(params.page)
-        //     // eslint-disable-next-line no-unused-vars
+        // const body = {
+        //     poNumber: searchValidation(params.poNumber),
+        //     dateTime: searchValidation(params.date),
+        //     customerName: searchValidation(params.customer)
+        // }
+        // OrderService.searchOrders(params.page, body)
         //     .then(res => {
         //         if (res.success) {
         //             setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
@@ -240,28 +236,7 @@ const BulkProductList = () => {
         //             customToastMsg(res.data.title, res.status)
         //         }
         //         dispatch(toggleLoading())
-        //         setIsFetched(true)
         //     })
-
-        setStore({allData: list, data: list, params, total: 1})
-    }
-
-    const searchOrder = (params) => {
-        dispatch(toggleLoading())
-        const body = {
-            poNumber: searchValidation(params.poNumber),
-            dateTime: searchValidation(params.date),
-            customerName: searchValidation(params.customer)
-        }
-        OrderService.searchOrders(params.page, body)
-            .then(res => {
-                if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
-                } else {
-                    customToastMsg(res.data.title, res.status)
-                }
-                dispatch(toggleLoading())
-            })
     }
 
     const getAllCategories = async () => {
@@ -270,7 +245,7 @@ const BulkProductList = () => {
                 if (res.success) {
                     console.log(res)
                     const list = []
-                    if (res.data.length > 0)
+                    if (res.data.category_list.length > 0)
                         res.data.category_list.map((items, index) => {
                             list.push({
                                 label: items.name,
@@ -288,7 +263,7 @@ const BulkProductList = () => {
             .then(res => {
                 if (res.success) {
                     const list = []
-                    if (res.data.length > 0)
+                    if (res.data.tag_list.length > 0)
                     res.data.tag_list.map((item, index) => {
                         list.push({
                             label: item.name,
@@ -532,6 +507,41 @@ const BulkProductList = () => {
         }
     }
 
+    const columns = [
+        {
+            name: 'Name',
+            selector: 'name',
+            sortable: true,
+        },
+        {
+            name: 'Image',
+            cell: row => <img src={row.image} alt={row.name}
+                              style={{width: '40px', height: '40px', borderRadius: '50%'}}/>,
+            sortable: false,
+        },
+        {
+            name: 'Visibility',
+            cell: row => <Badge color={row.visibility === 'onHold' ? 'danger' : 'success'}>{row.visibility}</Badge>,
+            sortable: true,
+        },
+        {
+            name: 'Tag',
+            selector: 'tag_id',
+            cell: row => tagsList.length > 0 ? tagsList.find(obj => obj.value === row.tag_id).label : '', // Assuming tag_id is the tag name
+            sortable: true,
+        },
+        {
+            name: 'Payment Type',
+            selector: 'payment_method',
+            sortable: true,
+        },
+        {
+            name: 'View Details',
+            cell: row => <Button color="primary">View</Button>,
+            sortable: false,
+        },
+    ];
+
     return (
         <Fragment>
             <div className='invoice-list-wrapper'>
@@ -605,105 +615,6 @@ const BulkProductList = () => {
                 tagList={tagsList}
                 categoryList={categoryList}
             />
-
-            {/*<OrderAdditionModal*/}
-            {/*    show={show}*/}
-            {/*    toggle={() => {*/}
-            {/*        setShow(!show)*/}
-            {/*        reset()*/}
-            {/*    }}*/}
-            {/*    onSubmit={handleSubmit(onSubmit)}*/}
-            {/*    control={control}*/}
-            {/*    errors={errors}*/}
-            {/*    tagList={tagsList}*/}
-            {/*    categoryList={categoryList}*/}
-            {/*    renderImageUploader={*/}
-            {/*        <Col md={6} xs={12}>*/}
-            {/*            <Label className='form-label mb-1' for='productImage'>*/}
-            {/*                Product Image <span style={{color: 'red'}}>*</span>*/}
-            {/*            </Label>*/}
-
-            {/*            <Col>*/}
-            {/*                <Row>*/}
-            {/*                    <Col>*/}
-
-            {/*                        <Controller*/}
-            {/*                            name='productImageName'*/}
-            {/*                            control={control}*/}
-            {/*                            render={({field}) => (*/}
-            {/*                                <ReactFilesMini  {...field} id='productImageName'*/}
-            {/*                                                 pageType*/}
-            {/*                                                 disabled={false}*/}
-            {/*                                                 sendImageData={async (imageFile, file) => {*/}
-            {/*                                                     await handleChangeFileShare(file, types.PRODUCT_IMAGE);*/}
-            {/*                                                 }}*/}
-            {/*                                                 invalid={errors.productImageName && true}*/}
-            {/*                                                 accepts={["image/png", "image/jpg", "image/jpeg"]}*/}
-            {/*                                                 imageFile={productImageName ? productImageName : uploadedProductImage}*/}
-            {/*                                />*/}
-
-            {/*                            )}*/}
-            {/*                        />*/}
-
-            {/*                        {errors.productImageName &&*/}
-            {/*                        <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please choose a product image</span>}*/}
-
-            {/*                    </Col>*/}
-            {/*                </Row>*/}
-            {/*                <Row>*/}
-            {/*                    <Col md={12} lg={12} xs={12}>*/}
-            {/*                        {productImageIsCropVisible && productImageSrc &&(*/}
-            {/*                            <div>*/}
-            {/*                                <div className={'program-modal-image-cropper'}>*/}
-            {/*                                    <Cropper*/}
-            {/*                                        image={productImageSrc}*/}
-            {/*                                        crop={productImageCrop}*/}
-            {/*                                        aspect={CROP_ASPECT_TO_FIRST_IMAGE}*/}
-            {/*                                        zoom={productImageZoom}*/}
-            {/*                                        onCropChange={(crop) => {*/}
-            {/*                                            onCropChange(crop, types.PRODUCT_IMAGE)*/}
-            {/*                                        }}*/}
-            {/*                                        onCropComplete={async (croppedArea, croppedAreaPixels) => {*/}
-            {/*                                            await onCropComplete(croppedArea, croppedAreaPixels, types.PRODUCT_IMAGE)*/}
-            {/*                                        }}*/}
-
-            {/*                                    />*/}
-            {/*                                </div>*/}
-            {/*                                <div className="program-modal-image-cropper-controller">*/}
-            {/*                                    <input*/}
-            {/*                                        disabled={false}*/}
-            {/*                                        type="range"*/}
-            {/*                                        value={productImageZoom}*/}
-            {/*                                        min={1}*/}
-            {/*                                        max={3}*/}
-            {/*                                        step={0.1}*/}
-            {/*                                        aria-labelledby="Zoom"*/}
-            {/*                                        onChange={(e) => {*/}
-            {/*                                            setProductImageZoom(e.target.value)*/}
-            {/*                                        }}*/}
-            {/*                                        className="zoom-range"*/}
-            {/*                                    />*/}
-            {/*                                </div>*/}
-            {/*                            </div>*/}
-            {/*                        )}*/}
-            {/*                    </Col>*/}
-            {/*                </Row>*/}
-            {/*                <Row>*/}
-            {/*                    {productCroppedImage && productImageSrc &&*/}
-            {/*                    <Col lg={12} md={12} sm={12}>*/}
-            {/*                        <img src={productCroppedImage}*/}
-            {/*                             style={{width: '50%'}}*/}
-            {/*                             loading={"lazy"}*/}
-            {/*                             className={'program-modal-image-cropper-output'}*/}
-            {/*                        />*/}
-            {/*                    </Col>*/}
-            {/*                    }*/}
-            {/*                </Row>*/}
-            {/*            </Col>*/}
-
-            {/*        </Col>*/}
-            {/*    }*/}
-            {/*/>*/}
         </Fragment>
     )
 }
