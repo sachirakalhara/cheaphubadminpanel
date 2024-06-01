@@ -53,7 +53,7 @@ const InvoicePreview = () => {
             <h4 className='alert-heading'>Order not found</h4>
             <div className='alert-body'>
                 Order with id: {id} doesn't exist. Check list of all order:{' '}
-                <Link to='/products/list'>Order List</Link>
+                <Link to='/products/bulk/list'>Order List</Link>
             </div>
         </Alert>
     )

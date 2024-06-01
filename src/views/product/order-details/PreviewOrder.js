@@ -39,7 +39,7 @@ const PreviewOrder = ({data}) => {
             <CardBody className='invoice-padding pb-0'>
                 {/* Header */}
                 <div className='d-flex align-items-center mb-2'>
-                    <Link to='/products/list'>
+                    <Link to='/products/bulk/list'>
                         <span className='go-back cursor-pointer'><ArrowLeft size={25}/></span>
                     </Link>
                     <h2 className='text-primary invoice-logo ms-1' style={{marginTop: 5}}>Order Info</h2>
@@ -84,18 +84,7 @@ const PreviewOrder = ({data}) => {
 
             </CardBody>
 
-            {/*<CardBody className='invoice-padding pt-0'>*/}
-            {/*  <Row>*/}
-            {/*    <Col sm='12'>*/}
-            {/*      <span className='fw-bold'>Note: </span>*/}
-            {/*      <span>*/}
-            {/*        It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance*/}
-            {/*        projects. Thank You!*/}
-            {/*      </span>*/}
-            {/*    </Col>*/}
-            {/*  </Row>*/}
-            {/*</CardBody>*/}
-            {/* /Invoice Note */}
+
         </Card>
     ) : null
 }

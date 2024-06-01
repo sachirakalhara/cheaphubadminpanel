@@ -140,22 +140,13 @@ const MachineryList = () => {
 
     const getDatass = (params) => {
         dispatch(toggleLoading())
-        // MachineService.getAllMachines(params.page)
-        //     // eslint-disable-next-line no-unused-vars
-        //     .then(res => {
-        //         if (res.success) {
-        //             setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
-        //         } else {
-        //             customToastMsg(res.data.title, res.status)
-        //         }
-        //         dispatch(toggleLoading())
-        //         setIsFetched(true)
-        //     })
 
         TagsServices.getAllTags()
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.tag_list, data: res.data.tag_list, params, total: 0})
+                    if (res.data?.tag_list!==undefined){
+                        setStore({allData: res.data.tag_list, data: res.data.tag_list, params, total: 0})
+                    }
                 } else {
                     customToastMsg(res.message, res.status)
                 }

@@ -10,7 +10,7 @@ import ExtensionsRoutes from './Extensions'
 import PageLayoutsRoutes from './PageLayouts'
 
 // ** Default Route
-const DefaultRoute = '/products/list'
+const DefaultRoute = '/products/bulk/list'
 
 // ** Merge Routes
 const Routes = [

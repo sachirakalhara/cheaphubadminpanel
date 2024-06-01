@@ -20,7 +20,20 @@ export default [
         id: 'products',
         title: 'Products',
         icon: <img src={img} alt="img" height={20} width={20} style={{marginRight:15}}/>,
-        navLink: '/products/list'
+        children: [
+            {
+                id: 'bulk',
+                title: 'Bulk Products',
+                icon: <Circle size={12} />,
+                navLink: '/products/bulk/list'
+            },
+            {
+                id: 'subscription',
+                title: 'Subscription Products',
+                icon: <Circle size={12} />,
+                navLink: '/products/subscription/list'
+            }
+        ]
     },
     {
         id: 'categories',
@@ -35,10 +48,10 @@ export default [
         navLink: '/tags/list'
     },
     {
-        id: 'production',
-        title: 'Production & Rejections',
+        id: 'regions',
+        title: 'Regions',
         icon: <img src={img3} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
-        navLink: '/production&Rejections/list'
+        navLink: '/regions/list'
     },
     {
         id: 'materials',

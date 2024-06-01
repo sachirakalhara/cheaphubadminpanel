@@ -1,0 +1,91 @@
+@import './src/assets/scss/common/colors';
+
+$vs-checkbox-radio-border-width: 2px;
+$vs-checkbox-radio-border-color: #6c757d !default;
+$vs-checkbox-box: 20px;
+$vs-checkbox-box-sm: 15px;
+$vs-checkbox-box-lg: 24px;
+$vs-radio-box: 18px;
+$vs-radio-box-sm: 13px;
+$vs-radio-box-lg: 22px;
+$primary: #1B9AF8;
+
+.vx-radio-con {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0.25rem 0;
+  input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 200;
+    cursor: pointer;
+    &:checked {
+      ~ .vx-radio {
+        transform: rotate(0deg);
+        outline: 0;
+        .vx-radio--circle {
+          background: rgba($primary, 1);
+          box-shadow: 0 3px 12px 0 rgba($primary, 0.4);
+          opacity: 1;
+          transform: scale(1);
+        }
+        .vx-radio--border {
+          opacity: 0;
+          transform: scale(0.3);
+        }
+      }
+    }
+    &:disabled {
+      cursor: default;
+      pointer-events: none;
+      + .vx-radio {
+        cursor: default;
+        opacity: 0.5;
+      }
+    }
+    &:active {
+      ~ .vx-radio {
+        transform: scale(1.1);
+      }
+    }
+  }
+  .vx-radio {
+    cursor: pointer;
+    position: relative;
+    width: $vs-radio-box;
+    height: $vs-radio-box;
+    transition: all 0.2s ease;
+    margin-right: 0.5rem;
+    &.vx-radio-sm {
+      width: $vs-radio-box-sm;
+      height: $vs-radio-box-sm;
+    }
+    &.vx-radio-lg {
+      width: $vs-radio-box-lg;
+      height: $vs-radio-box-lg;
+    }
+    .vx-radio--border,
+    .vx-radio--circle {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      left: 0;
+      transition: all 0.25s ease;
+      top: 0;
+      border-radius: 50%;
+    }
+    .vx-radio--border {
+      background: transparent;
+      border: $vs-checkbox-radio-border-width solid
+      $vs-checkbox-radio-border-color;
+    }
+    .vx-radio--circle {
+      opacity: 0;
+      transform: scale(0.1);
+    }
+  }
+}

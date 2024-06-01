@@ -5,6 +5,7 @@ import * as commonFunc from "../utility/Utils"
 
 import * as authService from "./auth"
 import qs from "qs"
+import {clearLocalStorage} from "../utility/Utils";
 
 let body = {}
 let headers
@@ -103,6 +104,9 @@ export const callApi = async (apiObject) => {
                         message: error.response.data.message,
                         data: null
                     }
+
+                    await clearLocalStorage();
+                    window.location.reload()
 
 
                 } else if (error.response.status === 403) {

@@ -168,8 +168,12 @@ const AppRoutes = [
     //my custom tabs links
 
   {
-    path: '/products/list',
-    component: lazy(() => import('../../views/product'))
+    path: '/products/bulk/list',
+    component: lazy(() => import('../../views/product/bulk'))
+  },
+  {
+    path: '/products/subscription/list',
+    component: lazy(() => import('../../views/product/subscription'))
   },
   {
     path: '/order/order-details/:id',
@@ -205,8 +209,8 @@ const AppRoutes = [
     component: lazy(() => import('../../views/tags'))
   },
   {
-    path: '/production&Rejections/list',
-    component: lazy(() => import('../../views/production&rejection'))
+    path: '/regions/list',
+    component: lazy(() => import('../../views/regions'))
   },
   {
     path: '/analytics',

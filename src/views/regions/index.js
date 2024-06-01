@@ -35,6 +35,7 @@ import * as stylesService from "../../services/style-resources"
 import {toggleLoading} from '@store/loading'
 import * as machineService from "../../services/machine-resources"
 import {CSVLink} from "react-csv"
+import * as RegionServices from '../../services/regions'
 
 const moment = require('moment')
 
@@ -67,7 +68,7 @@ const CustomHeader = ({
     return (
         <Card>
             <div className='invoice-list-table-header w-100 py-2 px-1 m-0'>
-                <h3 className='text-primary invoice-logo mb-2'>Production and Rejections</h3>
+                <h3 className='text-primary invoice-logo mb-2'>Regions</h3>
                 <Row>
                     <Col lg={csvList.length !== 0 ? 10 : 12} className='d-flex pr-0 mr-0'>
                         <div className="demo-inline-spacing">
@@ -97,88 +98,14 @@ const CustomHeader = ({
                                     )}
                                 </div>
                             </div>
-                            <div className='d-flex align-items-center'>
-                                <Label className='form-label' for='default-picker'>
-                                    Style
-                                </Label>
-                                <Select
-                                    id='style'
-                                    className='react-select ms-1'
-                                    classNamePrefix='select'
-                                    placeholder='Style'
-                                    options={stylesList}
-                                    theme={selectThemeColors}
-                                    value={stylesList.find((c) => c.value === selectedStyle)}
-                                    isClearable={true}
-                                    onChange={onChangeStyle}
-                                    styles={customStyles}
-                                />
-                            </div>
-                            <div className='d-flex align-items-center'>
-                                <Label className='form-label' for='default-picker'>
-                                    Component
-                                </Label>
-                                <Select
-                                    id='component'
-                                    className='react-select ms-1'
-                                    classNamePrefix='select'
-                                    placeholder='Component'
-                                    options={componentList}
-                                    theme={selectThemeColors}
-                                    value={selectedComponent !== "" ? componentList.find((c) => c.value === selectedComponent) : null}
-                                    isClearable={true}
-                                    onChange={onChangeComponent}
-                                    styles={customStyles}
-                                />
-                            </div>
-                            <div className='d-flex align-items-center'>
-                                <Label className='form-label' for='default-picker'>
-                                    Machine
-                                </Label>
-                                <Select
-                                    id='machine'
-                                    className='react-select ms-1'
-                                    classNamePrefix='select'
-                                    placeholder='Machine'
-                                    options={machinesList}
-                                    theme={selectThemeColors}
-                                    value={machinesList.find((c) => c.value === selectedMachine)}
-                                    isClearable={true}
-                                    onChange={onChangeMachiines}
-                                    styles={customStyles}
-                                />
-                            </div>
+
+
                             {/*<Button>*/}
                             {/*    <Sliders size={15} className="rotate-90" style={{marginRight: 5}}/>*/}
                             {/*    Filter*/}
                             {/*</Button>*/}
                         </div>
                     </Col>
-                    {csvList.length !== 0 && (
-                        <Col lg='2' className='d-flex align-items-start justify-content-end pt-2'>
-                            <CSVLink
-                                headers={[
-                                    {label: "Date", key: "date"},
-                                    {label: "Shift", key: "shift"},
-                                    {label: "Order", key: "order"},
-                                    {label: "Style", key: "style"},
-                                    {label: "Component", key: "component"},
-                                    {label: "Machine", key: "machine"},
-                                    {label: "Production (PCS)", key: "production"},
-                                    {label: "Production Weight (kg)", key: "productionWeight"},
-                                    {label: "Rejection Weight (kg)", key: "rejectionWeight"}
-                                ]}
-                                target="_blank"
-                                data={csvList}
-                                className="btn btn-primary"
-                                asyncOnClick={true}
-                                onClick={csvAction}
-                                filename={fileName}
-                            >
-                                Export CSV
-                            </CSVLink>
-                        </Col>
-                    )}
 
                 </Row>
             </div>
@@ -188,16 +115,8 @@ const CustomHeader = ({
 }
 
 const defaultValues = {
-    date: moment(new Date()).format('YYYY-MM-DD'),
-    shift: '',
-    style: '',
-    orderId: '',
-    // orderItemId: '',
-    component: '',
-    machine: '',
-    production: '',
-    rejection: '',
-    productionWeight: ''
+    name:'',
+    months:[]
 }
 
 const ProductionRejection = () => {
@@ -255,78 +174,21 @@ const ProductionRejection = () => {
 
     const getDatass = (params) => {
         dispatch(toggleLoading())
-        ProductionRejectionServices.getAllData(params.page)
+        RegionServices.getAllRegions(params.page)
             // eslint-disable-next-line no-unused-vars
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+                    setStore({allData: res.data.region_list, data: res.data.region_list, params, total: 0})
                 } else {
-                    customToastMsg(res.data.title, res.status)
+                    customToastMsg(res.message, res.status)
                 }
                 dispatch(toggleLoading())
                 setIsFetched(true)
             })
     }
 
-    const getCsvData = () => {
-        ProductionRejectionServices.getDateRange()
-            .then(res => {
-                if (res.success) {
-                    const list = []
-                    res.data.content.map((item) => {
-                        list.push({
-                            date: moment(item.date).format('YYYY-MM-DD'),
-                            shift: item.shift,
-                            order: item?.order.poNumber,
-                            style: item?.style.styleNumber,
-                            component: item?.component.type,
-                            machine: item?.machine.name,
-                            production: item.productionCount,
-                            productionWeight: item.productionWeight,
-                            rejectionWeight: item.rejectionCount
-                        })
-                    })
-                    setCsvData(list)
-                }
-            })
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    const getStylesDetails = async () => {
-        await stylesService.getAllStyles()
-            .then(res => {
-                if (res.success) {
-                    const list = []
-                    res.data.map(item => {
-                        list.push({
-                            label: item.styleNumber,
-                            value: item.id
-                        })
-                    })
-                    setStylesList(list)
-                }
-            })
-    }
-
-    const getMachines = async () => {
-        await machineService.getMachines()
-            .then(res => {
-                if (res.success) {
-                    const list = []
-                    res.data.map(item => {
-                        list.push({
-                            label: item.name,
-                            value: item.id
-                        })
-                    })
-                    setMachinesList(list)
-                }
-            })
-    }
 
     useEffect(async () => {
-        await getStylesDetails()
-        await getMachines()
         getDatass({
             sort,
             q: val,
@@ -335,7 +197,6 @@ const ProductionRejection = () => {
             perPage: rowsPerPage,
             status: statusValue
         })
-        await getCsvData()
     }, [])
 
     const handleFilter = val => {
@@ -605,16 +466,9 @@ const ProductionRejection = () => {
     const onUpdateHandler = (data) => {
 
         setSelectedId(data.id)
-        setValue("date", moment(data.date).format('YYYY-MM-DD'))
-        setValue("shift", data.shift)
-        setValue("style", data.style.id)
-        setValue("orderId", data.order !== null ? data.order.id : null)
-        // setValue("orderItemId", data.orderItem.id)
-        setValue("component", data.component.id)
-        setValue("machine", data.machine.id)
-        setValue("production", data.productionCount !== null ? data.productionCount.toString() : "0")
-        setValue("productionWeight", data.productionWeight !== null ? data.productionWeight.toString() : "0")
-        setValue("rejection", data.rejectionCount !== null ? data.rejectionCount.toString() : "0")
+
+        setValue("name", data.region_name)
+        setValue("month", data.month)
 
         setShow(true)
         setIsEditMode(true)
@@ -622,61 +476,19 @@ const ProductionRejection = () => {
 
     const columns = [
         {
-            name: 'Date',
-            minWidth: '120px',
+            name: 'Region Name',
+            width: '30%',
             center: true,
-            cell: row => moment(row.date).format('YYYY-MM-DD')
+            cell: row => row.region_name
         },
         {
-            name: 'Shift',
-            minWidth: '90px',
+            name: 'Months',
+            width: '40%',
             center: true,
             cell: row => row.shift
         },
         {
-            name: 'Order',
-            minWidth: '150px',
-            center: true,
-            cell: row => (row.order !== null ? row.order.poNumber : null)
-        },
-        {
-            name: 'Style',
-            minWidth: '150px',
-            center: true,
-            cell: row => row.style.styleNumber
-        },
-        {
-            name: 'Component',
-            minWidth: '190px',
-            center: true,
-            cell: row => row.component.type
-        },
-        {
-            minWidth: '170px',
-            name: 'Machine',
-            center: true,
-            cell: row => row.machine.name
-        },
-        {
-            minWidth: '140px',
-            name: <span className="text-center">Production (PCS)</span>,
-            center: true,
-            cell: row => row.productionCount
-        },
-        {
-            minWidth: '140px',
-            name: <span className="text-center">Production Weight <span className="text-lowercase">(Kg)</span></span>,
-            center: true,
-            cell: row => roundNumber(row.productionWeight)
-        },
-        {
-            minWidth: '140px',
-            name: <span className="text-center">Rejection Weight <span className="text-lowercase">(Kg)</span></span>,
-            center: true,
-            cell: row => roundNumber(row.rejectionCount)
-        },
-        {
-            minWidth: '140px',
+            width: '30%',
             name: 'Action',
             center: true,
             // eslint-disable-next-line no-unused-vars

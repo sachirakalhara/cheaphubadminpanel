@@ -31,7 +31,6 @@ const OrderAdditionModal = (props) => {
         })
     })
 
-
     return (
         <Modal show={props.show} toggle={props.toggle} headTitle="Add New Order">
             <Row tag='form' className='gy-1 pt-2' onSubmit={props.onSubmit}>
@@ -216,8 +215,6 @@ const OrderAdditionModal = (props) => {
                 {/*</Col>*/}
 
                 {props.renderImageUploader}
-
-                {props.renderAttachmentUploader}
 
 
                 <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>

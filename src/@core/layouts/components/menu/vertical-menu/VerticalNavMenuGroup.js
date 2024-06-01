@@ -132,7 +132,7 @@ const VerticalNavMenuGroup = ({
     >
       <Link className='d-flex align-items-center' to='/' onClick={e => onCollapseClick(e, item)}>
         {item.icon}
-        <span className='menu-title text-truncate'>{t(item.title)}</span>
+        <span className='menu-title text-truncate text-white'>{t(item.title)}</span>
 
         {item.badge && item.badgeText ? (
           <Badge className='ms-auto me-1' color={item.badge} pill>

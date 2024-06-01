@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom'
 import React, {useState, useEffect, Fragment} from 'react'
 
 // ** Table Columns
-import {columns} from './columns'
+import {columns} from '../columns'
 
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
@@ -21,21 +21,22 @@ import {selectThemeColors} from '@utils'
 import '@styles/react/apps/app-invoice.scss'
 
 import Flatpickr from "react-flatpickr"
-import * as OrderService from "../../services/order-resources"
-import {customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile, searchValidation} from "../../utility/Utils"
+import * as OrderService from "../../../services/order-resources"
+import {customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile, searchValidation} from "../../../utility/Utils"
 
 
 import {toggleLoading} from '@store/loading'
 import {Controller, useForm} from "react-hook-form"
-import OrderAdditionModal from "../../@core/components/modal/orderModal/addition"
-import * as DestinationServices from '../../services/destination-resources'
-import * as CustomerServices from '../../services/customer-resources'
+import OrderAdditionModal from "../../../@core/components/modal/orderModal/addition"
+import BulCreationModal from "../../../@core/components/modal/product/bulk-create-modal"
+import * as DestinationServices from '../../../services/destination-resources'
+import * as CustomerServices from '../../../services/customer-resources'
 import Select from "react-select";
-import ReactFilesMini from "../../custom-components/file-picker/ReactFiles-Mini";
+import ReactFilesMini from "../../../custom-components/file-picker/ReactFiles-Mini";
 import Cropper from "react-easy-crop";
 
-import * as CategoryServices from '../../services/categories';
-import * as TagsServices from '../../services/tags';
+import * as CategoryServices from '../../../services/categories';
+import * as TagsServices from '../../../services/tags';
 
 const moment = require('moment')
 
@@ -48,8 +49,7 @@ const defaultValues = {
     price: '',
     gatewayFee: '',
     tag: '',
-    productImageName: '',
-    serialDocumentName: ''
+    productImageName: ''
 }
 
 const options = {
@@ -81,9 +81,9 @@ const CustomHeader = (props) => {
     return (
         <Card className="mb-0">
             <Col className='invoice-list-table-header w-100 py-2 px-2' style={{whiteSpace: 'nowrap'}}>
-                <h3 className='text-primary invoice-logo ms-0 mb-2'>Products</h3>
+                <h3 className='text-primary invoice-logo ms-0 mb-2'>Bulk Products</h3>
                 <Row>
-                    <Col lg='5' className='d-flex align-items-center'>
+                    <Col lg='4' className='d-flex align-items-center'>
                         <Label className='form-label' for='default-picker'>
                             Product Name
                         </Label>
@@ -106,7 +106,7 @@ const CustomHeader = (props) => {
                     </Col>
                     <Col lg='6' className='d-flex align-items-center'>
                         <Label className='form-label' for='default-picker'>
-                            Component
+                            Category
                         </Label>
                         <Select
                             id='category'
@@ -157,7 +157,7 @@ const CustomHeader = (props) => {
     )
 }
 
-const InvoiceList = () => {
+const BulkProductList = () => {
     // ** Store vars
     const dispatch = useDispatch()
 
@@ -184,8 +184,6 @@ const InvoiceList = () => {
     const [productImageIsCropVisible, setProductImageIsCropVisible] = useState(false)
     const [productImageZoom, setProductImageZoom] = useState(1)
     const [productImageName, setProductImageName] = useState('')
-    const [serialDocumentName, setSerialDocumentName] = useState('')
-    const [serialDocument, setSerialDocument] = useState('');
 
     const list = [
         {
@@ -272,12 +270,14 @@ const InvoiceList = () => {
                 if (res.success) {
                     console.log(res)
                     const list = []
-                    if (res.data.length>0) res.data.category_list.map((items,index) => {
-                        list.push({
-                            label: items.name,
-                            value: items.id
+                    if (res.data.length > 0)
+                        res.data.category_list.map((items, index) => {
+                            list.push({
+                                label: items.name,
+                                value: items.id,
+                                key:index
+                            })
                         })
-                    })
                     setCategoryList(list)
                 }
             })
@@ -288,10 +288,12 @@ const InvoiceList = () => {
             .then(res => {
                 if (res.success) {
                     const list = []
-                    if (res.data.length>0) res.data.tag_list.map((item,index) => {
+                    if (res.data.length > 0)
+                    res.data.tag_list.map((item, index) => {
                         list.push({
                             label: item.name,
-                            value: item.id
+                            value: item.id,
+                            key:index
                         })
                     })
                     setTagsList(list)
@@ -350,7 +352,7 @@ const InvoiceList = () => {
                 previousClassName={'page-item prev'}
                 onPageChange={page => handlePagination(page)}
                 forcePage={currentPage !== 0 ? currentPage - 1 : 0}
-                containerClassName={'pagination react-paginate justify-content-end p-1'}
+                containerClassName='pagination react-paginate justify-content-end p-1'
             />
         )
     }
@@ -506,7 +508,7 @@ const InvoiceList = () => {
                     rotation
                 )
 
-                console.log(':::::::::::::::::::::::::::::::::::============================',croppedImage)
+                console.log(':::::::::::::::::::::::::::::::::::============================', croppedImage)
                 await setProductCroppedImage(croppedImage)
             } catch (e) {
                 console.error(e)
@@ -528,12 +530,6 @@ const InvoiceList = () => {
         } else {
             setProductImageIsCropVisible(false);
         }
-    }
-
-    const onChangeSerialDocValue = async (file) => {
-        setValue("serialDocumentName", file.name)
-        setSerialDocumentName(file.name)
-        setSerialDocument(file);
     }
 
     return (
@@ -599,132 +595,117 @@ const InvoiceList = () => {
                     </div>
                 </Card>
             </div>
-            <OrderAdditionModal
+
+            <BulCreationModal
                 show={show}
                 toggle={() => {
                     setShow(!show)
                     reset()
                 }}
-                onSubmit={handleSubmit(onSubmit)}
-                control={control}
-                errors={errors}
                 tagList={tagsList}
                 categoryList={categoryList}
-                renderImageUploader={
-                    <Col md={6} xs={12}>
-                        <Label className='form-label mb-1' for='productImage'>
-                            Product Image <span style={{color: 'red'}}>*</span>
-                        </Label>
-
-                        <Col>
-                            <Row>
-                                <Col>
-
-                                    <Controller
-                                        name='productImageName'
-                                        control={control}
-                                        render={({field}) => (
-                                            <ReactFilesMini  {...field} id='productImageName'
-                                                             pageType
-                                                             disabled={false}
-                                                             sendImageData={async (imageFile, file) => {
-                                                                 await handleChangeFileShare(file, types.PRODUCT_IMAGE);
-                                                             }}
-                                                             invalid={errors.productImageName && true}
-                                                             accepts={["image/png", "image/jpg", "image/jpeg"]}
-                                                             imageFile={productImageName ? productImageName : uploadedProductImage}
-                                            />
-
-                                        )}
-                                    />
-
-                                    {errors.productImageName &&
-                                    <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please choose a product image</span>}
-
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col md={12} lg={12} xs={12}>
-                                    {productImageIsCropVisible && productImageSrc &&(
-                                        <div>
-                                            <div className={'program-modal-image-cropper'}>
-                                                <Cropper
-                                                    image={productImageSrc}
-                                                    crop={productImageCrop}
-                                                    aspect={CROP_ASPECT_TO_FIRST_IMAGE}
-                                                    zoom={productImageZoom}
-                                                    onCropChange={(crop) => {
-                                                        onCropChange(crop, types.PRODUCT_IMAGE)
-                                                    }}
-                                                    onCropComplete={async (croppedArea, croppedAreaPixels) => {
-                                                        await onCropComplete(croppedArea, croppedAreaPixels, types.PRODUCT_IMAGE)
-                                                    }}
-
-                                                />
-                                            </div>
-                                            <div className="program-modal-image-cropper-controller">
-                                                <input
-                                                    disabled={false}
-                                                    type="range"
-                                                    value={productImageZoom}
-                                                    min={1}
-                                                    max={3}
-                                                    step={0.1}
-                                                    aria-labelledby="Zoom"
-                                                    onChange={(e) => {
-                                                        setProductImageZoom(e.target.value)
-                                                    }}
-                                                    className="zoom-range"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                                </Col>
-                            </Row>
-                            <Row>
-                                {productCroppedImage && productImageSrc &&
-                                <Col lg={12} md={12} sm={12}>
-                                    <img src={productCroppedImage}
-                                         style={{width: '50%'}}
-                                         loading={"lazy"}
-                                         className={'program-modal-image-cropper-output'}
-                                    />
-                                </Col>
-                                }
-                            </Row>
-                        </Col>
-
-                    </Col>
-                }
-
-                renderAttachmentUploader={
-                    <Col md={6} xs={12}>
-                        <Label className='form-label mb-1' for='serialDocumentName'>
-                            Serial Key <span style={{color: 'red'}}>*</span>
-                        </Label>
-
-                        <Controller
-                            name='serialDocumentName'
-                            control={control}
-                            render={({field}) => (
-                                <ReactFilesMini  {...field} id='serialDocumentName'
-                                                 pageType
-                                                 sendImageData={async (imageFile, file) => {
-                                                     await onChangeSerialDocValue(file);
-                                                 }}
-                                                 accepts={["text/plain"]}
-                                                 invalid={errors.serialDocumentName && true}
-                                />
-
-                            )}
-                        />
-                        {errors.serialDocumentName &&
-                        <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please choose a serial key file</span>}
-                    </Col>
-                }
             />
+
+            {/*<OrderAdditionModal*/}
+            {/*    show={show}*/}
+            {/*    toggle={() => {*/}
+            {/*        setShow(!show)*/}
+            {/*        reset()*/}
+            {/*    }}*/}
+            {/*    onSubmit={handleSubmit(onSubmit)}*/}
+            {/*    control={control}*/}
+            {/*    errors={errors}*/}
+            {/*    tagList={tagsList}*/}
+            {/*    categoryList={categoryList}*/}
+            {/*    renderImageUploader={*/}
+            {/*        <Col md={6} xs={12}>*/}
+            {/*            <Label className='form-label mb-1' for='productImage'>*/}
+            {/*                Product Image <span style={{color: 'red'}}>*</span>*/}
+            {/*            </Label>*/}
+
+            {/*            <Col>*/}
+            {/*                <Row>*/}
+            {/*                    <Col>*/}
+
+            {/*                        <Controller*/}
+            {/*                            name='productImageName'*/}
+            {/*                            control={control}*/}
+            {/*                            render={({field}) => (*/}
+            {/*                                <ReactFilesMini  {...field} id='productImageName'*/}
+            {/*                                                 pageType*/}
+            {/*                                                 disabled={false}*/}
+            {/*                                                 sendImageData={async (imageFile, file) => {*/}
+            {/*                                                     await handleChangeFileShare(file, types.PRODUCT_IMAGE);*/}
+            {/*                                                 }}*/}
+            {/*                                                 invalid={errors.productImageName && true}*/}
+            {/*                                                 accepts={["image/png", "image/jpg", "image/jpeg"]}*/}
+            {/*                                                 imageFile={productImageName ? productImageName : uploadedProductImage}*/}
+            {/*                                />*/}
+
+            {/*                            )}*/}
+            {/*                        />*/}
+
+            {/*                        {errors.productImageName &&*/}
+            {/*                        <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please choose a product image</span>}*/}
+
+            {/*                    </Col>*/}
+            {/*                </Row>*/}
+            {/*                <Row>*/}
+            {/*                    <Col md={12} lg={12} xs={12}>*/}
+            {/*                        {productImageIsCropVisible && productImageSrc &&(*/}
+            {/*                            <div>*/}
+            {/*                                <div className={'program-modal-image-cropper'}>*/}
+            {/*                                    <Cropper*/}
+            {/*                                        image={productImageSrc}*/}
+            {/*                                        crop={productImageCrop}*/}
+            {/*                                        aspect={CROP_ASPECT_TO_FIRST_IMAGE}*/}
+            {/*                                        zoom={productImageZoom}*/}
+            {/*                                        onCropChange={(crop) => {*/}
+            {/*                                            onCropChange(crop, types.PRODUCT_IMAGE)*/}
+            {/*                                        }}*/}
+            {/*                                        onCropComplete={async (croppedArea, croppedAreaPixels) => {*/}
+            {/*                                            await onCropComplete(croppedArea, croppedAreaPixels, types.PRODUCT_IMAGE)*/}
+            {/*                                        }}*/}
+
+            {/*                                    />*/}
+            {/*                                </div>*/}
+            {/*                                <div className="program-modal-image-cropper-controller">*/}
+            {/*                                    <input*/}
+            {/*                                        disabled={false}*/}
+            {/*                                        type="range"*/}
+            {/*                                        value={productImageZoom}*/}
+            {/*                                        min={1}*/}
+            {/*                                        max={3}*/}
+            {/*                                        step={0.1}*/}
+            {/*                                        aria-labelledby="Zoom"*/}
+            {/*                                        onChange={(e) => {*/}
+            {/*                                            setProductImageZoom(e.target.value)*/}
+            {/*                                        }}*/}
+            {/*                                        className="zoom-range"*/}
+            {/*                                    />*/}
+            {/*                                </div>*/}
+            {/*                            </div>*/}
+            {/*                        )}*/}
+            {/*                    </Col>*/}
+            {/*                </Row>*/}
+            {/*                <Row>*/}
+            {/*                    {productCroppedImage && productImageSrc &&*/}
+            {/*                    <Col lg={12} md={12} sm={12}>*/}
+            {/*                        <img src={productCroppedImage}*/}
+            {/*                             style={{width: '50%'}}*/}
+            {/*                             loading={"lazy"}*/}
+            {/*                             className={'program-modal-image-cropper-output'}*/}
+            {/*                        />*/}
+            {/*                    </Col>*/}
+            {/*                    }*/}
+            {/*                </Row>*/}
+            {/*            </Col>*/}
+
+            {/*        </Col>*/}
+            {/*    }*/}
+            {/*/>*/}
         </Fragment>
     )
 }
 
-export default InvoiceList
+export default BulkProductList

@@ -135,25 +135,18 @@ const CategoryList = () => {
 
     const getDatass = async (params) => {
         dispatch(toggleLoading())
-        // await stylesService.getAllStylesForTable(params.page)
-        //     .then(res => {
-        //         if (res.success) {
-        //             setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
-        //         } else {
-        //             customToastMsg(res.data.title, res.status)
-        //         }
-        //         dispatch(toggleLoading())
-        //         setIsFetched(false)
-        //     })
         await CategoryServices.getAllCategories()
             .then(res => {
+                console.log(res)
                 if (res.success) {
-                    setStore({allData: res.data.category_list, data: res.data.category_list, params, total: 0})
+                    if (res.data?.category_list!==undefined){
+                        setStore({allData: res.data?.category_list, data: res.data?.category_list, params, total: 0})
+                    }
                 } else {
                     customToastMsg(res.message, res.status)
                 }
                 dispatch(toggleLoading())
-                setIsFetched(false)
+                setIsFetched(true)
             })
     }
 

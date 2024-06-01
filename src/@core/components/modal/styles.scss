@@ -24,7 +24,6 @@
 
   /*Topic*/
   &-topic {
-    font-family: $poppins-regular;
     color: $blue-gray-dark;
     font-style: normal;
     font-weight: 500;
@@ -35,7 +34,6 @@
   /*button style*/
   &-nonOutline-button {
     margin: 10px 10px 10px 10px;
-    font-family: $poppins-regular;
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
@@ -59,7 +57,7 @@
 
   &-outline-button {
     margin: 10px 10px 10px 10px;
-    font-family: $poppins-regular;
+
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
@@ -80,7 +78,7 @@
   &-selected-button {
     margin: 10px 10px 10px 10px;
     background-color: $main-color-purple;
-    font-family: $poppins-regular;
+
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
@@ -101,7 +99,7 @@
 
   &-add-attachment-btn {
     margin: 10px 10px 10px 0px;
-    font-family: $poppins-regular;
+
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
@@ -130,10 +128,10 @@
 
   /*label*/
   &-label {
-    font-family: $poppins-regular;
+
     font-style: normal;
-    font-weight: 400;
-    font-size: 16px;
+    font-weight: 500;
+    font-size: 14px;
     line-height: 21px;
 
     span {
@@ -152,16 +150,12 @@
     height: 38px !important;
     width: 100%;
 
-    input {
-      font-family: $poppins-regular, serif !important;
-    }
   }
 
   &-textarea {
     height: 100px;
     padding: 0;
     text-align: start;
-    font-family: $poppins-regular, serif !important;
   }
 
   &-error {
@@ -174,7 +168,7 @@
 
   &-error-msg {
     text-align: start;
-    font-family: $poppins-regular, serif !important;
+
     color: red !important;
   }
 
@@ -188,10 +182,10 @@
   }
 
   &-radio-btn {
-    margin-right: 15px;
-    font-family: $poppins-regular;
+    margin-right: 10px!important;
+
     font-style: normal;
-    font-weight: 400;
+    font-weight: bold;
     font-size: 14px;
     line-height: 21px;
 
@@ -214,7 +208,7 @@
     }
 
     input {
-      font-family: $poppins-regular, serif !important;
+
     }
   }
 
@@ -230,7 +224,7 @@
 
     .picked-fileName {
       width: 100%;
-      font-family: $poppins-regular !important;
+
       font-style: normal;
       font-weight: 400;
       font-size: 12px;
@@ -240,7 +234,7 @@
       input {
         border-radius: 5px 0px 0px 5px !important;
         height: 38px;
-        font-family: $poppins-regular;
+
         font-style: normal;
         font-weight: 400;
         font-size: 12px;
@@ -267,7 +261,7 @@
       margin-top: 10px;
 
       span {
-        font-family: $poppins-regular;
+
         font-style: normal;
         font-weight: 300;
         font-size: 16px;
@@ -286,13 +280,17 @@
 
   /*text input filed*/
   &-text-input {
-    font-family: $poppins-regular;
+
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
 
     height: 48px;
     border-radius: 10px !important;
+  }
+
+  .reactEasyCrop_Container{
+    border-radius: 6px!important;
   }
 
   /*image cropper*/
@@ -303,6 +301,7 @@
     top: 0;
     left: 0;
     right: 0;
+    border-radius: 6px;
 
     &-output {
       position: relative;
@@ -329,7 +328,7 @@
   }
 
   &-banner-label {
-    font-family: $poppins-regular;
+
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -369,7 +368,7 @@
           text-decoration: underline;
           color: #AC3E7F;
 
-          font-family: 'Poppins';
+
           font-style: normal;
           font-weight: 500;
           font-size: 14px;
@@ -382,7 +381,7 @@
 
   &-addAttachmentCard {
     &-toggle-btn-label {
-      font-family: $poppins-regular;
+
       font-style: normal;
       font-weight: 400;
       font-size: 14px;
@@ -401,7 +400,6 @@
 
     .title {
       color: $main-color-pink;
-      font-family: $poppins-regular;
       font-style: normal;
       font-weight: 700;
       font-size: 14px;
@@ -410,7 +408,6 @@
 
     .description {
       color: $main-color-pink;
-      font-family: $poppins-regular;
       font-style: normal;
       font-weight: 400;
       font-size: 14px;
@@ -427,7 +424,6 @@
     display: block;
 
     h6 {
-      font-family: $poppins-regular;
       font-style: normal;
       font-weight: 500;
       font-size: 14px;
@@ -437,7 +433,6 @@
 
     span {
       color: $navy-blue;
-      font-family: $poppins-regular;
       font-style: normal;
       font-weight: 300;
       font-size: 12px;
@@ -618,13 +613,18 @@ textarea[disabled],
 {
   opacity: 1 !important;
   color: $black !important;
-  font-family: $poppins-regular;
   font-size: 14px;
 }
 
 .flatpickr-input {
   opacity: 1 !important;
   color: $black !important;
-  font-family: $poppins-regular;
   font-size: 14px;
+}
+
+.invalid-feedback-custom {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875em;
+  color: #dc3545;
 }
