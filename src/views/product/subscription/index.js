@@ -473,29 +473,27 @@ const SubscriptionProductList = () => {
         {
             name: 'Name',
             selector: 'name',
-            sortable: true,
         },
         {
             name: 'Image',
             cell: row => <img src={row.image} alt={row.name}
                               style={{width: '40px', height: '40px', borderRadius: '50%'}}/>,
-            sortable: false,
+            center: true,
         },
         {
             name: 'Visibility',
             cell: row => <Badge color={row.visibility === 'onHold' ? 'danger' : 'success'}>{row.visibility}</Badge>,
-            sortable: true,
+            center: true,
         },
         {
             name: 'Tag',
             selector: 'tag_id',
             cell: row => tagsList.length > 0 ? tagsList.find(obj => obj.value === row.tag_id).label : '', // Assuming tag_id is the tag name
-            sortable: true,
+            center: true,
         },
         {
             name: 'View Details',
             cell: row => <Button color="primary">View</Button>,
-            sortable: false,
         },
     ];
 

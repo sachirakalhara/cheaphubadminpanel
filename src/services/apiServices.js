@@ -63,20 +63,23 @@ export const callApi = async (apiObject) => {
 
     await axios[method](url, method !== 'get' && method !== 'delete' ? body : {headers}, {headers})
         .then(async response => {
-            if (!response.data.success) {
-                const code = response.data.errorCode
-                if (code === 470 || code === 471) {
-                    await commonFunc.removeCookiesValues()
-                    await commonFunc.clearLocalStorage()
-                    window.location = `${constants.BASE_URL}/login`
-                }
+            const code = response.status
+
+            if (code === 204) {
+                result = {
+                    data: {},
+                    status: null,
+                    success: false,
+                    message: ""
+                };
+            } else {
+                result = {
+                    data: response.data === '' ? [] : response.data,
+                    status: response.data.message === 'Success' || response.data.message === 'OK' ? 1 : 0,
+                    success: response.data.message === 'Success' || response.data.message === 'OK' || response.data.message === undefined,
+                    message: response.data.message
+                };
             }
-            result = {
-                data: response.data === ''?[]:response.data,
-                status: response.data.message === 'Success' || response.data.message === 'OK' ? 1 : 0,
-                success: response.data.message === 'Success' || response.data.message === 'OK' || response.data.message === undefined,
-                message: response.data.message
-            };
         })
         .catch(async error => {
             if (error !== undefined) {

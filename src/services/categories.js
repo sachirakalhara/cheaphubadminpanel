@@ -6,7 +6,7 @@ export async function getAllCategories() {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/category/get-all`
+    apiObject.endpoint = `category/get-all`
     apiObject.body = {all: 1}
     apiObject.multipart = false
 
@@ -19,7 +19,7 @@ export async function createCategory(data) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/category/create`
+    apiObject.endpoint = `admin/super-admin/category/create`
     apiObject.body = data
     apiObject.multipart = false
 

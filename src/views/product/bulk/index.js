@@ -182,6 +182,8 @@ const BulkProductList = () => {
     const [productImageIsCropVisible, setProductImageIsCropVisible] = useState(false)
     const [productImageZoom, setProductImageZoom] = useState(1)
     const [productImageName, setProductImageName] = useState('')
+    const [isEditMode, setIsEditMode] = useState(false)
+    const [selectedId, setSelectedId] = useState(null)
 
 
     const [store, setStore] = useState({
@@ -212,7 +214,12 @@ const BulkProductList = () => {
             // eslint-disable-next-line no-unused-vars
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.product_list.bulk_product_list, data: res.data.product_list.bulk_product_list, params, total: 0})
+                    setStore({
+                        allData: res.data.product_list.bulk_product_list,
+                        data: res.data.product_list.bulk_product_list,
+                        params,
+                        total: 0
+                    })
                 } else {
                     customToastMsg(res.data.title, res.status)
                 }
@@ -245,12 +252,12 @@ const BulkProductList = () => {
                 if (res.success) {
                     console.log(res)
                     const list = []
-                    if (res.data.category_list.length > 0)
-                        res.data.category_list.map((items, index) => {
+                    const dataArray = res.data.category_list ?? []
+                        dataArray.map((items, index) => {
                             list.push({
                                 label: items.name,
                                 value: items.id,
-                                key:index
+                                key: index
                             })
                         })
                     setCategoryList(list)
@@ -264,13 +271,13 @@ const BulkProductList = () => {
                 if (res.success) {
                     const list = []
                     if (res.data.tag_list.length > 0)
-                    res.data.tag_list.map((item, index) => {
-                        list.push({
-                            label: item.name,
-                            value: item.id,
-                            key:index
+                        res.data.tag_list.map((item, index) => {
+                            list.push({
+                                label: item.name,
+                                value: item.id,
+                                key: index
+                            })
                         })
-                    })
                     setTagsList(list)
                 }
             })
@@ -507,38 +514,50 @@ const BulkProductList = () => {
         }
     }
 
+    const editBtnHandler = (data) => {
+
+        setValue("productName", data.name)
+        setValue("category", data.categories[0].id)
+        setValue("price", data.price)
+        setValue("gatewayFee", data.gateway_fee)
+        setValue("description", data.description)
+        setValue("tag", data.tag_id)
+        setValue("productImageName", data.image)
+
+        setShow(true)
+        setIsEditMode(false)
+    }
+
     const columns = [
         {
             name: 'Name',
             selector: 'name',
-            sortable: true,
         },
         {
             name: 'Image',
             cell: row => <img src={row.image} alt={row.name}
                               style={{width: '40px', height: '40px', borderRadius: '50%'}}/>,
-            sortable: false,
+            center: true,
         },
         {
             name: 'Visibility',
             cell: row => <Badge color={row.visibility === 'onHold' ? 'danger' : 'success'}>{row.visibility}</Badge>,
-            sortable: true,
+            center: true,
         },
         {
             name: 'Tag',
             selector: 'tag_id',
             cell: row => tagsList.length > 0 ? tagsList.find(obj => obj.value === row.tag_id).label : '', // Assuming tag_id is the tag name
-            sortable: true,
+            center: true,
         },
         {
             name: 'Payment Type',
             selector: 'payment_method',
-            sortable: true,
+            center: true,
         },
         {
             name: 'View Details',
-            cell: row => <Button color="primary">View</Button>,
-            sortable: false,
+            cell: row => <Button color="primary" onClick={() =>editBtnHandler(row)}>View</Button>,
         },
     ];
 
@@ -579,6 +598,7 @@ const BulkProductList = () => {
                 >
                     <Button onClick={() => {
                         setShow(true)
+                        setIsEditMode(false)
                         reset()
                     }} style={{width: 100}}>
                         <Plus size={15} style={{marginRight: 5}}/>
@@ -614,6 +634,7 @@ const BulkProductList = () => {
                 }}
                 tagList={tagsList}
                 categoryList={categoryList}
+                isEditMode={isEditMode}
             />
         </Fragment>
     )

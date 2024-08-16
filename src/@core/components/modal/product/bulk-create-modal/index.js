@@ -35,21 +35,21 @@ import {ArrowLeft, ArrowRight} from "react-feather";
 import * as BulkProductServices from '../../../../../services/bulk-products';
 
 const defaultValues = {
-    productName: 'asd',
+    productName: '',
     category: '',
-    description: 'asd',
+    description: '',
     tag: '',
     productImageName: '',
     serialList: '',
     serviceInfo: '',
-    minimumQty: '30',
-    maximumQty: '50',
-    price: '65',
-    gatewayFee: '560',
+    minimumQty: '',
+    maximumQty: '',
+    price: '',
+    gatewayFee: '',
     cryptoRadio: false,
     stripeRadio: false,
     selectedPaymentMethods: [],
-    slugUrl: 'sad',
+    slugUrl: '',
 }
 
 const customStyle = (error) => ({
@@ -92,49 +92,37 @@ const BulCreationModal = (props) => {
 
     // product image upload
     const onCropChange = (crop, type) => {
-        if (type === types.PRODUCT_IMAGE) setProductImageCrop(crop)
+        setProductImageCrop(crop)
     }
 
-    const onCropComplete = (croppedArea, croppedAreaPixels, type) => {
-        if (type === types.PRODUCT_IMAGE) setProductImageCroppedAreaPixels(croppedAreaPixels)
-
-        cropButtonHandler(type)
+    const onCropComplete = (croppedArea, croppedAreaPixels) => {
+        setProductImageCroppedAreaPixels(croppedAreaPixels)
+        showCroppedImage(croppedAreaPixels)
     }
 
-    /*image cropper */
-    const cropButtonHandler = (type) => {
-        showCroppedImage(type);
-    }
-
-    const showCroppedImage = async (type) => {
+    const showCroppedImage = async (croppedRatios) => {
         const rotation = 0;
-        if (type === types.PRODUCT_IMAGE) {
             try {
                 const croppedImage = await getCroppedImg(
                     productImageSrc,
-                    productImageCroppedAreaPixels,
+                    croppedRatios ?? {width: 1640, height: 1640, x: 0, y: 360},
                     rotation
                 )
-                console.log(croppedImage)
                 setProductCroppedImage(croppedImage)
             } catch (e) {
                 console.error(e)
             }
-        }
+
     }
 
     const handleChangeFileShare = async (file, type) => {
         if (isImageFile(file.name)) {
-            if (type === types.PRODUCT_IMAGE) {
-                console.log(isImageFile(file.name))
                 setProductImageIsCropVisible(true);
                 setProductImageName(file.name);
                 let imageDataUrl = await fileReader(file);
-                console.log('imageDataUrl::::::::::::::::::::::', file)
                 setFile(file)
                 setProductImageSrc(imageDataUrl);
                 setValue("productImageName", file.name)
-            }
         } else {
             setProductImageIsCropVisible(false);
         }
@@ -503,7 +491,7 @@ const BulCreationModal = (props) => {
                                 )}
                             </Col>
 
-                            {productCroppedImage && productImageSrc &&
+                            {productImageSrc &&
                             <Col lg={6} md={6} sm={12}>
                                 <img src={productCroppedImage}
                                      style={{width: '30%'}}

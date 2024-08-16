@@ -40,13 +40,13 @@ import RepeatingPackageForm from "../../../../../views/forms/form-repeater/packa
 import * as ContributionProductService from '../../../../../services/contribution-products';
 
 const defaultValues = {
-    productName: 'asd',
+    productName: '',
     category: '',
-    description: 'asd',
+    description: '',
     tag: '',
     productImageName: '',
     serviceInfo: '',
-    slugUrl: 'sad'
+    slugUrl: ''
 }
 
 const customStyle = (error) => ({
@@ -90,49 +90,36 @@ const SubscriptionCreationModal = (props) => {
 
     // product image upload
     const onCropChange = (crop, type) => {
-        if (type === types.PRODUCT_IMAGE) setProductImageCrop(crop)
+        setProductImageCrop(crop)
     }
 
-    const onCropComplete = (croppedArea, croppedAreaPixels, type) => {
-        if (type === types.PRODUCT_IMAGE) setProductImageCroppedAreaPixels(croppedAreaPixels)
-
-        cropButtonHandler(type)
+    const onCropComplete = async (croppedArea, croppedAreaPixels, type) => {
+        setProductImageCroppedAreaPixels(croppedAreaPixels)
+        await showCroppedImage(croppedAreaPixels)
     }
 
-    /*image cropper */
-    const cropButtonHandler = (type) => {
-        showCroppedImage(type);
-    }
-
-    const showCroppedImage = async (type) => {
+    const showCroppedImage = async (croppedRatio) => {
         const rotation = 0;
-        if (type === types.PRODUCT_IMAGE) {
-            try {
-                const croppedImage = await getCroppedImg(
-                    productImageSrc,
-                    productImageCroppedAreaPixels,
-                    rotation
-                )
-                console.log(croppedImage)
-                setProductCroppedImage(croppedImage)
-            } catch (e) {
-                console.error(e)
-            }
+        try {
+            const croppedImage = await getCroppedImg(
+                productImageSrc,
+                croppedRatio,
+                rotation
+            )
+            setProductCroppedImage(croppedImage)
+        } catch (e) {
+            console.error(e)
         }
     }
 
-    const handleChangeFileShare = async (file, type) => {
+    const handleChangeFileShare = async (file) => {
         if (isImageFile(file.name)) {
-            if (type === types.PRODUCT_IMAGE) {
-                console.log(isImageFile(file.name))
-                setProductImageIsCropVisible(true);
-                setProductImageName(file.name);
-                let imageDataUrl = await fileReader(file);
-                console.log('imageDataUrl::::::::::::::::::::::', file)
-                setFile(file)
-                setProductImageSrc(imageDataUrl);
-                setValue("productImageName", file.name)
-            }
+            setProductImageIsCropVisible(true);
+            setProductImageName(file.name);
+            let imageDataUrl = await fileReader(file);
+            setFile(file)
+            setProductImageSrc(imageDataUrl);
+            setValue("productImageName", file.name)
         } else {
             setProductImageIsCropVisible(false);
         }
@@ -145,7 +132,7 @@ const SubscriptionCreationModal = (props) => {
             description: data.description,
             tag: data.tag.toString(),
             productImageName: data.productImageName,
-            serviceInfo:data.serviceInfo
+            serviceInfo: data.serviceInfo
         }
 
         if (Object.values(obj).every(field => field.length > 0)) {
@@ -210,11 +197,11 @@ const SubscriptionCreationModal = (props) => {
     }, [])
 
     const onHeaderTabPress = (selectedActiveValue) => {
-        if(selectedActiveValue===1 || selectedActiveValue===2){
+        if (selectedActiveValue === 1 || selectedActiveValue === 2) {
             if (selectedActiveValue <= active) {
                 setActive(selectedActiveValue)
             }
-        }else {
+        } else {
             setActive(selectedActiveValue)
         }
     }

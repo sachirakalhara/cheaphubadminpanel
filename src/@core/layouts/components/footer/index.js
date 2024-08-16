@@ -1,5 +1,6 @@
 // ** Icons Import
 import { Heart } from 'react-feather'
+import {COMPANY_NAME} from "../../../../const/constant";
 
 const Footer = () => {
   return (
@@ -7,7 +8,7 @@ const Footer = () => {
       <span className='float-md-start d-block d-md-inline-block mt-25'>
         Powered by {' '}
         <a href='https://ceyentra.com' target='_blank' rel='noopener noreferrer'>
-          Ceyentra Technologies
+            {COMPANY_NAME}
         </a>
         {/*<span className='d-none d-sm-inline-block'>, All rights Reserved</span>*/}
       </span>

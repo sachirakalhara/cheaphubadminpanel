@@ -7,7 +7,7 @@ export async function createContributionProduct(body) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/contribution/product/create`
+    apiObject.endpoint = `admin/super-admin/contribution/product/create`
     apiObject.body = body
     apiObject.multipart = true
 
@@ -20,7 +20,7 @@ export async function getAllContributionProduct() {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/contribution/product/get-all`
+    apiObject.endpoint = `contribution/product/get-all`
     apiObject.body = {"all" : 1}
     apiObject.multipart = false
 
@@ -33,7 +33,7 @@ export async function createSubscription(body) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/subscription/create`
+    apiObject.endpoint = `admin/super-admin/subscription/create`
     apiObject.body = body
     apiObject.multipart = true
 
@@ -46,7 +46,7 @@ export async function getAllSubscriptionPackages(body) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/subscription/get-all`
+    apiObject.endpoint = `subscription/get-all`
     apiObject.body = body
     apiObject.multipart = false
 
@@ -59,7 +59,7 @@ export async function createPackage(body) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/package/create`
+    apiObject.endpoint = `admin/super-admin/package/create`
     apiObject.body = body
     apiObject.multipart = true
 

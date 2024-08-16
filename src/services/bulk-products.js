@@ -6,7 +6,7 @@ export async function createBulkProduct(body) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/bulk/product/create`
+    apiObject.endpoint = `admin/super-admin/bulk/product/create`
     apiObject.body = body
     apiObject.multipart = true
 
@@ -19,7 +19,7 @@ export async function getAllBulkProducts() {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/bulk/product/get-all`
+    apiObject.endpoint = `bulk/product/get-all`
     apiObject.body = {"all" : 1}
     apiObject.multipart = true
 

@@ -40,7 +40,7 @@ const TopLoadingBar = () => {
     })
 
     return (
-        <LoadingBar color={'#6AB254'} ref={ref} shadow={true} style={{zIndex: 9999999999}}/>
+        <LoadingBar color={'#1B9AF8'} ref={ref} shadow={true} style={{zIndex: 9999999999}}/>
     )
 }
 

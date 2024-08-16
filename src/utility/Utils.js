@@ -118,36 +118,38 @@ const ToastContent = ({title, body, assets}) => (
 )
 
 export const customToastMsg = (title, type, body) => {
-    let msgType = "info"
-    let assets = {
-        color: "bg-info",
-        icon: <AlertTriangle size={15}/>
-    }
-
-    if (type === 2) {
-        msgType = "info"
-        assets = {
+    if (!isEmpty(type)) {
+        let msgType = "info"
+        let assets = {
             color: "bg-info",
             icon: <AlertTriangle size={15}/>
         }
-    } else if (type === 0) {
-        msgType = "error"
-        assets = {
-            color: "bg-danger",
-            icon: <X size={15}/>
-        }
-    } else if (type === 1) {
-        msgType = "success"
-        assets = {
-            color: "bg-success",
-            icon: <Check size={15}/>
-        }
-    }
 
-    toast[msgType](
-        <ToastContent title={title} body={body} assets={assets}/>,
-        {icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000}
-    )
+        if (type === 2) {
+            msgType = "info"
+            assets = {
+                color: "bg-info",
+                icon: <AlertTriangle size={15}/>
+            }
+        } else if (type === 0) {
+            msgType = "error"
+            assets = {
+                color: "bg-danger",
+                icon: <X size={15}/>
+            }
+        } else if (type === 1) {
+            msgType = "success"
+            assets = {
+                color: "bg-success",
+                icon: <Check size={15}/>
+            }
+        }
+
+        toast[msgType](
+            <ToastContent title={title} body={body} assets={assets}/>,
+            {icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000}
+        )
+    }
 }
 
 export const customSweetAlert = (text, type, buttonEvent, title) => {
@@ -226,9 +228,9 @@ export const getCustomDateTimeStamp = () => {
     const now = new Date()
     const year = now.getFullYear()
     const month = now.getMonth() + 1
-    const date = now.getDate() < 10 ? `0${  now.getDate()}` : now.getDate()
-    const hours = now.getHours() < 10 ? `0${  now.getHours()}` : now.getHours()
-    const minutes = now.getMinutes() < 10 ? `0${  now.getMinutes()}` : now.getMinutes()
+    const date = now.getDate() < 10 ? `0${now.getDate()}` : now.getDate()
+    const hours = now.getHours() < 10 ? `0${now.getHours()}` : now.getHours()
+    const minutes = now.getMinutes() < 10 ? `0${now.getMinutes()}` : now.getMinutes()
     const milliseconds = now.getMilliseconds()
 
     return `${year}-${month}-${date}T${hours}.${minutes}.${milliseconds}`
@@ -268,7 +270,7 @@ export async function getCroppedImg(
     imageSrc,
     pixelCrop,
     rotation = 0,
-    flip = { horizontal: false, vertical: false }
+    flip = {horizontal: false, vertical: false}
 ) {
     const image = await createImage(imageSrc)
     const canvas = document.createElement('canvas')
@@ -281,7 +283,7 @@ export async function getCroppedImg(
     const rotRad = getRadianAngle(rotation)
 
     // calculate bounding box of the rotated image
-    const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
+    const {width: bBoxWidth, height: bBoxHeight} = rotateSize(
         image.width,
         image.height,
         rotation

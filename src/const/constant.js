@@ -44,3 +44,5 @@ export const StorageStrings = {
 export const BASE_URL = "/"
 export const AUTH_CLIENT_SECRET = ''
 export const REFRESH_CLIENT_SECRET = ''
+
+export const COMPANY_NAME = "CheapHub"

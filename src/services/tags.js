@@ -6,7 +6,7 @@ export async function getAllTags() {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/tag/get-all`
+    apiObject.endpoint = `tag/get-all`
     apiObject.body = {all: 1}
     apiObject.multipart = false
 
@@ -19,7 +19,7 @@ export async function createTags(data) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/tag/create`
+    apiObject.endpoint = `admin/super-admin/tag/create`
     apiObject.body = data
     apiObject.multipart = false
 
@@ -45,7 +45,7 @@ export async function updateTags(body) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `super-admin/tag/update`
+    apiObject.endpoint = `admin/super-admin/tag/update`
     apiObject.body = body
     apiObject.multipart = false
 

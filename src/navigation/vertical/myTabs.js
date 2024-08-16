@@ -47,23 +47,23 @@ export default [
         icon: <img src={img2} alt="img" height={20} width={20} style={{marginRight:15}}/>,
         navLink: '/tags/list'
     },
-    {
-        id: 'regions',
-        title: 'Regions',
-        icon: <img src={img3} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
-        navLink: '/regions/list'
-    },
-    {
-        id: 'materials',
-        title: 'Materials Requirements',
-        icon: <img src={img5} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
-        navLink: '/materials_requirements/list'
-    },
-    {
-        id: 'colors',
-        title: 'Colors',
-        icon: <img src={img6} alt="img" height={20} width={20} style={{marginRight:15}}/>,
-        navLink: '/colors/list'
-    }
+    // {
+    //     id: 'regions',
+    //     title: 'Regions',
+    //     icon: <img src={img3} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
+    //     navLink: '/regions/list'
+    // },
+    // {
+    //     id: 'materials',
+    //     title: 'Materials Requirements',
+    //     icon: <img src={img5} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
+    //     navLink: '/materials_requirements/list'
+    // },
+    // {
+    //     id: 'colors',
+    //     title: 'Colors',
+    //     icon: <img src={img6} alt="img" height={20} width={20} style={{marginRight:15}}/>,
+    //     navLink: '/colors/list'
+    // }
 
 ]
