@@ -102,9 +102,6 @@ const MachineryList = () => {
     const [statusValue, setStatusValue] = useState('')
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [show, setShow] = useState(false)
-    const [knittingDiaList, setKnittingDiaList] = useState([])
-    // eslint-disable-next-line no-unused-vars
-    const [knittingDiaData, setKnittingDiaData] = useState([])
     const [isEditMode, setIsEditMode] = useState(false)
     const [selectedId, setSelectedId] = useState('')
     const [knittingDiameter, setKnittingDiameter] = useState('')
@@ -155,46 +152,27 @@ const MachineryList = () => {
             })
     }
 
-    const searchMachines = async (params) => {
-        const body = {
-            knittingDiameter: searchValidation(params.knittingDiameter),
-            name: searchValidation(params.name)
+    const searchTags = async (params) => {
+        dispatch(toggleLoading())
+        const data = {
+            "all": 1,
+            "tag_name": params.searchKey
         }
         dispatch(toggleLoading())
-        await MachineService.searchMachines(body, params.page)
+        await TagsServices.filterTags(data)
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+                    console.log(res)
+                    setStore({allData: res.data.tag_list, data: res.data.tag_list, params, total: 0})
                 } else {
-                    customToastMsg(res.message, res.status)
+                    customToastMsg(res.message, 0,'',()=>{
+                        setStore({allData: [], data: [], params, total: 0})
+                    })
                 }
                 dispatch(toggleLoading())
             })
     }
 
-    const getAllSearchedCsvData = async (params) => {
-        const body = {
-            knittingDiameter: searchValidation(params.knittingDiameter),
-            name: searchValidation(params.name)
-        }
-
-        await MachineService.searchMachinesForCsv(body)
-            .then(res => {
-                if (res.success) {
-                    const list = []
-                    res.data.content.map((item) => {
-                        list.push({
-                            modelNumber: item.modelNumber,
-                            knittingDiameter: item?.knittingDiameter.knittingDiameter,
-                            name: item.name,
-                            number: item.number
-                        })
-                    })
-                    setCsvData(list)
-                }
-            })
-
-    }
 
     useEffect(async () => {
         getDatass({
@@ -254,14 +232,9 @@ const MachineryList = () => {
                 page: page.selected
             })
         } else {
-            searchMachines({
-                sort,
-                q: val,
-                sortColumn,
+            searchTags({
+                searchKey:name,
                 page: page.selected,
-                perPage: page.selected,
-                status: statusValue,
-                knittingDiameter,
                 name
             })
         }
@@ -468,21 +441,7 @@ const MachineryList = () => {
     }
 
     const onSearch = (value, type) => {
-        let diameter = knittingDiameter
-        let searchName = name
-
-        switch (type) {
-            case 'KNITTING':
-                setKnittingDiameter(value)
-                diameter = value
-                break
-            case 'NAME':
-                setName(value)
-                searchName = value
-                break
-            default:
-                break
-        }
+        setName(value)
 
         prev = new Date().getTime()
         setCurrentPage(0)
@@ -490,34 +449,11 @@ const MachineryList = () => {
         setTimeout(() => {
             const now = new Date().getTime()
             if (now - prev >= 1000) {
-                if (diameter.length === 0 && searchName.length === 0) {
-                    getDatass({
-                        sort,
-                        q: val,
-                        sortColumn,
-                        page: 0,
-                        perPage: 0,
-                        status: statusValue,
-                        knittingDiameter: diameter,
-                        name: searchName
-                    })
-                } else {
-                    searchMachines({
-                        sort,
-                        q: val,
-                        sortColumn,
-                        page: 0,
-                        perPage: 0,
-                        status: statusValue,
-                        knittingDiameter: diameter,
-                        name: searchName
-                    })
-
-                    getAllSearchedCsvData({
-                        knittingDiameter: diameter,
-                        name: searchName
-                    })
-                }
+                searchTags({
+                    searchKey:value,
+                    page: 0,
+                    perPage: 0,
+                })
             }
         }, 1000)
 

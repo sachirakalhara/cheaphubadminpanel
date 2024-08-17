@@ -51,3 +51,17 @@ export async function updateTags(body) {
 
     return await ApiService.callApi(apiObject)
 }
+
+
+export async function filterTags(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.multipart = false
+    apiObject.endpoint = `tag/filter`
+    apiObject.body = body
+
+    return await ApiService.callApi(apiObject)
+}

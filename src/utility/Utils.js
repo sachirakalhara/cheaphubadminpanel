@@ -117,7 +117,7 @@ const ToastContent = ({title, body, assets}) => (
     </Fragment>
 )
 
-export const customToastMsg = (title, type, body) => {
+export const customToastMsg = (title, type, body,action) => {
     if (!isEmpty(type)) {
         let msgType = "info"
         let assets = {
@@ -149,6 +149,10 @@ export const customToastMsg = (title, type, body) => {
             <ToastContent title={title} body={body} assets={assets}/>,
             {icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000}
         )
+    }else {
+        if (action){
+            action()
+        }
     }
 }
 

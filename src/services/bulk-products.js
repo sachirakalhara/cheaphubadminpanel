@@ -25,3 +25,29 @@ export async function getAllBulkProducts() {
 
     return await ApiService.callApi(apiObject)
 }
+
+export async function filterBulkProduct(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.multipart = false
+    apiObject.endpoint = `bulk/product/filter`
+    apiObject.body = body
+
+    return await ApiService.callApi(apiObject)
+}
+
+export async function filterContributionProduct(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.multipart = false
+    apiObject.endpoint = `contribution/product/filter`
+    apiObject.body = body
+
+    return await ApiService.callApi(apiObject)
+}

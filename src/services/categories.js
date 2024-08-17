@@ -38,3 +38,16 @@ export async function updateCategory(data) {
 
     return await ApiService.callApi(apiObject)
 }
+
+export async function filterCategories(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.multipart = false
+    apiObject.endpoint = `category/filter`
+    apiObject.body = body
+
+    return await ApiService.callApi(apiObject)
+}

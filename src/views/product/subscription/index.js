@@ -17,29 +17,21 @@ import {selectThemeColors} from '@utils'
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 
-import Flatpickr from "react-flatpickr"
+
 import * as OrderService from "../../../services/order-resources"
 import {customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile, searchValidation} from "../../../utility/Utils"
 
 
 import {toggleLoading} from '@store/loading'
 import {Controller, useForm} from "react-hook-form"
-import OrderAdditionModal from "../../../@core/components/modal/orderModal/addition"
-import * as DestinationServices from '../../../services/destination-resources'
-import * as CustomerServices from '../../../services/customer-resources'
 import Select from "react-select";
-import ReactFilesMini from "../../../custom-components/file-picker/ReactFiles-Mini";
-import Cropper from "react-easy-crop";
 
 import * as CategoryServices from '../../../services/categories';
 import * as TagsServices from '../../../services/tags';
-import BulCreationModal from "../../../@core/components/modal/product/bulk-create-modal";
 import SubscriptionCreationModal from "../../../@core/components/modal/product/subscription-create-modal";
 import * as ContributionProductService from "../../../services/contribution-products";
+import * as BulkProductService from "../../../services/bulk-products";
 
-const moment = require('moment')
-
-const after3Months = new Date(new Date().setMonth(new Date().getMonth() + 3))
 
 const defaultValues = {
     productName: '',
@@ -52,11 +44,6 @@ const defaultValues = {
     serialDocumentName: ''
 }
 
-const options = {
-    enableTime: false,
-    dateFormat: 'Y-m-d'
-}
-
 let prev = 0
 
 const customStyles = {
@@ -67,10 +54,6 @@ const customStyles = {
     })
 }
 
-const CROP_ASPECT_TO_FIRST_IMAGE = 1;
-//value should be <1
-const CROP_ASPECT_TO_SECOND_IMAGE = 3 / 2;
-const CROP_ASPECT_TO_SHARE_URL_IMAGE = 5 / 3
 
 const types = {
     PRODUCT_IMAGE: 'program-modal-banner'
@@ -83,34 +66,34 @@ const CustomHeader = (props) => {
             <Col className='invoice-list-table-header w-100 py-2 px-2' style={{whiteSpace: 'nowrap'}}>
                 <h3 className='text-primary invoice-logo ms-0 mb-2'>Subscription Products</h3>
                 <Row>
-                    <Col lg='4' className='d-flex align-items-center'>
+                    <Col lg='5' className='d-flex align-items-center'>
                         <Label className='form-label' for='default-picker'>
                             Product Name
                         </Label>
-                        <div className='inputWithButton'>
+                        <div className='inputWithButton w-100'>
                             <Input
                                 className='ms-1 w-100'
                                 type='text'
                                 value={props.searchKey}
-                                onChange={props.onChangeNumber}
+                                onChange={props.onChangeName}
                                 placeholder='Product Name'
                                 autoComplete="off"
                             />
                             {props.searchKey.length !== 0 && (
                                 <X size={18}
                                    className='cursor-pointer close-btn'
-                                   onClick={async () => props.onClearPoNumber()}
+                                   onClick={async () => props.onClearProductName()}
                                 />
                             )}
                         </div>
                     </Col>
-                    <Col lg='6' className='d-flex align-items-center'>
+                    <Col lg='4' className='d-flex align-items-center  ms-1'>
                         <Label className='form-label' for='default-picker'>
                             Category
                         </Label>
                         <Select
                             id='category'
-                            className='react-select ms-1'
+                            className='react-select w-100 ms-1'
                             classNamePrefix='select'
                             placeholder='Category'
                             options={props.categoryList}
@@ -122,35 +105,6 @@ const CustomHeader = (props) => {
                         />
                     </Col>
 
-                    {/*<Col*/}
-                    {/*    lg='4'*/}
-                    {/*    className='d-flex align-items-center'*/}
-                    {/*>*/}
-
-                    {/*    <Label className='form-label' for='default-picker'>*/}
-                    {/*        PO Date*/}
-                    {/*    </Label>*/}
-                    {/*    <div className='inputWithButton'>*/}
-                    {/*        <Flatpickr*/}
-                    {/*            className='form-control ms-1 w-100'*/}
-                    {/*            value={props.picker}*/}
-                    {/*            onChange={props.onFlatPickrChange}*/}
-                    {/*            options={options}*/}
-                    {/*            placeholder={"Select PO Date"}*/}
-                    {/*        />*/}
-                    {/*        {props.picker.length !== 0 && (*/}
-                    {/*            <X size={18}*/}
-                    {/*               className='cursor-pointer close-btn'*/}
-                    {/*               onClick={async () => props.onClearPicker()}*/}
-                    {/*            />*/}
-                    {/*        )}*/}
-                    {/*    </div>*/}
-
-
-                    {/*    /!*<Button onClick={props.onButtonClick} className="ms-1">*!/*/}
-                    {/*    /!*    Filter*!/*/}
-                    {/*    /!*</Button>*!/*/}
-                    {/*</Col>*/}
                 </Row>
             </Col>
         </Card>
@@ -171,8 +125,6 @@ const SubscriptionProductList = () => {
     const [categoryList, setCategoryList] = useState([])
     const [tagsList, setTagsList] = useState([])
     const [searchKey, setSearchKey] = useState('')
-    const [picker, setPicker] = useState('')
-    const [customerName, setCustomerName] = useState('')
     const [isFetched, setIsFetched] = useState(false)
 
 
@@ -187,6 +139,8 @@ const SubscriptionProductList = () => {
     const [serialDocumentName, setSerialDocumentName] = useState('')
     const [serialDocument, setSerialDocument] = useState('');
 
+    const [isEditMode, setIsEditMode] = useState(false)
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null)
 
     const [store, setStore] = useState({
         allData: [],
@@ -229,19 +183,26 @@ const SubscriptionProductList = () => {
             });
     }
 
-    const searchOrder = (params) => {
+    const searchContributionProduct = (params) => {
         dispatch(toggleLoading())
         const body = {
-            poNumber: searchValidation(params.poNumber),
-            dateTime: searchValidation(params.date),
-            customerName: searchValidation(params.customer)
+            "products_name": params.searchKey,
+            "product_category_id": params.category,
+            "all": 1,
         }
-        OrderService.searchOrders(params.page, body)
+        BulkProductService.filterContributionProduct(body)
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+                    setStore({
+                        allData: res.data.contribution_product_list,
+                        data: res.data.contribution_product_list,
+                        params,
+                        total: 0
+                    })
                 } else {
-                    customToastMsg(res.data.title, res.status)
+                    customToastMsg(res.message, 0,'',()=>{
+                        setStore({allData: [], data: [], params, total: 0})
+                    })
                 }
                 dispatch(toggleLoading())
             })
@@ -251,13 +212,13 @@ const SubscriptionProductList = () => {
         await CategoryServices.getAllCategories()
             .then(res => {
                 if (res.success) {
-                    console.log(res)
                     const list = []
-                    // if (res.data.length>0)
-                    res.data.category_list.map((items, index) => {
+                    const dataArray = res.data.category_list ?? []
+                    dataArray.map((items, index) => {
                         list.push({
                             label: items.name,
-                            value: items.id
+                            value: items.id,
+                            key: index
                         })
                     })
                     setCategoryList(list)
@@ -293,24 +254,6 @@ const SubscriptionProductList = () => {
     }, [])
 
     const handlePagination = async page => {
-        if (searchKey.length === 0 && picker.length === 0 && customerName.length === 0) {
-            await getDataList({
-                q: value1,
-                perPage: rowsPerPage,
-                page: page.selected
-            })
-        } else {
-            setCurrentPage(0)
-            await searchOrder({
-                q: value1,
-                perPage: rowsPerPage,
-                page: page.selected,
-                poNumber: searchKey,
-                date: picker,
-                customer: customerName
-            })
-        }
-
         setCurrentPage(page.selected + 1)
     }
 
@@ -365,53 +308,6 @@ const SubscriptionProductList = () => {
     }
 
 
-    const onSearch = async (e, type) => {
-        // setCurrentPage(0)
-        // let poNumber = searchKey
-        // let date = picker
-        // let customer = customerName
-        // switch (type) {
-        //     case 'PO_NUMBER':
-        //         setSearchKey(e)
-        //         poNumber = e
-        //         break
-        //     case 'DATE':
-        //         setPicker(e)
-        //         console.log(e)
-        //         date = e
-        //         break
-        //     case 'CUSTOMER':
-        //         setCustomerName(e)
-        //         customer = e
-        //         break
-        // }
-        //
-        // prev = new Date().getTime()
-        //
-        // setTimeout(async () => {
-        //     const now = new Date().getTime()
-        //     if (now - prev >= 1000) {
-        //         if (poNumber.length === 0 && date.length === 0 && customer.length === 0) {
-        //             await getDataList({
-        //                 q: value1,
-        //                 perPage: rowsPerPage,
-        //                 page: 0
-        //             })
-        //         } else {
-        //             await searchOrder({
-        //                 q: value1,
-        //                 page: 0,
-        //                 perPage: 0,
-        //                 poNumber,
-        //                 date,
-        //                 customer
-        //             })
-        //         }
-        //     }
-        // }, 1000)
-
-    }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     const onCropChange = (crop, type) => {
@@ -447,27 +343,6 @@ const SubscriptionProductList = () => {
         }
     }
 
-    const handleChangeFileShare = async (file, type) => {
-        if (isImageFile(file.name)) {
-            if (type === types.PRODUCT_IMAGE) {
-                console.log(isImageFile(file.name))
-                setProductImageIsCropVisible(true);
-                setProductImageName(file.name);
-                let imageDataUrl = await fileReader(file);
-                console.log(imageDataUrl)
-                setProductImageSrc(imageDataUrl);
-                setValue("productImageName", file.name)
-            }
-        } else {
-            setProductImageIsCropVisible(false);
-        }
-    }
-
-    const onChangeSerialDocValue = async (file) => {
-        setValue("serialDocumentName", file.name)
-        setSerialDocumentName(file.name)
-        setSerialDocument(file);
-    }
 
     const columns = [
         {
@@ -497,36 +372,49 @@ const SubscriptionProductList = () => {
         },
     ];
 
+    const onSearch = async (e) => {
+        setCurrentPage(0)
+        setSearchKey(e)
+
+        prev = new Date().getTime()
+
+        setTimeout(async () => {
+            const now = new Date().getTime()
+            if (now - prev >= 1000) {
+                await searchContributionProduct({
+                    searchKey: e,
+                    category: selectedCategoryId,
+                    page: 0,
+                    perPage: 0
+                })
+            }
+        }, 1000)
+    }
+
+    const onCategoryChange = async (e) => {
+        setCurrentPage(0)
+        setSelectedCategoryId(e);
+        await searchContributionProduct({
+            searchKey: searchKey,
+            category: e,
+            page: 0,
+            perPage: 0
+        })
+    }
+
+
+
     return (
         <Fragment>
             <div className='invoice-list-wrapper'>
                 <CustomHeader
-                    value={value1}
                     rowsPerPage={rowsPerPage}
-                    onChangeNumber={(e) => onSearch(e.target.value, 'PO_NUMBER')}
-                    onChangeCustomer={(e) => onSearch(e.target.value, 'CUSTOMER')}
-                    /* eslint-disable-next-line no-unused-vars */
-                    onFlatPickrChange={([date], dateStr) => {
-                        // const d = moment(date).utc()
-                        onSearch(dateStr, 'DATE')
-                    }}
                     searchKey={searchKey}
-                    customerName={customerName}
-                    picker={picker}
-                    onButtonClick={async () => {
-                        setCurrentPage(0)
-                        await searchOrder({
-                            q: value1,
-                            page: 0,
-                            perPage: 0
-                        })
-                    }}
-                    onClearPoNumber={() => onSearch('', 'PO_NUMBER')}
-                    onClearPicker={() => onSearch('', 'DATE')}
-
-                    categoryList={[]}
-                    selectedCategory={''}
-                    onChangeCategory={() => onSearch('', 'CATEGORY')}
+                    categoryList={categoryList}
+                    onChangeName={(e) => onSearch(e.target.value)}
+                    onClearProductName={() => onSearch('')}
+                    selectedCategory={selectedCategoryId}
+                    onChangeCategory={(e) => onCategoryChange(e?.value ?? "")}
                 />
                 <Col
                     lg='4'
@@ -566,6 +454,11 @@ const SubscriptionProductList = () => {
                 toggle={() => {
                     setShow(!show)
                     reset()
+                    getDataList({
+                        q: value1,
+                        page: currentPage,
+                        perPage: rowsPerPage
+                    })
                 }}
                 tagList={tagsList}
                 categoryList={categoryList}

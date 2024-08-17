@@ -1,9 +1,4 @@
-// ** React Imports
-import {Link} from 'react-router-dom'
 import React, {useState, useEffect, Fragment} from 'react'
-
-// ** Table Columns
-import {columns} from './columns'
 
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
@@ -13,30 +8,20 @@ import DataTable from 'react-data-table-component'
 // ** Reactstrap Imports
 import {Button, Input, Row, Col, Card, Label, CardHeader, CardTitle, CardBody, CardSubtitle} from 'reactstrap'
 
-// ** Store & Actions
-import {getData} from '../apps/invoice/store'
+
 import {useDispatch} from 'react-redux'
 
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 
 
-import Breadcrumbs from '@components/breadcrumbs'
-import Flatpickr from "react-flatpickr"
-import {Bar} from "react-chartjs-2"
-import * as OrderService from "../../services/order-resources"
 import * as stylesService from "../../services/style-resources"
 import {customSweetAlert, customToastMsg, emptyUI} from "../../utility/Utils"
 import {useForm} from "react-hook-form"
-// import {dataOrder} from "../../@fake-db/apps/orders"
 import {toggleLoading} from '@store/loading'
 
 import AdditionModal from "../../@core/components/modal/categoryModal/AdditionModal"
-import ConsumptionModal from "../../@core/components/modal/categoryModal/ConsumptionModal"
-import * as ColorServices from "../../services/color-resources"
 import * as CategoryServices from "../../services/categories";
-import * as StyleServices from "../../services/style-resources";
-import TagsModal from "../../@core/components/modal/tagsModal/tagsModal";
 
 let prev = 0
 
@@ -69,10 +54,6 @@ const CustomHeader = (props) => {
                                 )}
                             </div>
                         </div>
-
-                        {/*<Button onClick={props.onClick}>*/}
-                        {/*    Search*/}
-                        {/*</Button>*/}
 
                     </Col>
                     <Col
@@ -116,7 +97,7 @@ const CategoryList = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [show, setShow] = useState(false)
     const [searchKey, setSearchKey] = useState('')
-    const [colorsList, setColorsList] = useState([])
+
     const [isFetched, setIsFetched] = useState(false)
     const [isEditMode, setIsEditMode] = useState(false)
     const [selectedId, setSelectedId] = useState('')
@@ -139,7 +120,7 @@ const CategoryList = () => {
             .then(res => {
                 console.log(res)
                 if (res.success) {
-                    if (res.data?.category_list!==undefined){
+                    if (res.data?.category_list !== undefined) {
                         setStore({allData: res.data?.category_list, data: res.data?.category_list, params, total: 0})
                     }
                 } else {
@@ -150,15 +131,26 @@ const CategoryList = () => {
             })
     }
 
-    // eslint-disable-next-line no-unused-vars
-    const searchData = async (params, searchKey) => {
+
+    const searchData = async (params) => {
         dispatch(toggleLoading())
-        await stylesService.searchStyleDetails(params.page, searchKey.trim())
+        const data = {
+            "all": 1,
+            "category_name": params.searchKey
+        }
+        await CategoryServices.filterCategories(data)
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+                    setStore({
+                        allData: res.data.category_list,
+                        data: res.data.category_list,
+                        params,
+                        total: 0
+                    })
                 } else {
-                    customToastMsg(res.message, res.status)
+                    customToastMsg(res.message, 0,'',()=>{
+                        setStore({allData: [], data: [], params, total: 0})
+                    })
                 }
                 dispatch(toggleLoading())
             })
@@ -186,12 +178,10 @@ const CategoryList = () => {
             })
         } else {
             await searchData({
-                sort,
-                q: value1,
-                sortColumn,
+                searchKey:searchKey,
                 perPage: rowsPerPage,
                 page: page.selected
-            }, searchKey)
+            })
         }
 
         setCurrentPage(page.selected + 1)
@@ -287,7 +277,7 @@ const CategoryList = () => {
                         }
                         dispatch(toggleLoading())
                     })
-            }else {
+            } else {
                 await CategoryServices.createCategory(body)
                     .then(res => {
                         if (res.success) {
@@ -346,12 +336,10 @@ const CategoryList = () => {
         if (searchKey.length !== 0) {
             setCurrentPage(0)
             await searchData({
-                sort,
-                q: value1,
-                sortColumn,
+                searchKey: searchKey,
                 page: 0,
                 perPage: 0
-            }, searchKey)
+            })
         } else {
             await onClearText()
         }
@@ -387,7 +375,7 @@ const CategoryList = () => {
             center: true,
             cell: row => (
                 <div className='d-flex align-items-center w-100 justify-content-around'>
-                    <span style={{maxWidth:90}}>{row.name}</span>
+                    <span style={{maxWidth: 90}}>{row.name}</span>
                 </div>
             )
         },
@@ -406,10 +394,10 @@ const CategoryList = () => {
                 <div className='d-flex align-items-center w-100 justify-content-evenly'>
                     <Button
                         color='success' outline
-                        style={{width:80,padding:5,alignItems:'center'}}
-                        onClick={()=>onUpdateHandler(row)}
+                        style={{width: 80, padding: 5, alignItems: 'center'}}
+                        onClick={() => onUpdateHandler(row)}
                     >
-                        <Eye size={15} style={{marginRight: 5,marginBottom:3}}/>
+                        <Eye size={15} style={{marginRight: 5, marginBottom: 3}}/>
                         Edit
                     </Button>
                     {/*<Button*/}

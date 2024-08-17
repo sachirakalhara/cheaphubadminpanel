@@ -258,6 +258,7 @@ const BulCreationModal = (props) => {
                 .then(res => {
                     if (res.success){
                         customToastMsg("Bulk Product was successfully created", 1);
+                        props.toggle();
                     }else {
                         customToastMsg(res.message, res.status)
                     }
