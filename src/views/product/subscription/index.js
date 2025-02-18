@@ -4,7 +4,7 @@ import React, {useState, useEffect, Fragment} from 'react'
 
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
-import {Calendar, ChevronDown, Plus, X} from 'react-feather'
+import {Calendar, ChevronDown, Eye, Plus, Settings, Trash, X} from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
@@ -17,8 +17,6 @@ import {selectThemeColors} from '@utils'
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 
-
-import * as OrderService from "../../../services/order-resources"
 import {customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile, searchValidation} from "../../../utility/Utils"
 
 
@@ -31,18 +29,8 @@ import * as TagsServices from '../../../services/tags';
 import SubscriptionCreationModal from "../../../@core/components/modal/product/subscription-create-modal";
 import * as ContributionProductService from "../../../services/contribution-products";
 import * as BulkProductService from "../../../services/bulk-products";
+import BulCreationModal from "../../../@core/components/modal/product/bulk-create-modal";
 
-
-const defaultValues = {
-    productName: '',
-    category: '',
-    description: '',
-    price: '',
-    gatewayFee: '',
-    tag: '',
-    productImageName: '',
-    serialDocumentName: ''
-}
 
 let prev = 0
 
@@ -127,20 +115,10 @@ const SubscriptionProductList = () => {
     const [searchKey, setSearchKey] = useState('')
     const [isFetched, setIsFetched] = useState(false)
 
-
-    const [uploadedProductImage, setUploadedProductImage] = useState(null)
-    const [productImageSrc, setProductImageSrc] = useState('')
-    const [productImageCrop, setProductImageCrop] = useState({x: 0, y: 0})
-    const [productImageCroppedAreaPixels, setProductImageCroppedAreaPixels] = useState(null)
-    const [productCroppedImage, setProductCroppedImage] = useState(null)
-    const [productImageIsCropVisible, setProductImageIsCropVisible] = useState(false)
-    const [productImageZoom, setProductImageZoom] = useState(1)
-    const [productImageName, setProductImageName] = useState('')
-    const [serialDocumentName, setSerialDocumentName] = useState('')
-    const [serialDocument, setSerialDocument] = useState('');
-
     const [isEditMode, setIsEditMode] = useState(false)
+    const [isManageMode, setIsManageMode] = useState(false)
     const [selectedCategoryId, setSelectedCategoryId] = useState(null)
+    const [selectedData, setSelectedData] = useState({})
 
     const [store, setStore] = useState({
         allData: [],
@@ -152,16 +130,6 @@ const SubscriptionProductList = () => {
         },
         total: 0
     })
-
-    // ** Hooks
-    const {
-        control,
-        setError,
-        handleSubmit,
-        formState: {errors},
-        setValue,
-        reset
-    } = useForm({defaultValues})
 
 
     const getDataList = (params) => {
@@ -200,7 +168,7 @@ const SubscriptionProductList = () => {
                         total: 0
                     })
                 } else {
-                    customToastMsg(res.message, 0,'',()=>{
+                    customToastMsg(res.message, 0, '', () => {
                         setStore({allData: [], data: [], params, total: 0})
                     })
                 }
@@ -307,40 +275,21 @@ const SubscriptionProductList = () => {
         }
     }
 
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    const onCropChange = (crop, type) => {
-        if (type === types.PRODUCT_IMAGE) setProductImageCrop(crop)
+    const editBtnHandler = (data) => {
+        setShow(true)
+        setIsEditMode(true)
+        setIsManageMode(false)
+        setSelectedData(data);
+    }
+    const manageBtnHandler = (data) => {
+        setShow(true)
+        setIsManageMode(true)
+        setIsEditMode(false)
+        setSelectedData(data);
     }
 
-    const onCropComplete = async (croppedArea, croppedAreaPixels, type) => {
-        if (type === types.PRODUCT_IMAGE) await setProductImageCroppedAreaPixels(croppedAreaPixels)
+    const removeItem = () => {
 
-        await cropButtonHandler(type)
-    }
-
-    /*image cropper */
-    const cropButtonHandler = async (type) => {
-        await showCroppedImage(type);
-    }
-
-    const showCroppedImage = async (type) => {
-        const rotation = 0;
-        if (type === types.PRODUCT_IMAGE) {
-            try {
-                const croppedImage = await getCroppedImg(
-                    productImageSrc,
-                    productImageCroppedAreaPixels,
-                    rotation
-                )
-
-                console.log(':::::::::::::::::::::::::::::::::::============================', croppedImage)
-                await setProductCroppedImage(croppedImage)
-            } catch (e) {
-                console.error(e)
-            }
-        }
     }
 
 
@@ -351,7 +300,7 @@ const SubscriptionProductList = () => {
         },
         {
             name: 'Image',
-            cell: row => <img src={row.image} alt={row.name}
+            cell: row => <img src={row.image} alt={row.name} className="cell-fit"
                               style={{width: '40px', height: '40px', borderRadius: '50%'}}/>,
             center: true,
         },
@@ -367,8 +316,37 @@ const SubscriptionProductList = () => {
             center: true,
         },
         {
-            name: 'View Details',
-            cell: row => <Button color="primary">View</Button>,
+            name: 'Actions',
+            width: '30%',
+            center: true,
+            cell: row => (
+                <div className='d-flex align-items-center w-100 justify-content-evenly'>
+                    <Button
+                        color='success' outline
+                        style={{width: 80, padding: 5, alignItems: 'center'}}
+                        onClick={() => editBtnHandler(row)}
+                    >
+                        <Eye size={15} style={{marginRight: 5, marginBottom: 3}}/>
+                        Edit
+                    </Button>
+                    <Button
+                        color='secondary' outline
+                        style={{width: 95, padding: 5, alignItems: 'center'}}
+                        onClick={() => manageBtnHandler(row)}
+                    >
+                        <Settings size={15} style={{marginRight: 5, marginBottom: 3}}/>
+                        Manage
+                    </Button>
+                    <Button
+                        color='danger' outline
+                        style={{width: 100, padding: 5, alignItems: 'center'}}
+                        onClick={() => removeItem(row.id)}
+                    >
+                        <Trash size={15} style={{marginRight: 5, marginBottom: 3}}/>
+                        Delete
+                    </Button>
+                </div>
+            )
         },
     ];
 
@@ -403,7 +381,6 @@ const SubscriptionProductList = () => {
     }
 
 
-
     return (
         <Fragment>
             <div className='invoice-list-wrapper'>
@@ -421,8 +398,9 @@ const SubscriptionProductList = () => {
                     className='w-100 actions-right justify-content-end d-flex flex-lg-nowrap flex-wrap pe-1 my-1'
                 >
                     <Button onClick={() => {
+                        setIsEditMode(false)
+                        setIsManageMode(false)
                         setShow(true)
-                        reset()
                     }} style={{width: 100}}>
                         <Plus size={15} style={{marginRight: 5}}/>
                         Add
@@ -449,20 +427,25 @@ const SubscriptionProductList = () => {
                 </Card>
             </div>
 
-            <SubscriptionCreationModal
-                show={show}
-                toggle={() => {
-                    setShow(!show)
-                    reset()
-                    getDataList({
-                        q: value1,
-                        page: currentPage,
-                        perPage: rowsPerPage
-                    })
-                }}
-                tagList={tagsList}
-                categoryList={categoryList}
-            />
+            {show && (
+                <SubscriptionCreationModal
+                    show={show}
+                    toggle={() => {
+                        setShow(!show)
+                        getDataList({
+                            q: value1,
+                            page: currentPage,
+                            perPage: rowsPerPage
+                        })
+                    }}
+                    tagList={tagsList}
+                    categoryList={categoryList}
+                    isEditMode={isEditMode}
+                    isManageMode={isManageMode}
+                    selectedData={selectedData}
+                />
+            )}
+
         </Fragment>
     )
 }

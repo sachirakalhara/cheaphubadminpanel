@@ -91,11 +91,9 @@ const BulCreationModal = (props) => {
     const {control, setError, handleSubmit, formState: {errors}, setValue, getValues, reset} = useForm({defaultValues});
 
     useEffect(() => {
-
         if (props.isEditMode) {
             loadDefaultValues(props.selectedData);
         }
-
     }, [])
 
     const loadDefaultValues = (data) => {

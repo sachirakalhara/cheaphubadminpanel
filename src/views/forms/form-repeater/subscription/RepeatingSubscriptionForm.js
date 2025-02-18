@@ -1,5 +1,5 @@
 // ** React Imports
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 
 // ** Custom Components
 import Repeater from '@components/repeater'
@@ -14,12 +14,56 @@ import * as ContributionProductService from "../../../../services/contribution-p
 import {customToastMsg} from "../../../../utility/Utils";
 
 const RepeatingSubscriptionForm = (props) => {
-    const [count, setCount] = useState(1);
-    const [subscriptions, setSubscriptions] = useState([{name: '', fee: '', serials: '', errors: {}}]);
 
-    const increaseCount = () => {
+    const getFormatterRepeatArray = (array) => {
+        let list = [];
+
+        if (props.isManageMode) {
+            if (array.length === 0) {
+                list = [{id: null, name: '', gateway_fee: '', serials: '', errors: {}}]
+            } else {
+                array.map(item => {
+                    list.push({
+                        id: item.id,
+                        name: item.name,
+                        gateway_fee: item.gateway_fee.toString(),
+                        serials: item.serial,
+                        errors: {}
+                    })
+                })
+            }
+        } else {
+            list = [{id: null, name: '', gateway_fee: '', serials: '', errors: {}}]
+        }
+        console.log("list???????????????????????", list)
+        return list;
+    }
+
+    const [count, setCount] = useState(1);
+    const [subscriptions, setSubscriptions] = useState(getFormatterRepeatArray(props.subscriptionList));
+
+    useEffect(() => {
+        getContributionProductDetails(false);
+    }, [])
+
+    const getContributionProductDetails = (isIncreased = false) => {
+        ContributionProductService.getContributionDetailsById(props.productId)
+            .then(res => {
+                if (res.success) {
+                    const formattedList = getFormatterRepeatArray(res.data.contribution_product.subscriptions);
+                    setSubscriptions(formattedList)
+                    if (isIncreased) {
+                        increaseCount(formattedList);
+                    }
+                } else {
+                    customToastMsg(res.message, res.status)
+                }
+            })
+    }
+
+    const increaseCount = (list) => {
         setCount(count + 1);
-        setSubscriptions([...subscriptions, {name: '', fee: '', serials: '', errors: {}}]);
+        setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', errors: {}}]);
     };
 
     const handleInputChange = (index, key, value) => {
@@ -29,7 +73,7 @@ const RepeatingSubscriptionForm = (props) => {
         updatedSubscriptions[index][key] = value;
 
         // Reset the validation error for the updated field
-        const updatedErrors = { ...updatedSubscriptions[index].errors };
+        const updatedErrors = {...updatedSubscriptions[index].errors};
         delete updatedErrors[key]; // Remove the error for the updated field
 
         // Update the errors object within the subscription
@@ -40,15 +84,15 @@ const RepeatingSubscriptionForm = (props) => {
     };
 
     const validateFields = (index) => {
-        const {name, fee, serials} = subscriptions[index];
+        const {name, gateway_fee, serials} = subscriptions[index];
         const errors = {};
 
         if (!name.trim()) {
             errors.name = 'Subscription Name is required';
         }
 
-        if (!fee.trim()) {
-            errors.fee = 'Gateway Fee is required'
+        if (!gateway_fee.trim()) {
+            errors.gateway_fee = 'Gateway Fee is required'
         }
 
         if (!serials.trim()) {
@@ -72,29 +116,51 @@ const RepeatingSubscriptionForm = (props) => {
 
 
             let data = new FormData();
-            data.append('contribution_product_id',props.productId)
-            data.append('name',formData.name)
-            data.append('serial',formData.serials)
+            data.append('contribution_product_id', props.productId)
+            data.append('name', formData.name)
+            data.append('serial', formData.serials)
             // data.append('refresh_count',props.productId)
-            data.append('gateway_fee',formData.fee)
+            data.append('gateway_fee', formData.gateway_fee)
 
             ContributionProductService.createSubscription(data)
-                .then(res=>{
-                    if (res.success){
+                .then(res => {
+                    if (res.success) {
                         customToastMsg("Subscription was successfully created", 1);
-                    }else {
+                        getContributionProductDetails(true);
+                    } else {
                         customToastMsg(res.message, res.status)
                     }
                 })
         }
     };
 
-    const deleteForm = (e, index) => {
-        e.preventDefault();
-        const updatedSubscriptions = [...subscriptions];
-        updatedSubscriptions.splice(index, 1);
-        setSubscriptions(updatedSubscriptions);
-        setCount(count - 1);
+    const deleteItemByServer = (id) => {
+        const data = {
+            "all": 1,
+            "contribution_product_id": props.productId
+        }
+        ContributionProductService.removeSubscriptionItemById(data, id)
+            .then(res => {
+                if (res.success) {
+                    customToastMsg("Subscription was successfully deleted", 1);
+                    getContributionProductDetails(false);
+                } else {
+                    customToastMsg(res.message, res.status)
+                }
+            })
+    }
+
+    const deleteForm = (e, index, id) => {
+
+        if (id !== null) {
+            deleteItemByServer(id);
+        } else {
+            e.preventDefault();
+            const updatedSubscriptions = [...subscriptions];
+            updatedSubscriptions.splice(index, 1);
+            setSubscriptions(updatedSubscriptions);
+            setCount(count - 1);
+        }
     };
 
     return (
@@ -133,12 +199,12 @@ const RepeatingSubscriptionForm = (props) => {
                                             type='number'
                                             s id={`gateway-fee-${index}`}
                                             placeholder='Gateway Fee'
-                                            value={subscription.fee}
-                                            onChange={(e) => handleInputChange(index, 'fee', e.target.value)}
-                                            invalid={subscription.errors.fee && true}
+                                            value={subscription.gateway_fee}
+                                            onChange={(e) => handleInputChange(index, 'gateway_fee', e.target.value)}
+                                            invalid={subscription.errors.gateway_fee && true}
                                         />
-                                        {subscription.errors.fee && (
-                                            <FormFeedback>{subscription.errors.fee}</FormFeedback>
+                                        {subscription.errors.gateway_fee && (
+                                            <FormFeedback>{subscription.errors.gateway_fee}</FormFeedback>
                                         )}
                                     </Col>
                                     <Col md={8} className='mb-md-0 mb-1'>
@@ -162,14 +228,14 @@ const RepeatingSubscriptionForm = (props) => {
                                         <Button color='primary' className='text-nowrap mt-2'
                                                 onClick={(e) => saveForm(e, index)} outline>
                                             <Save size={14} className='me-50'/>
-                                            <span>Save</span>
+                                            <span>{subscription.id === null ? "Save" : "Update"}</span>
                                         </Button>
                                     </Col>
                                     <Col md={2}>
                                         <Button color='danger' className='text-nowrap mt-2'
-                                                onClick={(e) => deleteForm(e, index)} outline>
+                                                onClick={(e) => deleteForm(e, index, subscription.id)} outline>
                                             <X size={14} className='me-50'/>
-                                            <span>Delete</span>
+                                            <span>{subscription.id !== null ? "Delete" : "Remove"}</span>
                                         </Button>
                                     </Col>
                                     <Col sm={12}>
@@ -180,7 +246,7 @@ const RepeatingSubscriptionForm = (props) => {
                         </Tag>
                     );
                 })}
-                <Button className='btn-icon' color='primary' onClick={increaseCount}>
+                <Button className='btn-icon' color='primary' onClick={() => increaseCount(subscriptions)}>
                     <Plus size={14}/>
                     <span className='align-middle ms-25'>Add New</span>
                 </Button>

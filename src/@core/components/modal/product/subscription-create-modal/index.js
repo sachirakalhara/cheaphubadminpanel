@@ -2,23 +2,9 @@ import Modal from "../../index";
 import React, {Fragment, useEffect, useState} from "react";
 import "../../styles.scss";
 import {selectThemeColors} from '@utils'
-import {
-    Button,
-    Col,
-    FormFeedback,
-    Input,
-    Label,
-    ListGroup,
-    ListGroupItem,
-    Nav,
-    NavItem,
-    NavLink,
-    Row
-} from "reactstrap";
+import {Button, Col, FormFeedback, Input, Label, Nav, NavItem, NavLink, Row} from "reactstrap";
 import imgBlack from '@src/assets/images/bulk/attachment-black.png'
 import imgWhite from '@src/assets/images/bulk/attachment-white.png'
-import imgDeliveryBlack from '@src/assets/images/bulk/delivery-black.png'
-import imgDeliveryWhite from '@src/assets/images/bulk/delivery-white.png'
 import imgDollarBlack from '@src/assets/images/bulk/dollar-black.png'
 import imgDollarWhite from '@src/assets/images/bulk/dollar-white.png'
 import imgSEOBlack from '@src/assets/images/bulk/seo-black.png'
@@ -29,15 +15,11 @@ import {Controller, useForm} from "react-hook-form"
 import Select from "react-select";
 import ReactFilesMini from "../../../../../custom-components/file-picker/ReactFiles-Mini";
 import Cropper from "react-easy-crop";
-import {customToastMsg, fileReader, getCroppedImg, isEmpty, isImageFile} from "../../../../../utility/Utils";
-import Radio from "../../../../../@core/components/radio/RadioVuexy";
-import cryptoLogo from '@src/assets/images/icons/payments/crypto.webp'
-import stripeLogo from '@src/assets/images/icons/payments/visa-cc.png'
-import {ArrowLeft, ArrowRight} from "react-feather";
-import * as BulkProductServices from '../../../../../services/bulk-products';
+import {customToastMsg, fileReader, getCroppedImg, isImageFile} from "../../../../../utility/Utils";
 import RepeatingSubscriptionForm from "../../../../../views/forms/form-repeater/subscription/RepeatingSubscriptionForm";
 import RepeatingPackageForm from "../../../../../views/forms/form-repeater/packages/RepeatingPackageForm";
 import * as ContributionProductService from '../../../../../services/contribution-products';
+import {formDataToJson} from "../../../../../utility/commonFun";
 
 const defaultValues = {
     productName: '',
@@ -66,7 +48,7 @@ const types = {
 const CROP_ASPECT_TO_FIRST_IMAGE = 1;
 
 const SubscriptionCreationModal = (props) => {
-    const [active, setActive] = useState(1);
+    const [active, setActive] = useState(props.isManageMode ? 3 : 1);
 
     // image uploader
     const [uploadedProductImage, setUploadedProductImage] = useState(null)
@@ -78,11 +60,11 @@ const SubscriptionCreationModal = (props) => {
     const [productImageZoom, setProductImageZoom] = useState(1)
     const [productImageName, setProductImageName] = useState('')
 
-    const [productType, setProductType] = useState(1);
     const [visibilityMode, setVisibilityMode] = useState('card');
 
     const [file, setFile] = useState(null);
-    const [productId, setProductId] = useState(null)
+    const [productId, setProductId] = useState(null);
+    const [buttonName, setButtonName] = useState(props.isEditMode ? 'Update' : 'Submit');
 
     // react hook form configurations
     const {control, setError, handleSubmit, formState: {errors}, setValue, getValues, reset} = useForm({defaultValues});
@@ -158,6 +140,7 @@ const SubscriptionCreationModal = (props) => {
 
 
         if (Object.values(obj).every(field => field.length > 0)) {
+
             let data = new FormData();
             data.append('name', getValues('productName'))
             data.append('description', getValues('description'))
@@ -168,14 +151,19 @@ const SubscriptionCreationModal = (props) => {
             data.append('visibility', visibilityMode)
             data.append('categories', getValues('category'))
 
-            ContributionProductService.createContributionProduct(data)
+            const fetchAPI = props.isEditMode ? ContributionProductService.updateContributionProduct : ContributionProductService.createContributionProduct;
+
+            fetchAPI(props.isEditMode ? formDataToJson(data) : data)
                 .then(res => {
                     console.log(res)
                     if (res.success) {
                         console.log(res)
                         setProductId(res.data.contribution_product.id);
-                        setActive(3)
-                        customToastMsg("Product is successfully created", 1);
+                        customToastMsg(`Product is successfully ${props.isEditMode ? "updated" : "created"}`, 1);
+
+                        if (!props.isEditMode) {
+                            setActive(3)
+                        }
                     } else {
                         customToastMsg(res.message, res.status)
                     }
@@ -194,7 +182,24 @@ const SubscriptionCreationModal = (props) => {
 
     useEffect(() => {
         console.log(props.tagList)
+        if (props.isEditMode) {
+            loadDefaultValues(props.selectedData);
+        }
     }, [])
+
+    const loadDefaultValues = (data) => {
+        console.log(data)
+        setValue("productName", data.name)
+        setValue("category", data.categories[0].id)
+        setValue("description", data.description)
+        setValue("tag", data.tag_id)
+        setValue("productImageName", data.image)
+        setValue("serviceInfo", data.service_info)
+        setValue("slugUrl", data.slug_url)
+
+        setVisibilityMode(data.visibility)
+        setUploadedProductImage(data.image)
+    }
 
     const onHeaderTabPress = (selectedActiveValue) => {
         if (selectedActiveValue === 1 || selectedActiveValue === 2) {
@@ -207,40 +212,53 @@ const SubscriptionCreationModal = (props) => {
     }
 
     return (
-        <Modal show={props.show} toggle={props.toggle} headTitle="Add New Service Product">
+        <Modal show={props.show} toggle={props.toggle}
+               headTitle={!props.isEditMode ? props.isManageMode ? "Manage Service Product" : "Add New Service Product" : "Edit Service Product"}>
             <Fragment>
                 <Nav pills className='mt-1 mb-0 pb-0'>
-                    <NavItem>
-                        <NavLink active={active === 1} onClick={() => onHeaderTabPress(1)}>
-                            <img src={active !== 1 ? imgBlack : imgWhite} alt="img" height={20} width={20}
-                                 className="me-1"/>
-                            <span className={`fw-bold fw-bolder ${active !== 1 ? 'text-black' : ''}`}>General</span>
-                        </NavLink>
-                    </NavItem>
 
-                    <NavItem>
-                        <NavLink active={active === 2} onClick={() => onHeaderTabPress(2)}>
-                            <img src={active !== 2 ? imgSEOBlack : imgSEOWhite} alt="img" height={20} width={20}
-                                 className="me-1"/>
-                            <span className={`fw-bold fw-bolder ${active !== 2 ? 'text-black' : ''}`}>SEO</span>
-                        </NavLink>
-                    </NavItem>
+                    {!props.isManageMode && (
+                        <>
+                            <NavItem>
+                                <NavLink active={active === 1} onClick={() => onHeaderTabPress(1)}>
+                                    <img src={active !== 1 ? imgBlack : imgWhite} alt="img" height={20} width={20}
+                                         className="me-1"/>
+                                    <span
+                                        className={`fw-bold fw-bolder ${active !== 1 ? 'text-black' : ''}`}>General</span>
+                                </NavLink>
+                            </NavItem>
 
-                    <NavItem>
-                        <NavLink active={active === 3} onClick={() => onHeaderTabPress(3)}>
-                            <img src={active !== 3 ? imgDollarBlack : imgDollarWhite} alt="img" height={20} width={20}
-                                 className="me-1"/>
-                            <span className={`fw-bold fw-bolder ${active !== 3 ? 'text-black' : ''}`}>Subscription / Variant</span>
-                        </NavLink>
-                    </NavItem>
+                            <NavItem>
+                                <NavLink active={active === 2} onClick={() => onHeaderTabPress(2)}>
+                                    <img src={active !== 2 ? imgSEOBlack : imgSEOWhite} alt="img" height={20} width={20}
+                                         className="me-1"/>
+                                    <span className={`fw-bold fw-bolder ${active !== 2 ? 'text-black' : ''}`}>SEO</span>
+                                </NavLink>
+                            </NavItem>
+                        </>
+                    )}
 
-                    <NavItem>
-                        <NavLink active={active === 4} onClick={() => onHeaderTabPress(4)}>
-                            <img src={active !== 4 ? imgBoxBlack : imgBoxWhite} alt="img" height={20}
-                                 width={20} className="me-1"/>
-                            <span className={`fw-bold fw-bolder ${active !== 4 ? 'text-black' : ''}`}>Packages</span>
-                        </NavLink>
-                    </NavItem>
+                    {!props.isEditMode && (
+                        <>
+                            <NavItem>
+                                <NavLink active={active === 3} onClick={() => onHeaderTabPress(3)}>
+                                    <img src={active !== 3 ? imgDollarBlack : imgDollarWhite} alt="img" height={20}
+                                         width={20}
+                                         className="me-1"/>
+                                    <span className={`fw-bold fw-bolder ${active !== 3 ? 'text-black' : ''}`}>Subscription / Variant</span>
+                                </NavLink>
+                            </NavItem>
+
+                            <NavItem>
+                                <NavLink active={active === 4} onClick={() => onHeaderTabPress(4)}>
+                                    <img src={active !== 4 ? imgBoxBlack : imgBoxWhite} alt="img" height={20}
+                                         width={20} className="me-1"/>
+                                    <span
+                                        className={`fw-bold fw-bolder ${active !== 4 ? 'text-black' : ''}`}>Packages</span>
+                                </NavLink>
+                            </NavItem>
+                        </>
+                    )}
 
 
                 </Nav>
@@ -378,7 +396,8 @@ const SubscriptionCreationModal = (props) => {
                                                  }}
                                                  invalid={errors.productImageName && true}
                                                  accepts={["image/png", "image/jpg", "image/jpeg"]}
-                                                 imageFile={productImageName ? productImageName : uploadedProductImage}
+                                                 imageFile={productImageName}
+                                                 defaultImg={uploadedProductImage}
                                 />
 
                             )}
@@ -405,8 +424,8 @@ const SubscriptionCreationModal = (props) => {
                                                 onCropChange={(crop) => {
                                                     onCropChange(crop, types.PRODUCT_IMAGE)
                                                 }}
-                                                onCropComplete={(croppedArea, croppedAreaPixels) => {
-                                                    onCropComplete(croppedArea, croppedAreaPixels, types.PRODUCT_IMAGE)
+                                                onCropComplete={async (croppedArea, croppedAreaPixels) => {
+                                                    await onCropComplete(croppedArea, croppedAreaPixels, types.PRODUCT_IMAGE)
                                                 }}
 
                                             />
@@ -522,7 +541,7 @@ const SubscriptionCreationModal = (props) => {
 
                     <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
                         <Button type='submit' className='me-1' color='success'>
-                            Submit
+                            {buttonName}
                         </Button>
                         <Button type='reset' color='secondary' outline onClick={props.toggle}>
                             Discard
@@ -533,7 +552,9 @@ const SubscriptionCreationModal = (props) => {
 
             {active === 3 && (
                 <RepeatingSubscriptionForm
-                    productId={productId}
+                    productId={props.isManageMode ? props.selectedData?.id : productId}
+                    isManageMode={props.isManageMode}
+                    subscriptionList={props.selectedData?.subscriptions ?? []}
                 />
             )}
 
