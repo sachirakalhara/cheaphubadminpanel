@@ -101,3 +101,16 @@ $font-family-sans-serif: 'Montserrat', Helvetica, Arial, serif !default;
 .empty-text{
   color: #A6AFBD!important;
 }
+
+.view-button-container{
+  padding-top: 5px;
+  display: flex;
+  justify-content: end;
+
+  a{
+    padding: 2px 5px;
+    border-radius: 5px;
+    color :white;
+    background-color: #28C76F;
+  }
+}

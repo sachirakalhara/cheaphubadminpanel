@@ -154,11 +154,11 @@ const RepeatingPackageForm = (props) => {
 
             let data = new FormData()
             data.append('subscription_id', formData.subscription);
-            data.append('package_name', formData.packageName);
-            data.append('duration', formData.duration);
-            data.append('quantity', formData.quantity);
+            data.append('name', formData.packageName);
+            data.append('expiry_duration', formData.duration);
+            data.append('qty', formData.quantity);
             data.append('replace_count', formData.replaceCount);
-            data.append('payment_methods', formData.paymentMethods.map((method) => method.value).join(','));
+            data.append('payment_method', formData.paymentMethods.map((method) => method.value).join(','));
             data.append('price', formData.price);
 
             ContributionProductService.createPackage(data).then((res) => {

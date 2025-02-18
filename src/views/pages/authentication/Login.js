@@ -60,7 +60,7 @@ const Login = () => {
         handleSubmit,
         formState: {errors}
     } = useForm({defaultValues})
-    const illustration = skin === 'dark' ? 'new-login-avatar.svg' : 'new-login-avatar.svg',
+    const illustration = skin === 'dark' ? 'login-v2.svg' : 'login-v2.svg',
         source = require(`@src/assets/images/pages/${illustration}`).default
 
 
@@ -76,8 +76,9 @@ const Login = () => {
             dispatch(toggleLoading())
             await UserAuthService.authUser(body)
                 .then(async res => {
+                    console.log(res);
                     if (!res.success) {
-                        customToastMsg(res.message, res.status)
+                        customToastMsg(res.message, 0)
                         dispatch(toggleLoading())
                     } else {
 

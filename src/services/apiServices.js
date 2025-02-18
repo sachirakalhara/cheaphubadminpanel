@@ -108,8 +108,10 @@ export const callApi = async (apiObject) => {
                         data: null
                     }
 
-                    await clearLocalStorage();
-                    window.location.reload()
+                    if (apiObject.state !== "login") {
+                        await clearLocalStorage();
+                        window.location.reload()
+                    }
 
 
                 } else if (error.response.status === 403) {

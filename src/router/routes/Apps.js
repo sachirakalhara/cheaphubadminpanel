@@ -226,10 +226,6 @@ const AppRoutes = [
   {
     path: '/materials_requirements/list',
     component: lazy(() => import('../../views/materials'))
-  },
-  {
-    path: '/colors/list',
-    component: lazy(() => import('../../views/colors'))
   }
 ]
 

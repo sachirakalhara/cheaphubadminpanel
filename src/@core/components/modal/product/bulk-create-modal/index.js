@@ -33,6 +33,7 @@ import cryptoLogo from '@src/assets/images/icons/payments/crypto.webp'
 import stripeLogo from '@src/assets/images/icons/payments/visa-cc.png'
 import {ArrowLeft, ArrowRight} from "react-feather";
 import * as BulkProductServices from '../../../../../services/bulk-products';
+import {formDataToJson} from "../../../../../utility/commonFun";
 
 const defaultValues = {
     productName: '',
@@ -89,6 +90,38 @@ const BulCreationModal = (props) => {
     // react hook form configurations
     const {control, setError, handleSubmit, formState: {errors}, setValue, getValues, reset} = useForm({defaultValues});
 
+    useEffect(() => {
+
+        if (props.isEditMode) {
+            loadDefaultValues(props.selectedData);
+        }
+
+    }, [])
+
+    const loadDefaultValues = (data) => {
+        console.log("data:::::::::::::::::::::::", data)
+
+        setValue("productName", data.name)
+        setValue("category", data.categories[0].id)
+        setValue("price", data.price.toString())
+        setValue("gatewayFee", data.gateway_fee.toString())
+        setValue("description", data.description)
+        setValue("tag", data.tag_id)
+        setValue("productImageName", data.image)
+
+        setValue("serialList", data.serial)
+        setValue("serviceInfo", data.service_info)
+        setValue("minimumQty", data.minimum_quantity.toString())
+        setValue("maximumQty", data.maximum_quantity.toString())
+        setValue("cryptoRadio", data.payment_method.includes("crypto"))
+        setValue("stripeRadio", data.payment_method.includes("stripe"))
+        // setValue("selectedPaymentMethods", data.image)
+
+        setValue("slugUrl", data.slug_url)
+        setVisibilityMode(data.visibility)
+        setUploadedProductImage(data.image)
+    }
+
 
     // product image upload
     const onCropChange = (crop, type) => {
@@ -102,27 +135,28 @@ const BulCreationModal = (props) => {
 
     const showCroppedImage = async (croppedRatios) => {
         const rotation = 0;
-            try {
-                const croppedImage = await getCroppedImg(
-                    productImageSrc,
-                    croppedRatios ?? {width: 1640, height: 1640, x: 0, y: 360},
-                    rotation
-                )
-                setProductCroppedImage(croppedImage)
-            } catch (e) {
-                console.error(e)
-            }
+        try {
+            const croppedImage = await getCroppedImg(
+                productImageSrc,
+                croppedRatios ?? {width: 1640, height: 1640, x: 0, y: 360},
+                rotation
+            )
+            setProductCroppedImage(croppedImage)
+        } catch (e) {
+            console.error(e)
+        }
 
     }
 
     const handleChangeFileShare = async (file, type) => {
         if (isImageFile(file.name)) {
-                setProductImageIsCropVisible(true);
-                setProductImageName(file.name);
-                let imageDataUrl = await fileReader(file);
-                setFile(file)
-                setProductImageSrc(imageDataUrl);
-                setValue("productImageName", file.name)
+            setUploadedProductImage(null);
+            setProductImageIsCropVisible(true);
+            setProductImageName(file.name);
+            let imageDataUrl = await fileReader(file);
+            setFile(file)
+            setProductImageSrc(imageDataUrl);
+            setValue("productImageName", file.name)
         } else {
             setProductImageIsCropVisible(false);
         }
@@ -131,19 +165,6 @@ const BulCreationModal = (props) => {
     const onSubmitGeneralDetails = async data => {
 
         console.log(data)
-
-        // productName: '',
-        //     category: '',
-        //     description: '',
-        //     tag: '',
-        //     productImageName: '',
-        //     serialList: '',
-        //     serviceInfo: '',
-        //     minimumQty: '',
-        //     maximumQty: '',
-        //     price: '',
-        //     gatewayFee: '',
-        //     slugUrl: ''
 
         const obj = {
             productName: data.productName,
@@ -229,6 +250,7 @@ const BulCreationModal = (props) => {
         }
     }
 
+
     const onSubmitSEODetails = async data => {
         const obj = {
             slugUrl: data.slugUrl
@@ -241,7 +263,6 @@ const BulCreationModal = (props) => {
             data.append('description', getValues('description'))
             data.append('price', getValues('price'))
             data.append('gateway_fee', getValues('gatewayFee'))
-            data.append('image', file)
             data.append('categories', getValues('category'))
             data.append('tag_id', getValues('tag'))
             data.append('payment_method', getValues('selectedPaymentMethods'))
@@ -252,14 +273,19 @@ const BulCreationModal = (props) => {
             data.append('slug_url', getValues('slugUrl'))
             data.append('visibility', visibilityMode)
 
-            console.log(data)
+            if (props.isEditMode) {
+                data.append('id', props.selectedData.id)
+            } else {
+                data.append('image', file)
+            }
 
-            BulkProductServices.createBulkProduct(data)
+            const fetchAPI = props.isEditMode ? BulkProductServices.updateBulkProduct : BulkProductServices.createBulkProduct
+            fetchAPI(props.isEditMode ? formDataToJson(data) : data)
                 .then(res => {
-                    if (res.success){
-                        customToastMsg("Bulk Product was successfully created", 1);
+                    if (res.success) {
+                        customToastMsg(`Bulk Product was successfully ${props.isEditMode ? 'updated' : 'created'}`, 1);
                         props.toggle();
-                    }else {
+                    } else {
                         customToastMsg(res.message, res.status)
                     }
                 })
@@ -286,8 +312,13 @@ const BulCreationModal = (props) => {
         }
     }
 
+    const toogleModal = () => {
+        setUploadedProductImage(null)
+        props.toggle();
+    }
+
     return (
-        <Modal show={props.show} toggle={props.toggle} headTitle="Add New Bulk Product">
+        <Modal show={props.show} toggle={toogleModal} headTitle="Add New Bulk Product">
             <Fragment>
                 <Nav pills className='mt-1 mb-0 pb-0'>
                     <NavItem>
@@ -440,7 +471,8 @@ const BulCreationModal = (props) => {
                                                  }}
                                                  invalid={errors.productImageName && true}
                                                  accepts={["image/png", "image/jpg", "image/jpeg"]}
-                                                 imageFile={productImageName ? productImageName : uploadedProductImage}
+                                                 imageFile={productImageName}
+                                                 defaultImg={uploadedProductImage}
                                 />
 
                             )}

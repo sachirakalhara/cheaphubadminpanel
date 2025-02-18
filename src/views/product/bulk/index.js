@@ -1,14 +1,13 @@
 // ** React Imports
-import {Link} from 'react-router-dom'
 import React, {useState, useEffect, Fragment} from 'react'
 
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
-import {Calendar, ChevronDown, Plus, X} from 'react-feather'
+import {Eye, Plus, Trash, X} from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
-import {Button, Input, Row, Col, Card, Label, CardHeader, CardTitle, CardBody, CardSubtitle, Badge} from 'reactstrap'
+import {Button, Input, Row, Col, Card, Label, Badge} from 'reactstrap'
 
 // ** Store & Actions
 import {useDispatch} from 'react-redux'
@@ -18,11 +17,10 @@ import {selectThemeColors} from '@utils'
 import '@styles/react/apps/app-invoice.scss'
 
 
-import {customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile, searchValidation} from "../../../utility/Utils"
+import {customToastMsg, emptyUI} from "../../../utility/Utils"
 
 
 import {toggleLoading} from '@store/loading'
-import {Controller, useForm} from "react-hook-form"
 
 import BulCreationModal from "../../../@core/components/modal/product/bulk-create-modal"
 
@@ -34,16 +32,6 @@ import * as TagsServices from '../../../services/tags';
 import * as BulkProductService from '../../../services/bulk-products';
 
 
-const defaultValues = {
-    productName: '',
-    category: '',
-    description: '',
-    price: '',
-    gatewayFee: '',
-    tag: '',
-    productImageName: ''
-}
-
 let prev = 0
 
 const customStyles = {
@@ -54,9 +42,6 @@ const customStyles = {
     })
 }
 
-const types = {
-    PRODUCT_IMAGE: 'program-modal-banner'
-}
 
 const CustomHeader = (props) => {
 
@@ -126,17 +111,9 @@ const BulkProductList = () => {
     const [searchKey, setSearchKey] = useState('')
     const [isFetched, setIsFetched] = useState(false)
 
-
-    const [productImageSrc, setProductImageSrc] = useState('')
-    const [productImageCrop, setProductImageCrop] = useState({x: 0, y: 0})
-    const [productImageCroppedAreaPixels, setProductImageCroppedAreaPixels] = useState(null)
-    const [productCroppedImage, setProductCroppedImage] = useState(null)
-    const [productImageIsCropVisible, setProductImageIsCropVisible] = useState(false)
-    const [productImageName, setProductImageName] = useState('')
-
-
     const [isEditMode, setIsEditMode] = useState(false)
     const [selectedCategoryId, setSelectedCategoryId] = useState(null)
+    const [selectedData, setSelectedData] = useState({})
 
 
     const [store, setStore] = useState({
@@ -149,16 +126,6 @@ const BulkProductList = () => {
         },
         total: 0
     })
-
-    // ** Hooks
-    const {
-        control,
-        setError,
-        handleSubmit,
-        formState: {errors},
-        setValue,
-        reset
-    } = useForm({defaultValues})
 
 
     const getDataList = (params) => {
@@ -198,7 +165,7 @@ const BulkProductList = () => {
                         total: 0
                     })
                 } else {
-                    customToastMsg(res.message, 0,'',()=>{
+                    customToastMsg(res.message, 0, '', () => {
                         setStore({allData: [], data: [], params, total: 0})
                     })
                 }
@@ -306,57 +273,6 @@ const BulkProductList = () => {
         }
     }
 
-    const onSubmit = async data => {
-        console.log(data)
-        if (Object.values(data).every(field => field.length > 0)) {
-            // const body = {
-            //     poNumber: data.poNumber,
-            //     poDate: `${data.poDate}T00:00:00Z`,
-            //     quantity: null,
-            //     deliveryDate: `${data.deliveryDate}T00:00:00Z`,
-            //     priceTerm: data.priceTerm,
-            //     customer: {
-            //         id: data.customer
-            //     },
-            //     destination: {
-            //         id: data.destination
-            //     }
-            // }
-            // dispatch(toggleLoading())
-            // await OrderService.saveOrder(body)
-            //     .then(res => {
-            //         if (res.success) {
-            //             customToastMsg("Order added successfully!", 1)
-            //             setCurrentPage(0)
-            //             setRowsPerPage(0)
-            //             setCustomerName('')
-            //             setPicker('')
-            //             setSearchKey('')
-            //             getDataList({
-            //                 q: value,
-            //                 page: 0,
-            //                 perPage: 0
-            //             })
-            //             setShow(false)
-            //         } else {
-            //             customToastMsg(res.message, res.status)
-            //         }
-            //         dispatch(toggleLoading())
-            //     })
-
-        } else {
-            for (const key in data) {
-                if (data[key].length === 0) {
-                    setError(key, {
-                        type: 'required'
-                    })
-                }
-            }
-
-            console.log(data)
-        }
-    }
-
     const onSearch = async (e) => {
         setCurrentPage(0)
         setSearchKey(e)
@@ -387,69 +303,14 @@ const BulkProductList = () => {
         })
     }
 
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    const onCropChange = (crop, type) => {
-        if (type === types.PRODUCT_IMAGE) setProductImageCrop(crop)
-    }
-
-    const onCropComplete = async (croppedArea, croppedAreaPixels, type) => {
-        if (type === types.PRODUCT_IMAGE) await setProductImageCroppedAreaPixels(croppedAreaPixels)
-
-        await cropButtonHandler(type)
-    }
-
-    /*image cropper */
-    const cropButtonHandler = async (type) => {
-        await showCroppedImage(type);
-    }
-
-    const showCroppedImage = async (type) => {
-        const rotation = 0;
-        if (type === types.PRODUCT_IMAGE) {
-            try {
-                const croppedImage = await getCroppedImg(
-                    productImageSrc,
-                    productImageCroppedAreaPixels,
-                    rotation
-                )
-
-                console.log(':::::::::::::::::::::::::::::::::::============================', croppedImage)
-                await setProductCroppedImage(croppedImage)
-            } catch (e) {
-                console.error(e)
-            }
-        }
-    }
-
-    const handleChangeFileShare = async (file, type) => {
-        if (isImageFile(file.name)) {
-            if (type === types.PRODUCT_IMAGE) {
-                console.log(isImageFile(file.name))
-                setProductImageIsCropVisible(true);
-                setProductImageName(file.name);
-                let imageDataUrl = await fileReader(file);
-                console.log(imageDataUrl)
-                setProductImageSrc(imageDataUrl);
-                setValue("productImageName", file.name)
-            }
-        } else {
-            setProductImageIsCropVisible(false);
-        }
-    }
-
     const editBtnHandler = (data) => {
-
-        setValue("productName", data.name)
-        setValue("category", data.categories[0].id)
-        setValue("price", data.price)
-        setValue("gatewayFee", data.gateway_fee)
-        setValue("description", data.description)
-        setValue("tag", data.tag_id)
-        setValue("productImageName", data.image)
-
         setShow(true)
-        setIsEditMode(false)
+        setIsEditMode(true)
+        setSelectedData(data);
+    }
+
+    const removeItem = () => {
+
     }
 
     const columns = [
@@ -480,8 +341,29 @@ const BulkProductList = () => {
             center: true,
         },
         {
-            name: 'View Details',
-            cell: row => <Button color="primary" onClick={() => editBtnHandler(row)}>View</Button>,
+            name: 'Actions',
+            width: '30%',
+            center: true,
+            cell: row => (
+                <div className='d-flex align-items-center w-100 justify-content-evenly'>
+                    <Button
+                        color='success' outline
+                        style={{width: 80, padding: 5, alignItems: 'center'}}
+                        onClick={() => editBtnHandler(row)}
+                    >
+                        <Eye size={15} style={{marginRight: 5, marginBottom: 3}}/>
+                        Edit
+                    </Button>
+                    <Button
+                        color='danger' outline
+                        style={{width: 100, padding: 5, alignItems: 'center'}}
+                        onClick={() => removeItem(row.id)}
+                    >
+                        <Trash size={15} style={{marginRight: 5, marginBottom: 3}}/>
+                        Delete
+                    </Button>
+                </div>
+            )
         },
     ];
 
@@ -504,7 +386,6 @@ const BulkProductList = () => {
                     <Button onClick={() => {
                         setShow(true)
                         setIsEditMode(false)
-                        reset()
                     }} style={{width: 100}}>
                         <Plus size={15} style={{marginRight: 5}}/>
                         Add
@@ -531,21 +412,24 @@ const BulkProductList = () => {
                 </Card>
             </div>
 
-            <BulCreationModal
-                show={show}
-                toggle={() => {
-                    setShow(!show)
-                    reset()
-                    getDataList({
-                        q: value1,
-                        page: currentPage,
-                        perPage: rowsPerPage
-                    })
-                }}
-                tagList={tagsList}
-                categoryList={categoryList}
-                isEditMode={isEditMode}
-            />
+            {show && (
+                <BulCreationModal
+                    show={show}
+                    toggle={() => {
+                        setShow(!show)
+                        getDataList({
+                            q: value1,
+                            page: currentPage,
+                            perPage: rowsPerPage
+                        })
+                    }}
+                    tagList={tagsList}
+                    categoryList={categoryList}
+                    isEditMode={isEditMode}
+                    selectedData={selectedData}
+                />
+            )}
+
         </Fragment>
     )
 }

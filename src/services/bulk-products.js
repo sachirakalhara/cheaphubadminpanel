@@ -13,6 +13,19 @@ export async function createBulkProduct(body) {
     return await ApiService.callApi(apiObject)
 }
 
+export async function updateBulkProduct(body) {
+    const apiObject = {}
+    apiObject.method = 'PUT'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `admin/super-admin/bulk/product/update`
+    apiObject.body = body
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
+
 export async function getAllBulkProducts() {
     const apiObject = {}
     apiObject.method = 'POST'

@@ -1,9 +1,3 @@
-/**
- * Created by WebStorm.
- * User: athukorala
- * Date: 5/13/20
- * Time: 9:20 AM
- */
 import React, {useState} from 'react';
 import Files from "react-files";
 import * as commonFunc from "../../utility/commonFun";
@@ -24,15 +18,15 @@ const App = (props) => {
             let fileObj = files[0];
 
             const extension = fileObj.name.split('.').pop().toLowerCase();
-            if (extension ==='txt'){
+            if (extension === 'txt') {
                 setFileName(fileObj.name);
                 props.sendImageData(fileObj.name, fileObj);
-            }else {
+            } else {
                 getRealFileExtension(fileObj).then(res => {
-                    if (res){
+                    if (res) {
                         setFileName(fileObj.name);
                         props.sendImageData(fileObj.name, fileObj);
-                    }else {
+                    } else {
                         notifyMessage("You have uploaded file extension is mismatched with actual file extension");
                         setFileName('');
                         props.sendImageData('', {});
@@ -62,10 +56,17 @@ const App = (props) => {
             >
                 <div className={`file-picker-mini-sub`}>
                     <div className={`${props.invalid ? 'error' : ''}`}>
-                        <p
-                            className={`${props.imageFile && !props.imageFile.startsWith("http") ? 'active-lbl' : ''}`}>
-                            {fileName ? stringTrimFunction(60,fileName) : (props.imageFile && !props.imageFile.startsWith("http")) ? props.imageFile : props.imageFile && props.imageFile.startsWith("http") ? "Choose File (Update)" : props.placeholder !== undefined ? props.placeholder : "Choose File"}
-                        </p>
+                        {props.defaultImg ? (
+                            <p className="active-lbl">
+                                {props.defaultImg}
+                            </p>
+                        ) : (
+                            <p
+                                className={`${props.imageFile && !props.imageFile.startsWith("http") ? 'active-lbl' : ''}`}>
+                                {fileName ? stringTrimFunction(60, fileName) : (props.imageFile && !props.imageFile.startsWith("http")) ? props.imageFile : props.imageFile && props.imageFile.startsWith("http") ? "Choose File (Update)" : props.placeholder !== undefined ? props.placeholder : "Choose File"}
+                            </p>
+                        )}
+
                     </div>
                     <button
                         type={'button'}

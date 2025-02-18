@@ -95,3 +95,11 @@ export const getRealFileExtensionForTxt = (fileName) => {
     const extension = fileName.split('.').pop().toLowerCase(); // Get the file extension
     return extension === 'txt'; // Return true if the extension is 'txt', false otherwise
 }
+
+export const formDataToJson = (formData) => {
+    let object = {};
+    formData.forEach((value, key) => {
+        object[key] = value;
+    });
+    return object;
+};
