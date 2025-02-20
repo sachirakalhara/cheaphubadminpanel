@@ -59,6 +59,12 @@ export default [
         icon: <img src={img1} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
         navLink: '/customer/list'
     },
+    {
+        id: 'Orders',
+        title: 'Orders',
+        icon: <img src={img4} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
+        navLink: '/order/list'
+    },
     // {
     //     id: 'colors',
     //     title: 'Colors',

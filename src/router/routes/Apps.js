@@ -240,6 +240,10 @@ const AppRoutes = [
     path: '/customer/:name',
     component: lazy(() => import('../../views/customers/profile'))
   },
+  {
+    path: '/order/list',
+    component: lazy(() => import('../../views/orders'))
+  }
 ]
 
 export default AppRoutes
