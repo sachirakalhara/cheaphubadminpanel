@@ -14,7 +14,7 @@ const DefaultRoute = '/products/bulk/list'
 
 // ** Merge Routes
 const Routes = [
-  // ...DashboardRoutes,
+  ...DashboardRoutes,
   ...AppRoutes,
   ...PagesRoutes,
   ...UiElementRoutes,

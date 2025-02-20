@@ -356,3 +356,11 @@ export const fileReader = (file) => {
         reader.readAsDataURL(file)
     })
 }
+
+export const customStyles = {
+    subHeader: {
+        style: {
+            display: 'none'
+        }
+    }
+}

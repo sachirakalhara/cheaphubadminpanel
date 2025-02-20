@@ -6,8 +6,6 @@ import {useDispatch} from 'react-redux';
 import {Button, Input, Row, Col, Card, Label, Badge} from 'reactstrap';
 import {toggleLoading} from '@store/loading';
 import {useForm} from 'react-hook-form';
-// import CouponsModal from '../../@core/components/modal/couponsModal/couponsModal';
-// import * as CouponsServices from '../../services/coupons';
 import {customToastMsg, emptyUI, getCustomDateTimeStamp} from '../../utility/Utils';
 import CouponCreationModal from "../../@core/components/modal/couponCreationModal";
 

@@ -205,16 +205,6 @@ const AppRoutes = [
     }
   },
 
-  {
-    path: '/tags/list',
-    component: lazy(() => import('../../views/tags'))
-  },
-  {
-    path: '/coupon/list',
-    component: lazy(() => import('../../views/coupon'))
-  },
-
-
     //others
   {
     path: '/analytics',
@@ -230,7 +220,26 @@ const AppRoutes = [
   {
     path: '/materials_requirements/list',
     component: lazy(() => import('../../views/materials'))
-  }
+  },
+
+
+
+  {
+    path: '/tags/list',
+    component: lazy(() => import('../../views/tags'))
+  },
+  {
+    path: '/coupon/list',
+    component: lazy(() => import('../../views/coupon'))
+  },
+  {
+    path: '/customer/list',
+    component: lazy(() => import('../../views/customers'))
+  },
+  {
+    path: '/customer/:name',
+    component: lazy(() => import('../../views/customers/profile'))
+  },
 ]
 
 export default AppRoutes

@@ -2,7 +2,7 @@
 import {Home, Circle, Layers, Umbrella, File, FileText, CloudRain, Printer} from 'react-feather'
 import React from "react"
 import img from '@src/assets/images/sideBar/orders.svg'
-import img1 from '@src/assets/images/sideBar/styles.svg'
+import img1 from '@src/assets/images/sideBar/customer.svg'
 import img2 from '@src/assets/images/sideBar/machinery.svg'
 import img3 from '@src/assets/images/sideBar/production-rejections.svg'
 import img4 from '@src/assets/images/sideBar/analytics.svg'
@@ -53,12 +53,12 @@ export default [
         icon: <img src={img3} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
         navLink: '/coupon/list'
     },
-    // {
-    //     id: 'materials',
-    //     title: 'Materials Requirements',
-    //     icon: <img src={img5} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
-    //     navLink: '/materials_requirements/list'
-    // },
+    {
+        id: 'Customers',
+        title: 'Customers Management',
+        icon: <img src={img1} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
+        navLink: '/customer/list'
+    },
     // {
     //     id: 'colors',
     //     title: 'Colors',
