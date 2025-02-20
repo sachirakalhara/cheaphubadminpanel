@@ -3,6 +3,7 @@ import {AlertTriangle, Check, X} from "react-feather";
 import React, {Fragment} from "react";
 import {Slide, toast} from "react-toastify";
 import Avatar from '@components/avatar'
+import moment from "moment";
 
 
 const ToastContent = ({title, body, assets}) => (
@@ -102,4 +103,35 @@ export const formDataToJson = (formData) => {
         object[key] = value;
     });
     return object;
+};
+
+export const formDataDateConverter = (date) => {
+    return moment(date).format("YYYY-MM-DD");
+};
+
+
+export const getDatePickerOptions = (isOnOpen, minDate, maxDate) => {
+    const baseOptions = {
+        altInput: true,
+        altFormat: "d/m/Y"
+    };
+
+    if (!minDate) {
+        return baseOptions; // No minDate case
+    }
+
+    if (!isOnOpen) {
+        return {
+            ...baseOptions,
+            minDate: formDataDateConverter(minDate)
+        };
+    }
+
+    return {
+        ...baseOptions,
+        onOpen: (selectedDates, dateStr, instance) => {
+            if (minDate) instance.set("minDate", formDataDateConverter(minDate));
+            if (maxDate) instance.set("maxDate", formDataDateConverter(maxDate));
+        }
+    };
 };

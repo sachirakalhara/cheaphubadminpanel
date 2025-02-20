@@ -17,7 +17,15 @@ import {selectThemeColors} from '@utils'
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 
-import {customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile, searchValidation} from "../../../utility/Utils"
+import {
+    customSweetAlert,
+    customToastMsg,
+    emptyUI,
+    fileReader,
+    getCroppedImg,
+    isImageFile,
+    searchValidation
+} from "../../../utility/Utils"
 
 
 import {toggleLoading} from '@store/loading'
@@ -288,8 +296,14 @@ const SubscriptionProductList = () => {
         setSelectedData(data);
     }
 
-    const removeItem = () => {
+    const removeItem = async (id) => {
+        await customSweetAlert(
+            'Are you sure you want to remove this?',
+            0,
+            async () => {
 
+            }
+        )
     }
 
 

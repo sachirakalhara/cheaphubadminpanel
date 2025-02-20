@@ -47,12 +47,12 @@ export default [
         icon: <img src={img2} alt="img" height={20} width={20} style={{marginRight:15}}/>,
         navLink: '/tags/list'
     },
-    // {
-    //     id: 'regions',
-    //     title: 'Regions',
-    //     icon: <img src={img3} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
-    //     navLink: '/regions/list'
-    // },
+    {
+        id: 'coupon',
+        title: 'Coupon Management',
+        icon: <img src={img3} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
+        navLink: '/coupon/list'
+    },
     // {
     //     id: 'materials',
     //     title: 'Materials Requirements',

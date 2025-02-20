@@ -204,14 +204,18 @@ const AppRoutes = [
       navLink: '/styles/styles-details'
     }
   },
+
   {
     path: '/tags/list',
     component: lazy(() => import('../../views/tags'))
   },
   {
-    path: '/regions/list',
-    component: lazy(() => import('../../views/regions'))
+    path: '/coupon/list',
+    component: lazy(() => import('../../views/coupon'))
   },
+
+
+    //others
   {
     path: '/analytics',
     component: lazy(() => import('../../views/analytics'))

@@ -1,5 +1,4 @@
 // ** React Imports
-import {Link} from 'react-router-dom'
 import React, {useState, useEffect, Fragment} from 'react'
 
 // ** Third Party Components
@@ -17,28 +16,17 @@ import {useDispatch} from 'react-redux'
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 
-import * as MachineService from "../../services/machine-resources"
 import {customSweetAlert, customToastMsg, emptyUI, getCustomDateTimeStamp, searchValidation} from "../../utility/Utils"
 import {useForm} from "react-hook-form"
 import TagsModal from "../../@core/components/modal/tagsModal/tagsModal"
-import OrderModal from "../../@core/components/modal/orderModal"
-import * as knittingDiaServices from "../../services/knittingDia-resources"
-import {CSVLink} from "react-csv"
 import * as TagsServices from "../../services/tags";
-import * as StyleServices from "../../services/style-resources";
 
 let prev = 0
 
 const CustomHeader = ({
                           onNameTextChange,
-                          onKnittingTextChange,
-                          knittingDiameter,
                           name,
                           onClearNameText,
-                          onClearKnittingText,
-                          csvList,
-                          csvAction,
-                          fileName,
                           setShow
                       }) => {
     return (

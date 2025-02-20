@@ -17,7 +17,7 @@ import {selectThemeColors} from '@utils'
 import '@styles/react/apps/app-invoice.scss'
 
 
-import {customToastMsg, emptyUI} from "../../../utility/Utils"
+import {customSweetAlert, customToastMsg, emptyUI} from "../../../utility/Utils"
 
 
 import {toggleLoading} from '@store/loading'
@@ -309,8 +309,14 @@ const BulkProductList = () => {
         setSelectedData(data);
     }
 
-    const removeItem = () => {
+    const removeItem = async () => {
+        await customSweetAlert(
+            'Are you sure you want to remove this?',
+            0,
+            async () => {
 
+            }
+        )
     }
 
     const columns = [
