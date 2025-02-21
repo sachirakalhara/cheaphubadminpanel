@@ -65,11 +65,11 @@ export default [
         icon: <img src={img4} alt="img" height={20} width={20} className="me-1" style={{marginRight:5}}/>,
         navLink: '/order/list'
     },
-    // {
-    //     id: 'colors',
-    //     title: 'Colors',
-    //     icon: <img src={img6} alt="img" height={20} width={20} style={{marginRight:15}}/>,
-    //     navLink: '/colors/list'
-    // }
+    {
+        id: 'Tickets',
+        title: 'Tickets',
+        icon: <img src={img6} alt="img" height={20} width={20} style={{marginRight:15}}/>,
+        navLink: '/ticket/list'
+    }
 
 ]

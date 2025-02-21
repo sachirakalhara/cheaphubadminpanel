@@ -243,7 +243,17 @@ const AppRoutes = [
   {
     path: '/order/list',
     component: lazy(() => import('../../views/orders'))
-  }
+  },
+  {
+    path: '/ticket/list',
+    component: lazy(() => import('../../views/tickets'))
+  },
+  {
+    path: '/ticket/:name',
+    appLayout: true,
+    className: 'chat-application',
+    component: lazy(() => import('../../views/tickets/chat'))
+  },
 ]
 
 export default AppRoutes
