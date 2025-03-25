@@ -3,14 +3,14 @@ import ReactPaginate from 'react-paginate';
 import {ArrowRight, Box, ChevronDown, DollarSign, Eye, Plus, Trash, TrendingUp, User, X} from 'react-feather';
 import DataTable from 'react-data-table-component';
 import {Button, Input, Row, Col, Card, Label, Badge, CardTitle, CardText, CardBody} from 'reactstrap';
-import {customStyles, emptyUI} from "../../utility/Utils";
+import {customStyles, customToastMsg, emptyUI} from "../../utility/Utils";
 import {Link} from "react-router-dom";
 import classnames from "classnames";
 import Avatar from "../../@core/components/avatar";
 import * as CustomerResourcesServices from "../../services/customer-resources";
 
 const CustomerList = () => {
-    const [data,setData] = useState([
+    const [data, setData] = useState([
         // {
         //     title: '230k',
         //     subtitle: 'Sales',
@@ -60,12 +60,17 @@ const CustomerList = () => {
     const getTotalSpend = async () => {
         CustomerResourcesServices.getAllTotalSpend()
             .then(response => {
-                setData(prevData => {
-                    const newData = [...prevData];
-                    newData[1].title = `$${response.data.total_spend}`;
-                    newData[0].title = `${response.data.user_count}`;
-                    return newData;
-                });
+                if (response.success) {
+                    setData(prevData => {
+                        const newData = [...prevData];
+                        newData[1].title = `$${response.data.total_spend}`;
+                        newData[0].title = `${response.data.user_count}`;
+                        return newData;
+                    });
+                } else {
+                    customToastMsg(response.message, response.status)
+                }
+
             })
             .catch(error => {
                 console.log(error)
@@ -74,17 +79,21 @@ const CustomerList = () => {
 
     const getCustomers = async (searchKey) => {
         const body = {
-            "all" : 0,
+            "all": 0,
             "search": searchKey,
             "user_type": "customer"
         }
         CustomerResourcesServices.getAllCustomers(body)
             .then(response => {
                 console.log(response)
-                setStore({
-                    data: response.data.user_list,
-                    total: response.data.meta.total
-                })
+                if (response.success){
+                    setStore({
+                        data: response.data.user_list,
+                        total: response.data.meta.total
+                    })
+                }else {
+                    customToastMsg(response.message, response.status)
+                }
                 setIsFetched(true)
             })
             .catch(error => {
@@ -112,7 +121,7 @@ const CustomerList = () => {
             name: "",
             minWidth: "100px",
             cell: row => (
-                <Link to={`customers/${row.name}`} state={row}>
+                <Link to={{ pathname: `customers/${row.display_name}`, state: row }}>
                     <ArrowRight size={18} className="cursor-pointer"/>
                 </Link>
 

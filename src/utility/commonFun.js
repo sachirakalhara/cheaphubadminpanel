@@ -4,6 +4,7 @@ import React, {Fragment} from "react";
 import {Slide, toast} from "react-toastify";
 import Avatar from '@components/avatar'
 import moment from "moment";
+import logo from "../assets/images/logo/logo.png";
 
 
 const ToastContent = ({title, body, assets}) => (
@@ -135,3 +136,20 @@ export const getDatePickerOptions = (isOnOpen, minDate, maxDate) => {
         }
     };
 };
+
+
+export const valueFormatEditor = (value) => {
+    if (value === null || value === undefined || value === ""){
+        return "N/A";
+    }else {
+        return value;
+    }
+}
+
+export const defaultImageBinder = (image) => {
+    if (image === null || image === undefined || image === ""){
+        return logo;
+    }else {
+        return image;
+    }
+}

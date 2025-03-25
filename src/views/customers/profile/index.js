@@ -1,15 +1,18 @@
-import React, {Fragment, useState} from "react";
+import React, {Fragment, useEffect, useState} from "react";
 import BreadCrumbs from "../../../@core/components/breadcrumbs";
 import {Badge, Card, CardBody, Col, Input, InputGroup, InputGroupText, Row} from "reactstrap";
 import {ArrowRight, ChevronDown, Hash} from "react-feather";
 import Flatpickr from "react-flatpickr";
-import {Link} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
-import {customStyles, emptyUI} from "../../../utility/Utils";
+import {customStyles, customToastMsg, emptyUI} from "../../../utility/Utils";
 import logo from "../../../assets/images/logo/logo.png";
+import * as CustomerResourcesServices from "../../../services/customer-resources";
+import {defaultImageBinder, valueFormatEditor} from "../../../utility/commonFun";
 
 const CustomerProfile = () => {
+    const location = useLocation();
     const [store, setStore] = useState({
         data: [
             {
@@ -55,13 +58,32 @@ const CustomerProfile = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isFetched, setIsFetched] = useState(false);
     const [val, setVal] = useState('')
-    const [statusValue, setStatusValue] = useState('')
+    const [statusValue, setStatusValue] = useState('');
+    const [userData, setUserData] = useState({});
+
+    useEffect(() => {
+        const navigationParam = location.state;
+        getUserDetails(navigationParam)
+    }, []);
+
+    const getUserDetails = async (navigationParam) => {
+        CustomerResourcesServices.getCustomerDetails(navigationParam.id)
+            .then(response => {
+                if (response.success) {
+                    setUserData(response.data.user);
+                } else {
+                    customToastMsg(response.message, response.status)
+                }
+                console.log(response)
+            })
+    }
 
 
     const columns = [
         {name: 'Order Number', selector: row => row.orderId},
         {name: 'Amount', selector: row => row.amount},
-        {name: 'Status',
+        {
+            name: 'Status',
             selector: row => <Badge
                 color={row.status === 'Incomplete' ? 'danger' : row.status === 'Pending' ? 'warning' : 'success'}>{row.status}</Badge>
         },
@@ -130,19 +152,19 @@ const CustomerProfile = () => {
                     <div className='d-flex justify-content-between flex-md-row flex-column invoice-spacing mt-0'>
                         <div className='w-100'>
                             <div className='logo-wrapper d-flex d-inline mb-1 align-items-center'>
-                                <img src={logo} width={50} height={50} alt={'logo'}/>
-                                <h3 className='text-primary invoice-logo ms-1 mt-25'>CheapHub</h3>
+                                <img src={defaultImageBinder(userData?.profile_photo)} width={50} height={50} alt={'logo'} className="rounded-circle overflow-hidden"/>
+                                <h3 className='text-primary invoice-logo ms-1 mt-25'>{valueFormatEditor(userData?.display_name)}</h3>
                             </div>
                             <Row className="align-items-center">
                                 <Col lg={8}>
                                     <p className='card-text mb-25'><span
-                                        className="fw-bold text-black">Name: </span> Kavinda Dilshan</p>
+                                        className="fw-bold text-black">Name: </span> {valueFormatEditor(userData?.display_name)}</p>
                                     <p className='card-text mb-25'><span className="fw-bold text-black">Address: </span>San
                                         Diego County, CA 91905, USA</p>
                                     <p className='card-text mb-25'><span
-                                        className="fw-bold text-black">Email: </span> kavindadilshan@gmail.com</p>
+                                        className="fw-bold text-black">Email: </span> {valueFormatEditor(userData.email)}</p>
                                     <p className='card-text mb-0'><span
-                                        className="fw-bold text-black">Mobile: </span> +44 (876) 543 2198</p>
+                                        className="fw-bold text-black">Mobile: </span> {valueFormatEditor(userData.contact)}</p>
                                 </Col>
                                 <Col lg={4}>
                                     <div>
