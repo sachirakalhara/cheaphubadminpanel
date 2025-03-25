@@ -10,7 +10,7 @@ import Avatar from "../../@core/components/avatar";
 import * as CustomerResourcesServices from "../../services/customer-resources";
 
 const CustomerList = () => {
-    const data = [
+    const [data,setData] = useState([
         // {
         //     title: '230k',
         //     subtitle: 'Sales',
@@ -18,7 +18,7 @@ const CustomerList = () => {
         //     icon: <TrendingUp size={24} />
         // },
         {
-            title: '8.549k',
+            title: '0',
             subtitle: 'Total Customers',
             color: 'light-info',
             icon: <User size={24}/>
@@ -30,12 +30,12 @@ const CustomerList = () => {
         //     icon: <Box size={24} />
         // },
         {
-            title: '$9745',
+            title: '0',
             subtitle: 'Total Spend',
             color: 'light-success',
             icon: <DollarSign size={24}/>
         }
-    ]
+    ])
 
     const [val, setVal] = useState('')
     const [statusValue, setStatusValue] = useState('')
@@ -54,7 +54,23 @@ const CustomerList = () => {
     useEffect(() => {
         // Fetch customers from API
         getCustomers('');
+        getTotalSpend();
     }, []);
+
+    const getTotalSpend = async () => {
+        CustomerResourcesServices.getAllTotalSpend()
+            .then(response => {
+                setData(prevData => {
+                    const newData = [...prevData];
+                    newData[1].title = `$${response.data.total_spend}`;
+                    newData[0].title = `${response.data.user_count}`;
+                    return newData;
+                });
+            })
+            .catch(error => {
+                console.log(error)
+            })
+    }
 
     const getCustomers = async (searchKey) => {
         const body = {
