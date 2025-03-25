@@ -118,7 +118,6 @@ const ToastContent = ({title, body, assets}) => (
 )
 
 export const customToastMsg = (title, type, body,action) => {
-    if (!isEmpty(type)) {
         let msgType = "info"
         let assets = {
             color: "bg-info",
@@ -149,11 +148,7 @@ export const customToastMsg = (title, type, body,action) => {
             <ToastContent title={title} body={body} assets={assets}/>,
             {icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000}
         )
-    }else {
-        if (action){
-            action()
-        }
-    }
+
 }
 
 export const customSweetAlert = (text, type, buttonEvent, title) => {

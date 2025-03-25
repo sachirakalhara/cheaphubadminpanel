@@ -94,7 +94,7 @@ const AppChat = () => {
                                             "senderId": 11
                                         }]
                                 },
-                                "contact": {
+                                "customer": {
                                     "id": 1,
                                     "fullName": "Felecia Rower",
                                     "avatar": "/static/media/avatar-s-2.d21f2121.jpg"

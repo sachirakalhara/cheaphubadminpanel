@@ -48,7 +48,7 @@ const ChatLog = props => {
     // ** If user chat is not empty scrollToBottom
     useEffect(() => {
         const chatDetailsLen = Object.keys(chatDetails).length
-
+console.log(chatDetails)
         if (chatDetailsLen) {
             scrollToBottom()
         }
@@ -106,7 +106,7 @@ const ChatLog = props => {
                             imgWidth={36}
                             imgHeight={36}
                             className='box-shadow-1 cursor-pointer'
-                            img={chatDetails.contact.avatar}
+                            img={chatDetails.customer.avatar}
                         />
                     </div>
 
@@ -162,11 +162,11 @@ const ChatLog = props => {
                                 <Avatar
                                     imgHeight='36'
                                     imgWidth='36'
-                                    img={chatDetails.contact.avatar}
+                                    img={chatDetails.customer.avatar}
                                     status={'online'}
                                     className='avatar-border user-profile-toggle m-0 me-1 cursor-default'
                                 />
-                                <h6 className='mb-0'>{chatDetails.contact.fullName}</h6>
+                                <h6 className='mb-0'>{chatDetails.customer.fullName}</h6>
                             </div>
                         </header>
                     </div>

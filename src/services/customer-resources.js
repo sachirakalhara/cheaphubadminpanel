@@ -12,3 +12,17 @@ export async function getAllColors() {
 
     return await ApiService.callApi(apiObject)
 }
+
+
+export async function getAllCustomers(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `user/get-all`
+    apiObject.body = body
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}

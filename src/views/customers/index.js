@@ -7,6 +7,7 @@ import {customStyles, emptyUI} from "../../utility/Utils";
 import {Link} from "react-router-dom";
 import classnames from "classnames";
 import Avatar from "../../@core/components/avatar";
+import * as CustomerResourcesServices from "../../services/customer-resources";
 
 const CustomerList = () => {
     const data = [
@@ -45,18 +46,35 @@ const CustomerList = () => {
     const [isFetched, setIsFetched] = useState(false);
 
     const [store, setStore] = useState({
-        data: [
-            {id: 1, name: 'John Doe', email: 'john@example.com', balance: '$200', totalSpend: '$1500', purchases: 10},
-            {id: 2, name: 'Jane Smith', email: 'jane@example.com', balance: '$50', totalSpend: '$800', purchases: 5},
-        ],
-        total: 1
+        data: [{}],
+        total: 0
     });
 
 
     useEffect(() => {
         // Fetch customers from API
-        // getCustomers();
+        getCustomers('');
     }, []);
+
+    const getCustomers = async (searchKey) => {
+        const body = {
+            "all" : 0,
+            "search": searchKey,
+            "user_type": "customer"
+        }
+        CustomerResourcesServices.getAllCustomers(body)
+            .then(response => {
+                console.log(response)
+                setStore({
+                    data: response.data.user_list,
+                    total: response.data.meta.total
+                })
+                setIsFetched(true)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+    }
 
     const handlePagination = page => {
         setCurrentPage(page.selected);
@@ -65,15 +83,15 @@ const CustomerList = () => {
 
     const handleSearch = value => {
         setSearchQuery(value);
-        // getCustomers();
+        getCustomers(value);
     };
 
     const columns = [
-        {name: 'Customer Name', selector: row => row.name},
+        {name: 'Customer Name', selector: row => row.display_name},
         {name: 'Email', selector: row => row.email},
-        {name: 'Balance', selector: row => row.balance},
-        {name: 'Total Spend', selector: row => row.totalSpend},
-        {name: 'Purchases', selector: row => row.purchases, center: true},
+        {name: 'Balance ($)', selector: row => row.wallet},
+        {name: 'Total Spend ($)', selector: row => row.total_spend},
+        {name: 'Purchases ($)', selector: row => row.user_spend, center: true},
         {
             name: "",
             minWidth: "100px",

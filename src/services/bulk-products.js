@@ -6,7 +6,7 @@ export async function createBulkProduct(body) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `admin/super-admin/bulk/product/create`
+    apiObject.endpoint = `super-admin/bulk/product/create`
     apiObject.body = body
     apiObject.multipart = true
 
@@ -19,8 +19,21 @@ export async function updateBulkProduct(body) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `admin/super-admin/bulk/product/update`
+    apiObject.endpoint = `super-admin/bulk/product/update`
     apiObject.body = body
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
+
+export async function deleteBulkProduct(id) {
+    const apiObject = {}
+    apiObject.method = 'DELETE'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/bulk/product/delete/${id}`
+    apiObject.body = null
     apiObject.multipart = false
 
     return await ApiService.callApi(apiObject)

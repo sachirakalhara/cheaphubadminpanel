@@ -309,14 +309,32 @@ const BulkProductList = () => {
         setSelectedData(data);
     }
 
-    const removeItem = async () => {
+    const removeItem = async (id) => {
         await customSweetAlert(
             'Are you sure you want to remove this?',
             0,
             async () => {
-
+                await deleteBulkProduct(id)
             }
         )
+    }
+
+    const deleteBulkProduct = async (id) => {
+        dispatch(toggleLoading())
+        await BulkProductService.deleteBulkProduct(id)
+            .then(res => {
+                if (res.success) {
+                    customToastMsg(res.message, 1)
+                    getDataList({
+                        q: value1,
+                        page: currentPage,
+                        perPage: rowsPerPage
+                    })
+                } else {
+                    customToastMsg(res.message,0)
+                }
+                dispatch(toggleLoading())
+            })
     }
 
     const columns = [

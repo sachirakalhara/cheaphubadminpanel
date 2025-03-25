@@ -34,6 +34,8 @@ import stripeLogo from '@src/assets/images/icons/payments/visa-cc.png'
 import {ArrowLeft, ArrowRight} from "react-feather";
 import * as BulkProductServices from '../../../../../services/bulk-products';
 import {formDataToJson} from "../../../../../utility/commonFun";
+import {useDispatch} from "react-redux";
+import {toggleLoading} from "../../../../../redux/loading";
 
 const defaultValues = {
     productName: '',
@@ -70,6 +72,8 @@ const types = {
 const CROP_ASPECT_TO_FIRST_IMAGE = 1;
 
 const BulCreationModal = (props) => {
+    const dispatch = useDispatch()
+
     const [active, setActive] = useState(1);
 
     // image uploader
@@ -250,6 +254,7 @@ const BulCreationModal = (props) => {
 
 
     const onSubmitSEODetails = async data => {
+        dispatch(toggleLoading())
         const obj = {
             slugUrl: data.slugUrl
         }
@@ -270,6 +275,7 @@ const BulCreationModal = (props) => {
             data.append('service_info', getValues('serviceInfo'))
             data.append('slug_url', getValues('slugUrl'))
             data.append('visibility', visibilityMode)
+            // data.append('image', file)
 
             if (props.isEditMode) {
                 data.append('id', props.selectedData.id)
@@ -281,9 +287,11 @@ const BulCreationModal = (props) => {
             fetchAPI(props.isEditMode ? formDataToJson(data) : data)
                 .then(res => {
                     if (res.success) {
+                        dispatch(toggleLoading())
                         customToastMsg(`Bulk Product was successfully ${props.isEditMode ? 'updated' : 'created'}`, 1);
                         props.toggle();
                     } else {
+                        dispatch(toggleLoading())
                         customToastMsg(res.message, res.status)
                     }
                 })
@@ -622,7 +630,7 @@ const BulCreationModal = (props) => {
                                 name='minimumQty'
                                 control={control}
                                 render={({field}) => (
-                                    <Input {...field} id='minimumQty' placeholder='Minimum Quantity' value={field.value}
+                                    <Input {...field} type="number" id='minimumQty' placeholder='Minimum Quantity' value={field.value}
                                            invalid={errors.minimumQty && true} autoComplete="off"/>
                                 )}
                             />
@@ -637,7 +645,7 @@ const BulCreationModal = (props) => {
                                 name='maximumQty'
                                 control={control}
                                 render={({field}) => (
-                                    <Input {...field} id='maximumQty' placeholder='Maximum Quantity' value={field.value}
+                                    <Input {...field} type="number" id='maximumQty' placeholder='Maximum Quantity' value={field.value}
                                            invalid={errors.maximumQty && true} autoComplete="off"/>
                                 )}
                             />
@@ -753,7 +761,7 @@ const BulCreationModal = (props) => {
                                 name='price'
                                 control={control}
                                 render={({field}) => (
-                                    <Input {...field} id='price' placeholder='Product Price' value={field.value}
+                                    <Input {...field} type="number" id='price' placeholder='Product Price' value={field.value}
                                            invalid={errors.price && true} autoComplete="off"/>
                                 )}
                             />
@@ -768,7 +776,7 @@ const BulCreationModal = (props) => {
                                 name='gatewayFee'
                                 control={control}
                                 render={({field}) => (
-                                    <Input {...field} id='gatewayFee' placeholder='Gateway Fee' value={field.value}
+                                    <Input {...field} type="number" id='gatewayFee' placeholder='Gateway Fee' value={field.value}
                                            invalid={errors.gatewayFee && true} autoComplete="off"/>
                                 )}
                             />
