@@ -183,14 +183,27 @@ export async function searchEstimatedYarnRequirementsForCsv(orderId, body) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-export async function getOrdersByCustomerId(customerId) {
+export async function getOrdersByCustomerId(customerId,page) {
     const apiObject = {}
     apiObject.method = 'GET'
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `orders/${customerId}`
+    apiObject.endpoint = `orders/${customerId}?page=${page}`
     apiObject.body = null
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
+
+export async function filterOrderList(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `order/filter`
+    apiObject.body = body
     apiObject.multipart = false
 
     return await ApiService.callApi(apiObject)

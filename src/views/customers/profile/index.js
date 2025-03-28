@@ -10,29 +10,33 @@ import {customStyles, customToastMsg, emptyUI} from "../../../utility/Utils";
 import * as CustomerResourcesServices from "../../../services/customer-resources";
 import * as OrderResourcesServices from "../../../services/order-resources";
 import {defaultImageBinder, formDataDateConverter, valueFormatEditor} from "../../../utility/commonFun";
-import {getOrdersByCustomerId} from "../../../services/order-resources";
+
 import Modal from "../../../@core/components/modal";
 
 const CustomerProfile = () => {
     const location = useLocation();
+    const navigationParam = location.state;
+
     const [store, setStore] = useState({
         data: [],
-        total: 1
+        total: 0
     });
-    const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(0);
+
+    const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+
     const [isFetched, setIsFetched] = useState(false);
+
     const [val, setVal] = useState('')
     const [statusValue, setStatusValue] = useState('');
+
     const [userData, setUserData] = useState({});
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState(null);
 
     useEffect(() => {
-        const navigationParam = location.state;
         getUserDetails(navigationParam);
-        getOrderDetails(navigationParam);
+        getOrderDetails(navigationParam, currentPage);
     }, []);
 
     const getUserDetails = async (navigationParam) => {
@@ -47,13 +51,13 @@ const CustomerProfile = () => {
             })
     }
 
-    const getOrderDetails = async (navigationParam) => {
-        OrderResourcesServices.getOrdersByCustomerId(navigationParam.id)
+    const getOrderDetails = async (navigationParam, page) => {
+        OrderResourcesServices.getOrdersByCustomerId(navigationParam.id, page)
             .then(response => {
                 if (response.success) {
                     setStore({
                         data: response.data.order_list,
-                        total: response.data.meta.total
+                        total: response.data.meta.last_page
                     })
                 } else {
                     customToastMsg(response.message, response.status)
@@ -129,13 +133,9 @@ const CustomerProfile = () => {
     }
 
     const handlePagination = page => {
-        setCurrentPage(page.selected);
-        // getCustomers();
-    };
-
-    const handleSearch = value => {
-        setSearchQuery(value);
-        // getCustomers();
+        const pageNumber = page.selected + 1;
+        setCurrentPage(pageNumber);
+        getOrderDetails(navigationParam, pageNumber);
     };
 
 
@@ -209,23 +209,23 @@ const CustomerProfile = () => {
                         <>
                             <div className="mb-2">
                                 <label className="form-label">Order Number</label>
-                                <Input type="text" value={selectedRow.order_id} readOnly />
+                                <Input type="text" value={selectedRow.order_id} readOnly/>
                             </div>
                             <div className="mb-2">
                                 <label className="form-label">Amount</label>
-                                <Input type="text" value={selectedRow.amount} readOnly />
+                                <Input type="text" value={selectedRow.amount} readOnly/>
                             </div>
                             <div className="mb-2">
                                 <label className="form-label">Status</label>
-                                <Input type="text" value={selectedRow.payment_status} readOnly />
+                                <Input type="text" value={selectedRow.payment_status} readOnly/>
                             </div>
                             <div className="mb-2">
                                 <label className="form-label">Date</label>
-                                <Input type="text" value={formDataDateConverter(selectedRow.created_at)} readOnly />
+                                <Input type="text" value={formDataDateConverter(selectedRow.created_at)} readOnly/>
                             </div>
                             <div className="mb-2">
                                 <label className="form-label">Description</label>
-                                <Input type="text-area" value={selectedRow.description} readOnly />
+                                <Input type="text-area" value={selectedRow.description} readOnly/>
                             </div>
                         </>
                     )}

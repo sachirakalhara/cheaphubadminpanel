@@ -46,7 +46,7 @@ const CustomerList = () => {
     const [isFetched, setIsFetched] = useState(false);
 
     const [store, setStore] = useState({
-        data: [{}],
+        data: [],
         total: 0
     });
 
@@ -168,7 +168,7 @@ const CustomerList = () => {
         } else if (store.data?.length === 0 && isFiltered) {
             return []
         } else {
-            return store.allData.slice(0, rowsPerPage)
+            return store.data.slice(0, rowsPerPage)
         }
     }
 
