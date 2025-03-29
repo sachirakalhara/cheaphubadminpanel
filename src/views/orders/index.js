@@ -1,20 +1,27 @@
-import React, {useState} from "react";
+import React, {Fragment, useEffect, useState} from "react";
 import {Badge, Button, Card, Col, Input, Label, Row} from "reactstrap";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
 import {ArrowRight, ChevronDown, Plus, X} from "react-feather";
-import {customStyles, emptyUI, getCustomDateTimeStamp} from "../../utility/Utils";
+import {customStyles, customToastMsg, emptyUI, getCustomDateTimeStamp} from "../../utility/Utils";
 import {Link} from "react-router-dom";
 import Flatpickr from "react-flatpickr";
+import * as OrderResourcesServices from "../../services/order-resources";
+import {filterOrderList} from "../../services/order-resources";
+import {formDataDateConverter} from "../../utility/commonFun";
+import Modal from "../../@core/components/modal";
+
 
 const CustomHeader = ({
                           onOrderTextChange,
-                          orderKey,
+                          searchQuery,
                           OnClearOrderText,
                           productCategory,
                           selectProductCategory,
                           onChangeDateRange,
-                          onCloseDateRange
+                          onCloseDateRange,
+                          statusValue,
+                          selectStatusValue,
                       }) => {
     return (
         <Card>
@@ -31,12 +38,12 @@ const CustomHeader = ({
                                     id='name'
                                     className='ms-50 me-2 w-100'
                                     type='text'
-                                    value={orderKey}
+                                    value={searchQuery}
                                     onChange={onOrderTextChange}
                                     placeholder='Search Order Number'
                                     autoComplete="off"
                                 />
-                                {orderKey.length !== 0 && (
+                                {searchQuery.length !== 0 && (
                                     <X size={18}
                                        className='cursor-pointer close-btn'
                                        onClick={OnClearOrderText}
@@ -47,7 +54,7 @@ const CustomHeader = ({
                     </Col>
                     <Col lg='3' className='d-flex align-items-center'>
                         <div className='d-flex align-items-center'>
-                            <Label className='form-label me-25' for='default-picker'>
+                            <Label className='form-label me-2' for='default-picker'>
                                 Product Type
                             </Label>
                             <Input
@@ -56,26 +63,43 @@ const CustomHeader = ({
                                 value={productCategory}
                                 onChange={selectProductCategory}
                             >
-                                <option value='ALL'>All</option>
-                                <option value='BULK'>Bulk Product</option>
-                                <option value='SUBSCRIPTION'>Subscription Products</option>
+                                <option value='all'>All</option>
+                                <option value='bulk'>Bulk Product</option>
+                                <option value='contribution'>Subscription Products</option>
                             </Input>
                         </div>
                     </Col>
-                    <Col lg='5' className='d-flex align-items-center'>
+                    <Col lg='3' className='d-flex align-items-center'>
                         <div className='d-flex align-items-center'>
-                            <Label className='form-label me-25' for='default-picker'>
+                            <Label className='form-label me-2' for='default-picker'>
+                                Payment Status
+                            </Label>
+                            <Input
+                                type='select'
+                                id='rows-per-page'
+                                value={statusValue}
+                                onChange={selectStatusValue}
+                            >
+                                <option value='all'>All</option>
+                                <option value='pending'>Pending</option>
+                                <option value='failed'>Failed</option>
+                                <option value='paid'>Paid</option>
+                            </Input>
+                        </div>
+                    </Col>
+                    <Col lg='10' className='d-flex align-items-center mt-2'>
+                        <div className='d-flex align-items-center'>
+                            <Label className='form-label me-2' for='default-picker'>
                                 Transaction Range
                             </Label>
                             <Flatpickr
                                 id='range-picker'
                                 className='form-control'
                                 onChange={onChangeDateRange}
-                                style={{width: 210}}
+                                style={{width: 300}}
                                 options={{
                                     mode: 'range',
-                                    showMonths: 2,
-                                    defaultDate: [new Date(), new Date(new Date().setMonth(new Date().getMonth() + 1))]
+                                    showMonths: 2
                                 }}
                                 onClose={onCloseDateRange}
                             />
@@ -90,75 +114,77 @@ const CustomHeader = ({
 
 const OrdersScreen = () => {
     const [store, setStore] = useState({
-        data: [
-            {
-                id: 1,
-                orderId: 'ORD12345',
-                amount: '$200',
-                status: 'Completed',
-                date: '2024-02-10'
-            },
-            {
-                id: 2,
-                orderId: 'ORD12346',
-                amount: '$150',
-                status: 'Pending',
-                date: '2024-02-12'
-            },
-            {
-                id: 3,
-                orderId: 'ORD12347',
-                amount: '$300',
-                status: 'Completed',
-                date: '2024-02-15'
-            },
-            {
-                id: 4,
-                orderId: 'ORD12348',
-                amount: '$450',
-                status: 'Completed',
-                date: '2024-02-18'
-            },
-            {
-                id: 5,
-                orderId: 'ORD12349',
-                amount: '$100',
-                status: 'Incomplete',
-                date: '2024-02-20'
-            }
-        ],
-        total: 1
+        data: [],
+        total: 0
     });
-    const [searchQuery, setSearchQuery] = useState('');
+
     const [currentPage, setCurrentPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isFetched, setIsFetched] = useState(false);
     const [val, setVal] = useState('')
-    const [statusValue, setStatusValue] = useState('');
-    const [orderKey, setOrderKey] = useState('')
-    const [productCategory, setProductCategory] = useState('ALL');
-    const [picker, setPicker] = useState([])
+
+    const [statusValue, setStatusValue] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [productCategory, setProductCategory] = useState('all');
+    const [picker, setPicker] = useState([]);
+
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedRow, setSelectedRow] = useState(null);
+
+    useEffect(() => {
+        getAllOrders(productCategory, statusValue);
+    }, []);
+
+
+    const getAllOrders = async (type, status) => {
+        const body = {
+            "all": 0,
+            "type": type,
+            "order_id": searchQuery,
+            "payment_status": status === "all" ? null : status,
+            "transaction_id": null,
+            "from_date": null,
+            "to_date": null
+        }
+        OrderResourcesServices.filterOrderList(body)
+            .then(response => {
+                console.log(response)
+                if (response.success) {
+                    setStore({
+                        data: response.data.order_list,
+                        total: response.data.meta.last_page
+                    })
+                } else {
+                    customToastMsg(response.message, response.status)
+                }
+            })
+
+
+    }
 
     const columns = [
-        {name: 'Order Number', selector: row => row.orderId},
+        {name: 'Order Number', selector: row => row.order_id},
         {name: 'Amount', selector: row => row.amount},
         {
             name: 'Status',
             selector: row => <Badge
-                color={row.status === 'Incomplete' ? 'danger' : row.status === 'Pending' ? 'warning' : 'success'}>{row.status}</Badge>
+                color={row.payment_status === 'paid' ? 'success' : row.payment_status === 'pending' ? 'warning' : 'danger'}>{row.payment_status}</Badge>
         },
-        {name: 'Date', selector: row => row.date},
+        {name: 'Date', selector: row => formDataDateConverter(row.created_at)},
         {
-            name: "",
-            minWidth: "100px",
+            name: 'Action',
             cell: row => (
-                <Link to={`orders/${row.orderId}`} state={row}>
-                    <ArrowRight size={18} className="cursor-pointer"/>
-                </Link>
-
+                <button className="btn btn-primary btn-sm" onClick={() => handleView(row)}>
+                    View
+                </button>
             )
         }
     ];
+
+    const handleView = (row) => {
+        setSelectedRow(row);
+        setModalOpen(true);
+    };
 
     const CustomPagination = () => {
 
@@ -199,7 +225,7 @@ const OrdersScreen = () => {
         } else if (store.data?.length === 0 && isFiltered) {
             return []
         } else {
-            return store.allData.slice(0, rowsPerPage)
+            return store.data.slice(0, rowsPerPage)
         }
     }
 
@@ -216,46 +242,79 @@ const OrdersScreen = () => {
 
 
     return (
-        <Card className='mt-2'>
-            <CustomHeader
-                value={val}
-                OnClearOrderText={() => handleSearch("", 'order_key')}
-                onOrderTextChange={e => handleSearch(e.target.value, 'order_key')}
-                orderKey={orderKey}
-                productCategory={productCategory}
-                selectProductCategory={e => setProductCategory(e.target.value)}
-                picker={picker}
-                onChangeDateRange={async (date) => {
-                    if (date.length === 2) {
-                        setPicker(date)
-                    }
-                }}
-                onCloseDateRange={(selectedDates, dateStr, instance) => {
-                    if (selectedDates.length === 1) {
-                        instance.setDate([picker[0], picker[1]], true)
-                    }
-                }}
-            />
-
-            <div className='invoice-list-dataTable react-dataTable'>
-                <DataTable
-                    noHeader={true}
-                    pagination
-                    sortServer
-                    paginationServer
-                    subHeader={true}
-                    columns={columns}
-                    responsive={true}
-                    data={dataToRender()}
-                    sortIcon={<ChevronDown/>}
-                    className="dataTables_wrapper"
-                    paginationDefaultPage={currentPage}
-                    paginationComponent={CustomPagination}
-                    customStyles={customStyles}
-                    noDataComponent={emptyUI(isFetched)}
+        <Fragment>
+            <Card className='mt-2'>
+                <CustomHeader
+                    value={val}
+                    OnClearOrderText={() => handleSearch("", 'order_key')}
+                    onOrderTextChange={e => handleSearch(e.target.value, 'order_key')}
+                    searchQuery={searchQuery}
+                    productCategory={productCategory}
+                    statusValue={statusValue}
+                    selectStatusValue={e => setStatusValue(e.target.value)}
+                    selectProductCategory={e => setProductCategory(e.target.value)}
+                    picker={picker}
+                    onChangeDateRange={async (date) => {
+                        if (date.length === 2) {
+                            setPicker(date)
+                        }
+                    }}
+                    onCloseDateRange={(selectedDates, dateStr, instance) => {
+                        if (selectedDates.length === 1) {
+                            instance.setDate([picker[0], picker[1]], true)
+                        }
+                    }}
                 />
-            </div>
-        </Card>
+
+                <div className='invoice-list-dataTable react-dataTable'>
+                    <DataTable
+                        noHeader={true}
+                        pagination
+                        sortServer
+                        paginationServer
+                        subHeader={true}
+                        columns={columns}
+                        responsive={true}
+                        data={dataToRender()}
+                        sortIcon={<ChevronDown/>}
+                        className="dataTables_wrapper"
+                        paginationDefaultPage={currentPage}
+                        paginationComponent={CustomPagination}
+                        customStyles={customStyles}
+                        noDataComponent={emptyUI(isFetched)}
+                    />
+                </div>
+            </Card>
+
+            <Modal show={modalOpen} toggle={() => setModalOpen(!modalOpen)} headTitle={"Order Detail"} size={'lg'}>
+                <div className="p-3">
+                    {selectedRow && (
+                        <>
+                            <div className="mb-2">
+                                <label className="form-label">Order Number</label>
+                                <Input type="text" value={selectedRow.order_id} readOnly/>
+                            </div>
+                            <div className="mb-2">
+                                <label className="form-label">Amount</label>
+                                <Input type="text" value={selectedRow.amount} readOnly/>
+                            </div>
+                            <div className="mb-2">
+                                <label className="form-label">Status</label>
+                                <Input type="text" value={selectedRow.payment_status} readOnly/>
+                            </div>
+                            <div className="mb-2">
+                                <label className="form-label">Date</label>
+                                <Input type="text" value={formDataDateConverter(selectedRow.created_at)} readOnly/>
+                            </div>
+                            <div className="mb-2">
+                                <label className="form-label">Description</label>
+                                <Input type="text-area" value={selectedRow.description} readOnly/>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </Modal>
+        </Fragment>
     )
 }
 

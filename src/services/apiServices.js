@@ -75,7 +75,7 @@ export const callApi = async (apiObject) => {
         const code = response.status;
 
         if (code === 204) {
-            result = { data: {}, status: null, success: false, message: '' };
+            result = { data: {}, status: null, success: true, message: '' };
         } else {
             result = {
                 data: response.data === '' ? [] : response.data,
