@@ -38,3 +38,16 @@ export async function editCouponCodes(body) {
 
     return await ApiService.callApi(apiObject)
 }
+
+export async function deleteCouponCodes(id) {
+    const apiObject = {}
+    apiObject.method = 'DELETE'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/coupon/${id}`
+    apiObject.body = null
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}

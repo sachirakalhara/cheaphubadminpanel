@@ -6,7 +6,7 @@ import {useDispatch} from 'react-redux';
 import {Button, Input, Row, Col, Card, Label, Badge} from 'reactstrap';
 import {toggleLoading} from '@store/loading';
 import {useForm} from 'react-hook-form';
-import {customToastMsg, emptyUI, getCustomDateTimeStamp} from '../../utility/Utils';
+import {customSweetAlert, customToastMsg, emptyUI, getCustomDateTimeStamp} from '../../utility/Utils';
 import CouponCreationModal from "../../@core/components/modal/couponCreationModal";
 import * as CouponsServices from "../../services/coupon-code-resources";
 import {backendDateFormatter} from "../../utility/commonFun";
@@ -153,7 +153,8 @@ const CouponList = () => {
                         customToastMsg('Coupon updated successfully!', 1);
                         reset();
                         setShow(false);
-                        getCoupons();
+                        setCurrentPage(1)
+                        getCoupons(couponCode, productType, 1);
                     } else {
                         customToastMsg(res.message, res.status);
                     }
@@ -164,7 +165,8 @@ const CouponList = () => {
                     if (res.success) {
                         customToastMsg('New coupon added successfully!', 1);
                         setShow(false);
-                        getCoupons();
+                        setCurrentPage(1)
+                        getCoupons(couponCode, productType, 1);
                     } else {
                         customToastMsg(res.message, res.status);
                     }
@@ -212,7 +214,16 @@ const CouponList = () => {
                     >
                         <Eye size={15}/> Edit
                     </Button>
-                    <Button color='danger' className="ms-1" outline onClick={() => removeCoupon(row.id)}
+                    <Button color='danger' className="ms-1" outline onClick={async () => {
+                        await customSweetAlert(
+                            'Are you sure you want to remove this?',
+                            0,
+                            async () => {
+                                await removeCoupon(row.id)
+                            }
+                        )
+
+                    }}
                             style={{width: 80, padding: 5, alignItems: 'center'}}
                     >
                         <Trash size={15}/> Delete
@@ -244,14 +255,16 @@ const CouponList = () => {
     };
 
     const removeCoupon = async id => {
-        // await CouponsServices.deleteCoupon(id).then(res => {
-        //     if (res.success) {
-        //         customToastMsg('Coupon deleted successfully!', 1);
-        //         getCoupons();
-        //     } else {
-        //         customToastMsg(res.message, res.status);
-        //     }
-        // });
+        await CouponsServices.deleteCouponCodes(id)
+            .then(res => {
+                if (res.success) {
+                    customToastMsg('Coupon successfully deleted!', 1);
+                    setCurrentPage(1);
+                    getCoupons(couponCode, productType, 1);
+                } else {
+                    customToastMsg(res.message, res.status);
+                }
+            });
     };
 
     return (
