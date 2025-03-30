@@ -8,66 +8,103 @@ import {toggleLoading} from '@store/loading';
 import {useForm} from 'react-hook-form';
 import {customToastMsg, emptyUI, getCustomDateTimeStamp} from '../../utility/Utils';
 import CouponCreationModal from "../../@core/components/modal/couponCreationModal";
+import * as CouponsServices from "../../services/coupon-code-resources";
+import {backendDateFormatter} from "../../utility/commonFun";
 
 const defaultValues = {
     couponCode: '',
     discount: '',
     expirationDate: null,
     maxDiscount: '',
-    bulkProducts:false,
-    subscriptionProducts:false,
+    bulkProducts: false,
+    subscriptionProducts: false,
 };
+
+let prev = 0;
 
 const CouponList = () => {
     const dispatch = useDispatch();
+
+
     const [couponCode, setCouponCode] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+
     const [show, setShow] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
+
     const [selectedId, setSelectedId] = useState('');
     const [isFetched, setIsFetched] = useState(false);
+    const [productType, setProductType] = useState(null); // Add state for productType
     const [store, setStore] = useState({
-        allData: [],
-        data: [{
-            couponCode: 'asadkl',
-            discount: '10%',
-            expirationDate: '2021/03/05',
-            maxDiscount: '200',
-            productType: 'Bulk'
-        }],
+        data: [],
         total: 0
     });
 
-    const {control, handleSubmit, reset, setValue, setError, formState: {errors}} = useForm({defaultValues});
+    const {
+        control,
+        handleSubmit,
+        reset,
+        setValue,
+        setError,
+        clearErrors,
+        formState: {errors}
+    } = useForm({defaultValues});
 
-    const getCoupons = () => {
-        // dispatch(toggleLoading());
-        // CouponsServices.getAllCoupons()
-        //     .then(res => {
-        //         if (res.success) {
-        //             setStore({ allData: res.data.coupon_list, data: res.data.coupon_list, total: res.data.total || 0 });
-        //         } else {
-        //             customToastMsg(res.message, res.status);
-        //         }
-        //         dispatch(toggleLoading());
-        //         setIsFetched(true);
-        //     });
+    const getCoupons = (searchKey, type, pageNumber) => {
+        dispatch(toggleLoading());
+        const body = {
+            "all": 0,
+            "coupon_code": searchKey,
+            "product_type": type
+        };
+        CouponsServices.getAllCouponCodes(body)
+            .then(res => {
+                if (res.success) {
+                    setStore({data: res.data.coupon_list, total: res.data.meta.last_page || 0});
+                } else {
+                    customToastMsg(res.message, res.status);
+                }
+                dispatch(toggleLoading());
+                setIsFetched(true);
+            });
     };
 
     useEffect(() => {
-        getCoupons();
+        getCoupons(couponCode, productType, currentPage);
     }, []);
 
     const handlePagination = page => {
-        setCurrentPage(page.selected);
-        getCoupons();
+        const pageNumber = page.selected + 1;
+        setCurrentPage(pageNumber);
+        getCoupons(couponCode, productType, pageNumber);
     };
 
     const handleSearch = value => {
         setCouponCode(value);
-        getCoupons();
+        prev = new Date().getTime()
+
+        setTimeout(async () => {
+            const now = new Date().getTime()
+            if (now - prev >= 1000) {
+                getCoupons(value, productType, currentPage);
+            }
+        }, 1000)
     };
+
+    const handleProductTypeChange = value => {
+        setProductType(value);
+        getCoupons(couponCode, value, currentPage);
+    };
+
+    const getProductTypeStatus = data => {
+        if (data.bulkProducts && data.subscriptionProducts) {
+            return 'both';
+        } else if (data.subscriptionProducts) {
+            return 'subscription';
+        } else {
+            return 'bulk';
+        }
+    }
 
     const CustomPagination = () => (
         <ReactPaginate
@@ -87,15 +124,34 @@ const CouponList = () => {
     );
 
     const onSubmit = async data => {
-        if (Object.values(data).every(field => field.length > 0)) {
+        console.log("data", data);
+        if (Object.values(data).every(field => typeof field === 'boolean' || field.length > 0)) {
+            console.log("data", data);
+
+            if (!data.bulkProducts && !data.subscriptionProducts) {
+                setError('bulkProducts', {type: 'manual', message: 'At least one product type must be selected.'});
+                setError('subscriptionProducts', {
+                    type: 'manual',
+                    message: 'At least one product type must be selected.'
+                });
+                return;
+            }
+
             dispatch(toggleLoading());
-            const body = {couponCode: data.couponCode, discount: data.discount, expirationDate: data.expirationDate};
+            const body = {
+                "product_type": getProductTypeStatus(data),//'bulk', 'subscription', 'both'
+                "discount_percentage": Number(data.discount),//$table->decimal('discount_percentage', 5, 2);
+                "max_discount_amount": Number(data.maxDiscount),//$table->decimal('max_discount_amount', 10, 2);
+                "expiry_date": isEditMode ? data.expirationDate : backendDateFormatter(data.expirationDate),//25-02-2025
+                "coupon_code": data.couponCode
+            };
 
             if (isEditMode) {
                 body.id = selectedId;
-                await CouponsServices.updateCoupon(body).then(res => {
+                await CouponsServices.editCouponCodes(body).then(res => {
                     if (res.success) {
                         customToastMsg('Coupon updated successfully!', 1);
+                        reset();
                         setShow(false);
                         getCoupons();
                     } else {
@@ -104,7 +160,7 @@ const CouponList = () => {
                     dispatch(toggleLoading());
                 });
             } else {
-                await CouponsServices.createCoupon(body).then(res => {
+                await CouponsServices.createCouponCodes(body).then(res => {
                     if (res.success) {
                         customToastMsg('New coupon added successfully!', 1);
                         setShow(false);
@@ -125,13 +181,25 @@ const CouponList = () => {
     };
 
     const columns = [
-        {name: 'Coupon Code', selector: row => row.couponCode, sortable: true},
-        {name: 'Discount', selector: row => row.discount, sortable: true},
-        {name: 'Max Discount', selector: row => row.maxDiscount, sortable: true},
-        {name: 'Expiration Date', selector: row => row.expirationDate, sortable: true},
+        {name: 'Coupon Code', selector: row => row.coupon_code, sortable: true},
+        {name: 'Discount', selector: row => row.discount_percentage, sortable: true},
+        {name: 'Max Discount', selector: row => row.max_discount_amount, sortable: true},
+        {name: 'Expiration Date', selector: row => row.expiry_date, sortable: true},
         {
             name: 'Production Type',
-            cell: row => <Badge color={row.productType === 'Bulk' ? 'danger' : 'success'}>{row.productType}</Badge>,
+            cell: row => (
+                <div>
+                    {row.product_type === "both" ? (
+                        <div className='d-inline-flex align-items-center'>
+                            <Badge color={'success'}>subscription</Badge>
+                            <Badge color={'danger'} className="ms-05">bulk</Badge>
+                        </div>
+                    ) : (
+                        <Badge color={row.product_type === 'bulk' ? 'danger' : 'success'}>{row.product_type}</Badge>
+
+                    )}
+                </div>
+            ),
             center: true,
         },
         {
@@ -156,11 +224,21 @@ const CouponList = () => {
 
     const onUpdateHandler = data => {
         setSelectedId(data.id);
-        setValue('couponCode', data.couponCode);
-        setValue('discount', data.discount);
-        setValue('discount', data.discount);
-        setValue('expirationDate', data.expirationDate);
-        setValue('productType', data.productType);
+        setValue('couponCode', data.coupon_code);
+        setValue('discount', data.discount_percentage);
+        setValue('maxDiscount', data.max_discount_amount);
+        setValue('expirationDate', data.expiry_date);
+
+        if (data.product_type === 'bulk') {
+            setValue('bulkProducts', true);
+            setValue('subscriptionProducts', false);
+        } else if (data.product_type === 'both') {
+            setValue('bulkProducts', true);
+            setValue('subscriptionProducts', true);
+        } else {
+            setValue('bulkProducts', false);
+            setValue('subscriptionProducts', true);
+        }
         setShow(true);
         setIsEditMode(true);
     };
@@ -207,11 +285,32 @@ const CouponList = () => {
                                 </div>
                             </div>
                         </Col>
+                        <Col lg='4' className='d-flex align-items-center px-0 px-lg-1'>
+                            <div className='d-flex align-items-center'>
+                                <Label className='form-label' for='product-type'>
+                                    Product Type
+                                </Label>
+                                <Input
+                                    id='product-type'
+                                    type='select'
+                                    value={productType}
+                                    onChange={e => handleProductTypeChange(e.target.value)}
+                                    className='ms-50 me-2 w-100'
+                                >
+                                    <option value={null}>All</option>
+                                    <option value='bulk'>Bulk</option>
+                                    <option value='subscription'>Subscription</option>
+                                </Input>
+                            </div>
+                        </Col>
                         <Col
-                            lg='8'
+                            lg='4'
                             className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1 p-0'
                         >
-                            <Button onClick={() => setShow(true)}>
+                            <Button onClick={() => {
+                                setIsEditMode(false)
+                                setShow(true)
+                            }}>
                                 <Plus size={15}/> Add Coupon
                             </Button>
                         </Col>
@@ -232,15 +331,16 @@ const CouponList = () => {
             </Card>
             <CouponCreationModal
                 show={show}
-                                 toggle={() => {
-                                     setShow(!show);
-                                     reset();
-                                 }}
-                                 onSubmit={handleSubmit(onSubmit)}
-                                 control={control}
-                                 errors={errors}
-                                 isEditMode={isEditMode}
+                toggle={() => {
+                    reset();
+                    setShow(!show);
+                }}
+                onSubmit={handleSubmit(onSubmit)}
+                control={control}
+                errors={errors}
+                isEditMode={isEditMode}
                 setValue={setValue}
+                clearErrors={clearErrors}
             />
         </Fragment>
     );

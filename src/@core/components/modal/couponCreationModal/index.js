@@ -9,6 +9,16 @@ import Flatpickr from "react-flatpickr";
 
 const CouponCreationModal = (props) => {
 
+    const generatePromoCode = () => {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let promoCode = '';
+        for (let i = 0; i < 10; i++) {
+            promoCode += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        props.setValue('couponCode', promoCode);
+        props.clearErrors('couponCode');
+    };
+
     return (
         <Modal show={props.show} toggle={props.toggle}
                headTitle={props.isEditMode ? "Update Coupon Code" : "Add Coupon Code"} size={'lg'}>
@@ -21,7 +31,7 @@ const CouponCreationModal = (props) => {
                         <Controller
                             name="bulkProducts"
                             control={props.control}
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <div className="form-check form-check-inline">
                                     <Input
                                         type="checkbox"
@@ -30,7 +40,7 @@ const CouponCreationModal = (props) => {
                                         onChange={(e) => {
                                             field.onChange(e.target.checked)
                                             if (e.target.checked) {
-                                                props.setValue("subscriptionProducts", false);
+                                                props.clearErrors("subscriptionProducts");
                                             }
                                         }}
                                     />
@@ -44,7 +54,7 @@ const CouponCreationModal = (props) => {
                         <Controller
                             name="subscriptionProducts"
                             control={props.control}
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <div className="form-check form-check-inline">
                                     <Input
                                         type="checkbox"
@@ -53,7 +63,7 @@ const CouponCreationModal = (props) => {
                                         onChange={(e) => {
                                             field.onChange(e.target.checked)
                                             if (e.target.checked) {
-                                                props.setValue("bulkProducts", false);
+                                                props.clearErrors("bulkProducts");
                                             }
                                         }}
                                     />
@@ -64,6 +74,10 @@ const CouponCreationModal = (props) => {
                             )}
                         />
                     </div>
+
+                    {(props.errors.bulkProducts || props.errors.subscriptionProducts) &&
+                        <FormFeedback className="d-block">At least one product type must be selected.</FormFeedback>}
+
                 </Col>
 
                 <Col md={6} xs={6}>
@@ -76,8 +90,12 @@ const CouponCreationModal = (props) => {
                         render={({field}) => (
                             <InputGroup className='input-group-merge'>
                                 <Input {...field} id='couponCode' placeholder='Coupon Code' value={field.value}
-                                       invalid={props.errors.couponCode && true} autoComplete="off"/>
-                                <InputGroupText onClick={e => e.preventDefault()}
+                                       invalid={props.errors.couponCode && true} autoComplete="off"
+                                       disabled={props.isEditMode}/>
+                                <InputGroupText onClick={e => {
+                                    e.preventDefault();
+                                    generatePromoCode();
+                                }}
                                                 className="bg-success text-white cursor-pointer">
                                     Generate
                                 </InputGroupText>
@@ -96,7 +114,7 @@ const CouponCreationModal = (props) => {
                         control={props.control}
                         render={({field}) => (
                             <InputGroup className='input-group-merge'>
-                                <Input {...field} id='discount' placeholder='Coupon Code' value={field.value}
+                                <Input {...field} id='discount' type="number" placeholder='Discount' value={field.value}
                                        invalid={props.errors.discount && true} autoComplete="off"/>
                                 <InputGroupText>
                                     %
@@ -105,33 +123,34 @@ const CouponCreationModal = (props) => {
                         )}
                     />
                     {props.errors.discount &&
-                    <FormFeedback>Please enter a discount</FormFeedback>}
+                        <FormFeedback>Please enter a discount</FormFeedback>}
                 </Col>
 
                 <Col md={6} xs={6}>
                     <Label className='form-label mb-1' for='description'>
                         Expiration Date
                     </Label>
-                <Controller
-                    control={props.control}
-                    name="expirationDate"
-                    render={({ field: { onChange, value, name } }) => {
-                        return (
-                            <Flatpickr
-                                className="form-control w-100"
-                                placeholder="Select date"
-                                id="expirationDate"
-                                value={value}
-                                onChange={([date], dateStr) => {
-                                    onChange(dateStr);
-                                }}
-                                name={name}
-                                // options={getDatePickerOptions()}
-                            />
-                        );
-                    }}
-                />
-                {props.errors.expirationDate && <FormFeedback>Please select the expiration date</FormFeedback>}
+                    <Controller
+                        control={props.control}
+                        name="expirationDate"
+                        render={({field: {onChange, value, name}}) => {
+                            return (
+                                <Flatpickr
+                                    className="form-control w-100"
+                                    placeholder="Select date"
+                                    id="expirationDate"
+                                    value={value}
+                                    onChange={([date], dateStr) => {
+                                        onChange(dateStr);
+                                    }}
+                                    name={name}
+                                    // options={getDatePickerOptions()}
+                                />
+                            );
+                        }}
+                    />
+                    {props.errors.expirationDate &&
+                        <FormFeedback className="d-block">Please select the expiration date</FormFeedback>}
                 </Col>
 
                 <Col md={6} xs={6}>
@@ -143,7 +162,8 @@ const CouponCreationModal = (props) => {
                         control={props.control}
                         render={({field}) => (
                             <InputGroup className='input-group-merge'>
-                                <Input {...field} id='maxDiscount' placeholder='Max Discount' value={field.value}
+                                <Input {...field} id='maxDiscount' type="number" placeholder='Max Discount'
+                                       value={field.value}
                                        invalid={props.errors.maxDiscount && true} autoComplete="off"/>
                                 <InputGroupText>
                                     $
@@ -152,7 +172,7 @@ const CouponCreationModal = (props) => {
                         )}
                     />
                     {props.errors.maxDiscount &&
-                    <FormFeedback>Please enter a max discount</FormFeedback>}
+                        <FormFeedback>Please enter a max discount</FormFeedback>}
                 </Col>
 
                 <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>

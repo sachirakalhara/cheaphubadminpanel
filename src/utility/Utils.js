@@ -219,7 +219,11 @@ export const emptyUI = (isFetched) => {
                 </div>
                 <div className="text-center text-body empty-text">There are no records to display</div>
             </div>
-        ) : null
+        ) : (
+            <div className="my-2">
+                <div className="text-center text-body empty-text">Loading ...</div>
+            </div>
+        )
     )
 }
 

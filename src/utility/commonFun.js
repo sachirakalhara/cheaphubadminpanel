@@ -115,6 +115,15 @@ export const formDataDateConverter = (date) => {
 
 };
 
+export const backendDateFormatter = (date) => {
+    if (date === null || date === undefined || date === "") {
+        return "N/A";
+    } else {
+        return moment(date).format("DD-MM-YYYY");
+    }
+
+};
+
 export const formDataDateTimeConverter = (date) => {
     if (date === null || date === undefined || date === "") {
         return "N/A";

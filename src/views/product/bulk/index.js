@@ -159,8 +159,8 @@ const BulkProductList = () => {
             .then(res => {
                 if (res.success) {
                     setStore({
-                        allData: res.data.product_list.bulk_product_list,
-                        data: res.data.product_list.bulk_product_list,
+                        allData: res.data?.product_list?.bulk_product_list ?? [],
+                        data: res.data?.product_list?.bulk_product_list ?? [],
                         params,
                         total: 0
                     })

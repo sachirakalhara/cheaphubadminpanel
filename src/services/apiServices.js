@@ -69,13 +69,13 @@ export const callApi = async (apiObject) => {
     try {
         const response =
             method === 'delete'
-                ? await axios.delete(url, { data: body, headers }) // Fix: Pass body inside { data: body, headers }
-                : await axios[method](url, method !== 'get' ? body : { headers }, { headers });
+                ? await axios.delete(url, {data: body, headers}) // Fix: Pass body inside { data: body, headers }
+                : await axios[method](url, method !== 'get' ? body : {headers}, {headers});
 
         const code = response.status;
 
         if (code === 204) {
-            result = { data: {}, status: null, success: true, message: '' };
+            result = {data: {}, status: null, success: true, message: ''};
         } else {
             result = {
                 data: response.data === '' ? [] : response.data,
