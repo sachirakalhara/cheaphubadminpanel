@@ -154,8 +154,8 @@ const OrdersScreen = () => {
             "order_id": searchKey,
             "payment_status": status === "all" ? null : status,
             "transaction_id": null,
-            "from_date": formDataDateConverter(startDate),
-            "to_date": formDataDateConverter(endDate)
+            "from_date": formDataDateConverter(startDate) === "N/A" ? null : formDataDateConverter(startDate),
+            "to_date": formDataDateConverter(endDate) === "N/A" ? null : formDataDateConverter(endDate),
         }
         OrderResourcesServices.filterOrderList(body)
             .then(response => {
