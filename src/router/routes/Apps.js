@@ -246,7 +246,7 @@ const AppRoutes = [
   },
   {
     path: '/order/:orderNumber',
-    component: lazy(() => import('../../views/orders/details'))
+    component: lazy(() => import('../../views/orders/details')),
   },
   {
     path: '/ticket/list',

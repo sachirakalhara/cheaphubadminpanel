@@ -107,7 +107,20 @@ export const formDataToJson = (formData) => {
 };
 
 export const formDataDateConverter = (date) => {
-    return moment(date).format("YYYY-MM-DD");
+    if (date === null || date === undefined || date === "") {
+        return "N/A";
+    } else {
+        return moment(date).format("YYYY-MM-DD");
+    }
+
+};
+
+export const formDataDateTimeConverter = (date) => {
+    if (date === null || date === undefined || date === "") {
+        return "N/A";
+    } else {
+        return moment(date).format("YYYY-MM-DD | HH:mm:ss");
+    }
 };
 
 
@@ -139,17 +152,17 @@ export const getDatePickerOptions = (isOnOpen, minDate, maxDate) => {
 
 
 export const valueFormatEditor = (value) => {
-    if (value === null || value === undefined || value === ""){
+    if (value === null || value === undefined || value === "") {
         return "N/A";
-    }else {
+    } else {
         return value;
     }
 }
 
 export const defaultImageBinder = (image) => {
-    if (image === null || image === undefined || image === ""){
+    if (image === null || image === undefined || image === "") {
         return logo;
-    }else {
+    } else {
         return image;
     }
 }

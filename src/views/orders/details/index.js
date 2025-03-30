@@ -1,13 +1,21 @@
 import {Badge, Button, Card, CardBody, CardHeader, CardText, CardTitle, Col, Row} from "reactstrap";
-import React, {Fragment, useState} from "react";
+import React, {Fragment, useEffect, useState} from "react";
 import BreadCrumbs from "../../../@core/components/breadcrumbs";
 import DataTable from "react-data-table-component";
 import {ArrowRight, ChevronDown} from "react-feather";
-import {customStyles, customSweetAlert, customToastMsg, emptyUI} from "../../../utility/Utils";
-import {Link} from "react-router-dom";
-import * as TagsServices from "../../../services/tags";
+import {customStyles, customSweetAlert, customToastMsg, dataBinder, emptyUI} from "../../../utility/Utils";
+import {Link, useLocation, useParams} from "react-router-dom";
+import * as OrderResourcesServices from "../../../services/order-resources";
+import {useDispatch} from "react-redux";
+import {toggleLoading} from "../../../redux/loading";
+import {formDataDateConverter, formDataDateTimeConverter} from "../../../utility/commonFun";
+
 
 const OrderDetails = () => {
+    const location = useLocation();
+    const navigationParam = location.state;
+    const dispatch = useDispatch()
+
     const [store, setStore] = useState({
         data: [
             {
@@ -17,13 +25,6 @@ const OrderDetails = () => {
                 status: 'Completed',
                 date: '2024-02-10'
             },
-            // {
-            //     id: 2,
-            //     ticketId: 'Tick12346',
-            //     email: 'samplegmail.com',
-            //     status: 'Pending',
-            //     date: '2024-02-12'
-            // }
         ],
         total: 1
     });
@@ -33,6 +34,26 @@ const OrderDetails = () => {
     const [isFetched, setIsFetched] = useState(false);
     const [val, setVal] = useState('')
     const [statusValue, setStatusValue] = useState('');
+    const [orderDetails, setOrderDetails] = useState({});
+
+    useEffect(() => {
+        getOrderDetails()
+    }, [])
+
+
+    const getOrderDetails = async () => {
+        dispatch(toggleLoading())
+        OrderResourcesServices.getOrderByOrderId(navigationParam.id)
+            .then((res) => {
+                if (res.success) {
+                    dispatch(toggleLoading())
+                    setOrderDetails(res.data.order)
+                } else {
+                    dispatch(toggleLoading())
+                    customToastMsg(res.message, 0)
+                }
+            })
+    }
 
 
     const dataToRender = () => {
@@ -50,7 +71,7 @@ const OrderDetails = () => {
         } else if (store.data?.length === 0 && isFiltered) {
             return []
         } else {
-            return store.allData.slice(0, rowsPerPage)
+            return store.data.slice(0, rowsPerPage)
         }
     }
 
@@ -79,7 +100,8 @@ const OrderDetails = () => {
         await customSweetAlert(
             'You are about to process this order manually. Once you confirm below, we’ll mark this order paid and deliver the product to the customer.',
             2,
-            async () =>{},
+            async () => {
+            },
             'Proceed Order'
         )
     }
@@ -96,17 +118,17 @@ const OrderDetails = () => {
                         <CardBody className='invoice-padding pb-0'>
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Order Number</CardText>
-                                <CardText tag="h6" className='text-black-50'>ORD00001</CardText>
+                                <CardText tag="h6" className='text-black-50'>{orderDetails.order_id}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Total</CardText>
-                                <CardText tag="h6" className='text-black-50'>$9447.55</CardText>
+                                <CardText tag="h6" className='text-black-50'>$ {orderDetails.amount}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
-                                <CardText tag="h5">Coupon</CardText>
-                                <CardText tag="h6" className='text-black-50'>None</CardText>
+                                <CardText tag="h5">Transaction Id</CardText>
+                                <CardText tag="h6" className='text-black-50'>{orderDetails.transaction_id}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
@@ -115,18 +137,25 @@ const OrderDetails = () => {
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
-                                <CardText tag="h5">Quantity</CardText>
-                                <CardText tag="h6" className='text-black-50'>30</CardText>
+                                <CardText tag="h5">Currency</CardText>
+                                <CardText tag="h6" className='text-black-50'>USD</CardText>
+                            </div>
+
+                            <div className="d-inline-flex w-100 align-items-center justify-content-between">
+                                <CardText tag="h5">Payment Status</CardText>
+                                <CardText tag="h6" className='text-black-50'>{orderDetails.payment_status}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Date</CardText>
-                                <CardText tag="h6" className='text-black-50'>03, May 2023 01:28</CardText>
+                                <CardText tag="h6" className='text-black-50'>{formDataDateTimeConverter(orderDetails.created_at)}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-center">
                                 <Button color='primary' className="mt-2 d-flex align-self-center" outline
-                                        onClick={async () => {await proceedOrder()}}>
+                                        onClick={async () => {
+                                            await proceedOrder()
+                                        }}>
                                     Process Order
                                 </Button>
                             </div>
@@ -141,18 +170,24 @@ const OrderDetails = () => {
                         <CardBody className='invoice-padding'>
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Name</CardText>
-                                <CardText tag="h6" className='text-black-50'>Kavinda Dilshan</CardText>
+                                <CardText tag="h6" className='text-black-50'>{dataBinder(orderDetails?.user_id?.display_name)}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Email</CardText>
-                                <CardText tag="h6" className='text-black-50'>Kavindad@gmail.com</CardText>
+                                <CardText tag="h6" className='text-black-50'>{dataBinder(orderDetails?.user_id?.email)}</CardText>
+                            </div>
+
+                            <div className="d-inline-flex w-100 align-items-center justify-content-between">
+                                <CardText tag="h5">Email Verified At</CardText>
+                                <CardText tag="h6" className='text-black-50'>{formDataDateTimeConverter(orderDetails?.user_id?.email_verified_at)}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Mobile Number</CardText>
-                                <CardText tag="h6" className='text-black-50'>+94 763737145</CardText>
+                                <CardText tag="h6" className='text-black-50'>{dataBinder(orderDetails?.user_id?.contact_no)}</CardText>
                             </div>
+
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Country</CardText>

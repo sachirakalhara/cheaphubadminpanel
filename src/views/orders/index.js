@@ -13,22 +13,24 @@ import Modal from "../../@core/components/modal";
 
 
 const CustomHeader = ({
-                          onOrderTextChange,
+                          onSearchQueryChange,
                           searchQuery,
-                          OnClearOrderText,
+                          onClearQuery,
                           productCategory,
                           selectProductCategory,
                           onChangeDateRange,
                           onCloseDateRange,
                           statusValue,
                           selectStatusValue,
+                          picker,
+                          onClearPicker
                       }) => {
     return (
         <Card>
             <div className='invoice-list-table-header w-100 py-2 px-1 m-0' style={{whiteSpace: 'nowrap'}}>
                 <h3 className='text-primary invoice-logo mb-2'>Orders</h3>
                 <Row>
-                    <Col lg='3' className='d-flex align-items-center'>
+                    <Col lg='4' className='d-flex align-items-center'>
                         <div className='d-flex align-items-center'>
                             <Label className='form-label' for='default-picker'>
                                 Name
@@ -36,17 +38,17 @@ const CustomHeader = ({
                             <div className='inputWithButton'>
                                 <Input
                                     id='name'
-                                    className='ms-50 me-2 w-100'
+                                    className='ms-50 w-100'
                                     type='text'
                                     value={searchQuery}
-                                    onChange={onOrderTextChange}
+                                    onChange={onSearchQueryChange}
                                     placeholder='Search Order Number'
                                     autoComplete="off"
                                 />
                                 {searchQuery.length !== 0 && (
                                     <X size={18}
                                        className='cursor-pointer close-btn'
-                                       onClick={OnClearOrderText}
+                                       onClick={onClearPicker}
                                     />
                                 )}
                             </div>
@@ -71,7 +73,7 @@ const CustomHeader = ({
                     </Col>
                     <Col lg='3' className='d-flex align-items-center'>
                         <div className='d-flex align-items-center'>
-                            <Label className='form-label me-2' for='default-picker'>
+                            <Label className='form-label ms-3 me-2' for='default-picker'>
                                 Payment Status
                             </Label>
                             <Input
@@ -92,17 +94,26 @@ const CustomHeader = ({
                             <Label className='form-label me-2' for='default-picker'>
                                 Transaction Range
                             </Label>
-                            <Flatpickr
-                                id='range-picker'
-                                className='form-control'
-                                onChange={onChangeDateRange}
-                                style={{width: 300}}
-                                options={{
-                                    mode: 'range',
-                                    showMonths: 2
-                                }}
-                                onClose={onCloseDateRange}
-                            />
+                            <div className='inputWithButton'>
+                                <Flatpickr
+                                    id='range-picker'
+                                    className='form-control'
+                                    onChange={onChangeDateRange}
+                                    style={{width: 300}}
+                                    options={{
+                                        mode: 'range',
+                                        showMonths: 2
+                                    }}
+                                    onClose={onCloseDateRange}
+                                />
+
+                                {picker.length !== 0 && (
+                                    <X size={18}
+                                       className='cursor-pointer close-btn me-1'
+                                       onClick={onClearQuery}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </Col>
                 </Row>
@@ -132,19 +143,19 @@ const OrdersScreen = () => {
     const [selectedRow, setSelectedRow] = useState(null);
 
     useEffect(() => {
-        getAllOrders(productCategory, statusValue);
+        getAllOrders(productCategory, statusValue, searchQuery);
     }, []);
 
 
-    const getAllOrders = async (type, status) => {
+    const getAllOrders = async (type, status, searchKey, startDate = null, endDate = null) => {
         const body = {
             "all": 0,
             "type": type,
-            "order_id": searchQuery,
+            "order_id": searchKey,
             "payment_status": status === "all" ? null : status,
             "transaction_id": null,
-            "from_date": null,
-            "to_date": null
+            "from_date": formDataDateConverter(startDate),
+            "to_date": formDataDateConverter(endDate)
         }
         OrderResourcesServices.filterOrderList(body)
             .then(response => {
@@ -171,12 +182,23 @@ const OrdersScreen = () => {
                 color={row.payment_status === 'paid' ? 'success' : row.payment_status === 'pending' ? 'warning' : 'danger'}>{row.payment_status}</Badge>
         },
         {name: 'Date', selector: row => formDataDateConverter(row.created_at)},
+        // {
+        //     name: 'Action',
+        //     cell: row => (
+        //         <button className="btn btn-primary btn-sm" onClick={() => handleView(row)}>
+        //             View
+        //         </button>
+        //     )
+        // }
+
         {
-            name: 'Action',
+            name: "",
+            minWidth: "100px",
             cell: row => (
-                <button className="btn btn-primary btn-sm" onClick={() => handleView(row)}>
-                    View
-                </button>
+                <Link to={{pathname: `order/${row.order_id}`, state: row}} state={row}>
+                    <ArrowRight size={18} className="cursor-pointer"/>
+                </Link>
+
             )
         }
     ];
@@ -235,9 +257,10 @@ const OrdersScreen = () => {
         // getCustomers();
     };
 
-    const handleSearch = value => {
+    const handleSearch = (value) => {
         setSearchQuery(value);
-        // getCustomers();
+        const [startDate, endDate] = picker.length === 2 ? picker : [null, null];
+        getAllOrders(productCategory, statusValue, value, startDate, endDate);
     };
 
 
@@ -246,17 +269,20 @@ const OrdersScreen = () => {
             <Card className='mt-2'>
                 <CustomHeader
                     value={val}
-                    OnClearOrderText={() => handleSearch("", 'order_key')}
-                    onOrderTextChange={e => handleSearch(e.target.value, 'order_key')}
+                    onClearQuery={() => handleSearch("", 'order_key')}
+                    onSearchQueryChange={e => handleSearch(e.target.value, 'order_key')}
                     searchQuery={searchQuery}
                     productCategory={productCategory}
                     statusValue={statusValue}
                     selectStatusValue={e => setStatusValue(e.target.value)}
                     selectProductCategory={e => setProductCategory(e.target.value)}
                     picker={picker}
+                    onClearPicker={() => setPicker([])}
                     onChangeDateRange={async (date) => {
                         if (date.length === 2) {
-                            setPicker(date)
+                            setPicker(date);
+                            const [startDate, endDate] = date;
+                            getAllOrders(productCategory, statusValue, searchQuery, startDate, endDate);
                         }
                     }}
                     onCloseDateRange={(selectedDates, dateStr, instance) => {
