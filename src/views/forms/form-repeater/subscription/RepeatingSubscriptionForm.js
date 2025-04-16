@@ -12,6 +12,10 @@ import {SlideDown} from 'react-slidedown'
 import {Row, Col, Card, CardHeader, CardBody, CardText, Form, Label, Input, Button, FormFeedback} from 'reactstrap'
 import * as ContributionProductService from "../../../../services/contribution-products";
 import {customToastMsg} from "../../../../utility/Utils";
+import qs from "qs";
+import {formDataToJson} from "../../../../utility/commonFun";
+
+let selectedObj = 0;
 
 const RepeatingSubscriptionForm = (props) => {
 
@@ -41,6 +45,7 @@ const RepeatingSubscriptionForm = (props) => {
 
     const [count, setCount] = useState(1);
     const [subscriptions, setSubscriptions] = useState(getFormatterRepeatArray(props.subscriptionList));
+    const [isNextEnabled, setIsNextEnabled] = useState(!!props.isManageMode);
 
     useEffect(() => {
         getContributionProductDetails(false);
@@ -53,7 +58,7 @@ const RepeatingSubscriptionForm = (props) => {
                     const formattedList = getFormatterRepeatArray(res.data.contribution_product.subscriptions);
                     setSubscriptions(formattedList)
                     if (isIncreased) {
-                        increaseCount(formattedList);
+                        increaseCount(formattedList, selectedObj);
                     }
                 } else {
                     customToastMsg(res.message, res.status)
@@ -61,9 +66,12 @@ const RepeatingSubscriptionForm = (props) => {
             })
     }
 
-    const increaseCount = (list) => {
-        setCount(count + 1);
-        setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', errors: {}}]);
+    const increaseCount = (list, index) => {
+        if (validateFields(index)) {
+            setCount(count + 1);
+            setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', errors: {}}]);
+        }
+
     };
 
     const handleInputChange = (index, key, value) => {
@@ -107,7 +115,12 @@ const RepeatingSubscriptionForm = (props) => {
         return isValid;
     };
 
-    const saveForm = (e, index) => {
+    const updateNextButtonState = () => {
+        const hasSavedSubscriptions = subscriptions.some(subscription => subscription.id !== null);
+        setIsNextEnabled(hasSavedSubscriptions);
+    };
+
+    const saveForm = (e, index, subscription) => {
         e.preventDefault();
         if (validateFields(index)) {
             // Perform save operation (e.g., send data to backend)
@@ -116,17 +129,31 @@ const RepeatingSubscriptionForm = (props) => {
 
 
             let data = new FormData();
-            data.append('contribution_product_id', props.productId)
+
             data.append('name', formData.name)
             data.append('serial', formData.serials)
             // data.append('refresh_count',props.productId)
             data.append('gateway_fee', formData.gateway_fee)
 
-            ContributionProductService.createSubscription(data)
+            if (subscription.id !== null) {
+                data.append('id', formData.id)
+            } else {
+                data.append('contribution_product_id', props.productId)
+            }
+
+            const FetchAPI = subscription.id !== null ? ContributionProductService.updateSubscription : ContributionProductService.createSubscription;
+
+            FetchAPI(subscription.id !== null ? qs.stringify(formDataToJson(data)) : data)
                 .then(res => {
                     if (res.success) {
                         customToastMsg("Subscription was successfully created", 1);
                         getContributionProductDetails(true);
+                        if (subscription.id !== null){
+                            props.toggle();
+                        }else {
+                            updateNextButtonState();
+                        }
+
                     } else {
                         customToastMsg(res.message, res.status)
                     }
@@ -141,6 +168,7 @@ const RepeatingSubscriptionForm = (props) => {
         }
         ContributionProductService.removeSubscriptionItemById(data, id)
             .then(res => {
+                console.log("res", res)
                 if (res.success) {
                     customToastMsg("Subscription was successfully deleted", 1);
                     getContributionProductDetails(false);
@@ -160,98 +188,137 @@ const RepeatingSubscriptionForm = (props) => {
             updatedSubscriptions.splice(index, 1);
             setSubscriptions(updatedSubscriptions);
             setCount(count - 1);
+            updateNextButtonState(); // Update button state after deletion
         }
     };
 
+
+    const onNextPage = () => {
+        let isValid = true;
+        subscriptions.forEach((subscription, index) => {
+            if (!validateFields(index)) {
+                isValid = false;
+            }
+        });
+
+        if (isValid) {
+            props.nextButtonAction()
+        }
+    }
+
     return (
-        <Card className="mt-2">
-            <CardHeader>
-                <h4 className='card-title'>Subscription</h4>
-            </CardHeader>
-            <CardBody>
-                {subscriptions.map((subscription, index) => {
-                    const Tag = index === 0 ? 'div' : SlideDown;
-                    return (
-                        <Tag key={index}>
-                            <Form>
-                                <Row className='justify-content-between align-items-center'>
-                                    <Col md={6} className='mb-md-0 mb-1'>
-                                        <Label className='form-label' for={`animation-subscription-name-${index}`}>
-                                            Subscription Name
-                                        </Label>
-                                        <Input
-                                            type='text'
-                                            id={`animation-subscription-name-${index}`}
-                                            placeholder='Subscription Name'
-                                            value={subscription.name}
-                                            onChange={(e) => handleInputChange(index, 'name', e.target.value)}
-                                            invalid={subscription.errors.name && true}
-                                        />
-                                        {subscription.errors.name && (
-                                            <FormFeedback>{subscription.errors.name}</FormFeedback>
+        <div>
+            <Card className="mt-2">
+                <CardHeader>
+                    <h4 className='card-title'>Subscription</h4>
+                </CardHeader>
+                <CardBody>
+                    {subscriptions.map((subscription, index) => {
+                        const Tag = index === 0 ? 'div' : SlideDown;
+                        selectedObj = index;
+                        return (
+                            <Tag key={index}>
+                                <Form>
+                                    <Row className='justify-content-between align-items-center'>
+                                        <Col md={6} className='mb-md-0 mb-1'>
+                                            <Label className='form-label' for={`animation-subscription-name-${index}`}>
+                                                Subscription Name
+                                            </Label>
+                                            <Input
+                                                type='text'
+                                                id={`animation-subscription-name-${index}`}
+                                                placeholder='Subscription Name'
+                                                value={subscription.name}
+                                                onChange={(e) => handleInputChange(index, 'name', e.target.value)}
+                                                invalid={subscription.errors.name && true}
+                                            />
+                                            {subscription.errors.name && (
+                                                <FormFeedback>{subscription.errors.name}</FormFeedback>
+                                            )}
+                                        </Col>
+                                        <Col md={6} className='mb-md-0 mb-1'>
+                                            <Label className='form-label' for={`gateway-fee-${index}`}>
+                                                Gateway Fee
+                                            </Label>
+                                            <Input
+                                                type='number'
+                                                s id={`gateway-fee-${index}`}
+                                                placeholder='Gateway Fee'
+                                                value={subscription.gateway_fee}
+                                                onChange={(e) => handleInputChange(index, 'gateway_fee', e.target.value)}
+                                                invalid={subscription.errors.gateway_fee && true}
+                                            />
+                                            {subscription.errors.gateway_fee && (
+                                                <FormFeedback>{subscription.errors.gateway_fee}</FormFeedback>
+                                            )}
+                                        </Col>
+                                        <Col md={7} className='mb-md-0 mb-1'>
+                                            <Label className='form-label' for={`serial-list-${index}`}>
+                                                Serial List
+                                            </Label>
+                                            <Input
+                                                type="textarea"
+                                                rows='4'
+                                                id={`serial-list-${index}`}
+                                                placeholder='Serial List'
+                                                value={subscription.serials}
+                                                onChange={(e) => handleInputChange(index, 'serials', e.target.value)}
+                                                invalid={subscription.errors.serials && true}
+                                            />
+                                            {subscription.errors.serials && (
+                                                <FormFeedback>{subscription.errors.serials}</FormFeedback>
+                                            )}
+                                        </Col>
+                                        <Col md={2}>
+                                            <Button color='primary' className='text-nowrap mt-2'
+                                                    onClick={(e) => saveForm(e, index, subscription)} outline>
+                                                <Save size={14} className='me-50'/>
+                                                <span>{subscription.id === null ? "Save & Add More" : "Update"}</span>
+                                            </Button>
+                                        </Col>
+                                        {(index !== 0 || props.isManageMode) && (
+                                            <Col md={2}>
+                                                <Button color='danger' className='text-nowrap mt-2'
+                                                        onClick={(e) => deleteForm(e, index, subscription.id)} outline>
+                                                    <X size={14} className='me-50'/>
+                                                    <span>{subscription.id !== null ? "Delete" : "Remove"}</span>
+                                                </Button>
+                                            </Col>
+
                                         )}
-                                    </Col>
-                                    <Col md={6} className='mb-md-0 mb-1'>
-                                        <Label className='form-label' for={`gateway-fee-${index}`}>
-                                            Gateway Fee
-                                        </Label>
-                                        <Input
-                                            type='number'
-                                            s id={`gateway-fee-${index}`}
-                                            placeholder='Gateway Fee'
-                                            value={subscription.gateway_fee}
-                                            onChange={(e) => handleInputChange(index, 'gateway_fee', e.target.value)}
-                                            invalid={subscription.errors.gateway_fee && true}
-                                        />
-                                        {subscription.errors.gateway_fee && (
-                                            <FormFeedback>{subscription.errors.gateway_fee}</FormFeedback>
-                                        )}
-                                    </Col>
-                                    <Col md={8} className='mb-md-0 mb-1'>
-                                        <Label className='form-label' for={`serial-list-${index}`}>
-                                            Serial List
-                                        </Label>
-                                        <Input
-                                            type="textarea"
-                                            rows='4'
-                                            id={`serial-list-${index}`}
-                                            placeholder='Serial List'
-                                            value={subscription.serials}
-                                            onChange={(e) => handleInputChange(index, 'serials', e.target.value)}
-                                            invalid={subscription.errors.serials && true}
-                                        />
-                                        {subscription.errors.serials && (
-                                            <FormFeedback>{subscription.errors.serials}</FormFeedback>
-                                        )}
-                                    </Col>
-                                    <Col md={1}>
-                                        <Button color='primary' className='text-nowrap mt-2'
-                                                onClick={(e) => saveForm(e, index)} outline>
-                                            <Save size={14} className='me-50'/>
-                                            <span>{subscription.id === null ? "Save" : "Update"}</span>
-                                        </Button>
-                                    </Col>
-                                    <Col md={2}>
-                                        <Button color='danger' className='text-nowrap mt-2'
-                                                onClick={(e) => deleteForm(e, index, subscription.id)} outline>
-                                            <X size={14} className='me-50'/>
-                                            <span>{subscription.id !== null ? "Delete" : "Remove"}</span>
-                                        </Button>
-                                    </Col>
-                                    <Col sm={12}>
-                                        <hr/>
-                                    </Col>
-                                </Row>
-                            </Form>
-                        </Tag>
-                    );
-                })}
-                <Button className='btn-icon' color='primary' onClick={() => increaseCount(subscriptions)}>
-                    <Plus size={14}/>
-                    <span className='align-middle ms-25'>Add New</span>
+
+                                        <Col sm={12}>
+                                            <hr/>
+                                        </Col>
+                                    </Row>
+                                </Form>
+                            </Tag>
+                        );
+                    })}
+
+                    {props.isManageMode && (
+                        <Button className='btn-icon' color='primary'
+                                onClick={() => increaseCount(subscriptions, selectedObj)}>
+                            <Plus size={14}/>
+                            <span className='align-middle ms-25'>Add New</span>
+                        </Button>
+                    )}
+
+                </CardBody>
+            </Card>
+
+            <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
+                <Button className='me-1' color='success' disabled={!isNextEnabled}
+                        onClick={() => onNextPage()}
+                >
+                    Next
                 </Button>
-            </CardBody>
-        </Card>
+                <Button type='reset' color='secondary' outline onClick={props.toggle}>
+                    Discard
+                </Button>
+            </Col>
+        </div>
+
     );
 };
 

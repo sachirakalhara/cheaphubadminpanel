@@ -52,7 +52,7 @@ const defaultValues = {
     cryptoRadio: false,
     stripeRadio: false,
     selectedPaymentMethods: [],
-    slugUrl: '',
+    // slugUrl: '',
 }
 
 const customStyle = (error) => ({
@@ -87,7 +87,7 @@ const BulCreationModal = (props) => {
     const [productImageName, setProductImageName] = useState('')
 
     const [productType, setProductType] = useState(1);
-    const [visibilityMode, setVisibilityMode] = useState('card');
+    const [visibilityMode, setVisibilityMode] = useState('');
 
     const [file, setFile] = useState(null);
 
@@ -97,6 +97,8 @@ const BulCreationModal = (props) => {
     useEffect(() => {
         if (props.isEditMode) {
             loadDefaultValues(props.selectedData);
+        }else {
+            setVisibilityMode("")
         }
     }, [])
 
@@ -104,7 +106,7 @@ const BulCreationModal = (props) => {
         console.log("data:::::::::::::::::::::::", data)
 
         setValue("productName", data.name)
-        setValue("category", data.categories[0].id)
+        setValue("category", data.categories.length !== 0 ? data.categories[0].id : '')
         setValue("price", data.price.toString())
         setValue("gatewayFee", data.gateway_fee.toString())
         setValue("description", data.description)
@@ -119,7 +121,7 @@ const BulCreationModal = (props) => {
         setValue("stripeRadio", data.payment_method.includes("stripe"))
         // setValue("selectedPaymentMethods", data.image)
 
-        setValue("slugUrl", data.slug_url)
+        // setValue("slugUrl", data.slug_url)
         setVisibilityMode(data.visibility)
         setUploadedProductImage(data.image)
     }
@@ -254,13 +256,10 @@ const BulCreationModal = (props) => {
 
 
     const onSubmitSEODetails = async data => {
-        dispatch(toggleLoading())
-        const obj = {
-            slugUrl: data.slugUrl
-        }
 
-        if (Object.values(obj).every(field => field.length > 0)) {
 
+        if (visibilityMode !== "") {
+            dispatch(toggleLoading())
             let data = new FormData();
             data.append('name', getValues('productName'))
             data.append('description', getValues('description'))
@@ -273,7 +272,7 @@ const BulCreationModal = (props) => {
             data.append('minimum_quantity', getValues('minimumQty'))
             data.append('maximum_quantity', getValues('maximumQty'))
             data.append('service_info', getValues('serviceInfo'))
-            data.append('slug_url', getValues('slugUrl'))
+            // data.append('slug_url', getValues('slugUrl'))
             data.append('visibility', visibilityMode)
             // data.append('image', file)
 
@@ -298,13 +297,7 @@ const BulCreationModal = (props) => {
 
 
         } else {
-            for (const key in obj) {
-                if (obj[key].length === 0) {
-                    setError(key, {
-                        type: 'required'
-                    })
-                }
-            }
+            customToastMsg("Please select visibility option", 0)
         }
     }
 
@@ -408,7 +401,11 @@ const BulCreationModal = (props) => {
                             }}
                         />
                         {errors.category &&
-                        <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please select category</span>}
+                            <span style={{
+                                fontSize: '12px',
+                                color: '#EA5455',
+                                marginTop: 4
+                            }}>Please select category</span>}
                     </Col>
 
                     <Col md={4} xs={12}>
@@ -441,7 +438,7 @@ const BulCreationModal = (props) => {
                             }}
                         />
                         {errors.tag &&
-                        <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please select a Tag</span>}
+                            <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please select a Tag</span>}
                     </Col>
 
                     <Col md={12} xs={12}>
@@ -484,11 +481,11 @@ const BulCreationModal = (props) => {
                             )}
                         />
                         {errors.productImageName &&
-                        <span style={{
-                            fontSize: '12px',
-                            color: '#EA5455',
-                            marginTop: 4
-                        }}>Please choose a product image</span>}
+                            <span style={{
+                                fontSize: '12px',
+                                color: '#EA5455',
+                                marginTop: 4
+                            }}>Please choose a product image</span>}
                     </Col>
 
                     <Col md={12} lg={12} xs={12}>
@@ -531,13 +528,13 @@ const BulCreationModal = (props) => {
                             </Col>
 
                             {productImageSrc &&
-                            <Col lg={6} md={6} sm={12}>
-                                <img src={productCroppedImage}
-                                     style={{width: '30%'}}
-                                     loading={"lazy"}
-                                     className='program-modal-image-cropper-output'
-                                />
-                            </Col>
+                                <Col lg={6} md={6} sm={12}>
+                                    <img src={productCroppedImage}
+                                         style={{width: '30%'}}
+                                         loading={"lazy"}
+                                         className='program-modal-image-cropper-output'
+                                    />
+                                </Col>
                             }
 
                         </Row>
@@ -630,7 +627,8 @@ const BulCreationModal = (props) => {
                                 name='minimumQty'
                                 control={control}
                                 render={({field}) => (
-                                    <Input {...field} type="number" id='minimumQty' placeholder='Minimum Quantity' value={field.value}
+                                    <Input {...field} type="number" id='minimumQty' placeholder='Minimum Quantity'
+                                           value={field.value}
                                            invalid={errors.minimumQty && true} autoComplete="off"/>
                                 )}
                             />
@@ -645,7 +643,8 @@ const BulCreationModal = (props) => {
                                 name='maximumQty'
                                 control={control}
                                 render={({field}) => (
-                                    <Input {...field} type="number" id='maximumQty' placeholder='Maximum Quantity' value={field.value}
+                                    <Input {...field} type="number" id='maximumQty' placeholder='Maximum Quantity'
+                                           value={field.value}
                                            invalid={errors.maximumQty && true} autoComplete="off"/>
                                 )}
                             />
@@ -747,7 +746,7 @@ const BulCreationModal = (props) => {
                             </ListGroup>
 
                             {getValues("selectedPaymentMethods").length === 0 &&
-                            <div className="invalid-feedback-custom">Please select a payment method</div>}
+                                <div className="invalid-feedback-custom">Please select a payment method</div>}
 
                         </Col>
 
@@ -761,7 +760,8 @@ const BulCreationModal = (props) => {
                                 name='price'
                                 control={control}
                                 render={({field}) => (
-                                    <Input {...field} type="number" id='price' placeholder='Product Price' value={field.value}
+                                    <Input {...field} type="number" id='price' placeholder='Product Price'
+                                           value={field.value}
                                            invalid={errors.price && true} autoComplete="off"/>
                                 )}
                             />
@@ -776,7 +776,8 @@ const BulCreationModal = (props) => {
                                 name='gatewayFee'
                                 control={control}
                                 render={({field}) => (
-                                    <Input {...field} type="number" id='gatewayFee' placeholder='Gateway Fee' value={field.value}
+                                    <Input {...field} type="number" id='gatewayFee' placeholder='Gateway Fee'
+                                           value={field.value}
                                            invalid={errors.gatewayFee && true} autoComplete="off"/>
                                 )}
                             />
@@ -833,34 +834,34 @@ const BulCreationModal = (props) => {
                         </div>
                     </Col>
 
-                    <Col md={8} xs={12}>
-                        <Label className='form-label mb-1' for='slugUrl'>
-                            Slug Url <span style={{color: 'red'}}>*</span>
-                        </Label>
-                        <Row>
-                            <Col md={8} xs={12}>
-                                <Controller
-                                    name='slugUrl'
-                                    control={control}
-                                    render={({field}) => (
-                                        <Input {...field} id='slugUrl' placeholder='Slug Url' value={field.value}
-                                               invalid={errors.slugUrl && true} autoComplete="off"/>
-                                    )}
-                                />
-                                {errors.slugUrl && <FormFeedback>Please enter a valid slug url</FormFeedback>}
-                            </Col>
-                            <Col md={4} xs={12}>
-                                <Button color='secondary' outline
-                                        onClick={() => {
-                                        }}
-                                >
-                                    Copy Product Name
-                                </Button>
-                            </Col>
-                        </Row>
+                    {/*<Col md={8} xs={12}>*/}
+                    {/*    <Label className='form-label mb-1' for='slugUrl'>*/}
+                    {/*        Slug Url <span style={{color: 'red'}}>*</span>*/}
+                    {/*    </Label>*/}
+                    {/*    <Row>*/}
+                    {/*        <Col md={8} xs={12}>*/}
+                    {/*            <Controller*/}
+                    {/*                name='slugUrl'*/}
+                    {/*                control={control}*/}
+                    {/*                render={({field}) => (*/}
+                    {/*                    <Input {...field} id='slugUrl' placeholder='Slug Url' value={field.value}*/}
+                    {/*                           invalid={errors.slugUrl && true} autoComplete="off"/>*/}
+                    {/*                )}*/}
+                    {/*            />*/}
+                    {/*            {errors.slugUrl && <FormFeedback>Please enter a valid slug url</FormFeedback>}*/}
+                    {/*        </Col>*/}
+                    {/*        <Col md={4} xs={12}>*/}
+                    {/*            <Button color='secondary' outline*/}
+                    {/*                    onClick={() => {*/}
+                    {/*                    }}*/}
+                    {/*            >*/}
+                    {/*                Copy Product Name*/}
+                    {/*            </Button>*/}
+                    {/*        </Col>*/}
+                    {/*    </Row>*/}
 
 
-                    </Col>
+                    {/*</Col>*/}
 
                     <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
                         <Button type='submit' className='me-1' color='success'>

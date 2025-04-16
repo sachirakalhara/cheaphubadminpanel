@@ -69,7 +69,8 @@ const Login = () => {
 
             const body = {
                 email: data.loginEmail,
-                password: data.password
+                password: data.password,
+                userLevel:"super_admin"
             }
             // eslint-disable-next-line no-unused-vars
             let accessToken

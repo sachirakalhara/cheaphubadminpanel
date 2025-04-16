@@ -20,6 +20,9 @@ import RepeatingSubscriptionForm from "../../../../../views/forms/form-repeater/
 import RepeatingPackageForm from "../../../../../views/forms/form-repeater/packages/RepeatingPackageForm";
 import * as ContributionProductService from '../../../../../services/contribution-products';
 import {formDataToJson} from "../../../../../utility/commonFun";
+import {toggleLoading} from "../../../../../redux/loading";
+import {useDispatch} from "react-redux";
+import qs from 'qs';
 
 const defaultValues = {
     productName: '',
@@ -28,7 +31,8 @@ const defaultValues = {
     tag: '',
     productImageName: '',
     serviceInfo: '',
-    slugUrl: ''
+    id: null,
+    // slugUrl: ''
 }
 
 const customStyle = (error) => ({
@@ -48,6 +52,8 @@ const types = {
 const CROP_ASPECT_TO_FIRST_IMAGE = 1;
 
 const SubscriptionCreationModal = (props) => {
+    const dispatch = useDispatch()
+
     const [active, setActive] = useState(props.isManageMode ? 3 : 1);
 
     // image uploader
@@ -60,7 +66,7 @@ const SubscriptionCreationModal = (props) => {
     const [productImageZoom, setProductImageZoom] = useState(1)
     const [productImageName, setProductImageName] = useState('')
 
-    const [visibilityMode, setVisibilityMode] = useState('card');
+    const [visibilityMode, setVisibilityMode] = useState('');
 
     const [file, setFile] = useState(null);
     const [productId, setProductId] = useState(null);
@@ -134,49 +140,54 @@ const SubscriptionCreationModal = (props) => {
     }
 
     const onSubmitSEODetails = async dataObj => {
-        const obj = {
-            slugUrl: dataObj.slugUrl
-        }
+        // const obj = {
+        //     slugUrl: dataObj.slugUrl
+        // }
 
 
-        if (Object.values(obj).every(field => field.length > 0)) {
-
+        if (visibilityMode !== "") {
+            dispatch(toggleLoading())
             let data = new FormData();
             data.append('name', getValues('productName'))
             data.append('description', getValues('description'))
             data.append('tag_id', getValues('tag'))
-            data.append('image', file)
             data.append('service_info', getValues('serviceInfo'))
-            data.append('slug_url', getValues('slugUrl'))
+            // data.append('slug_url', getValues('slugUrl'))
             data.append('visibility', visibilityMode)
             data.append('categories', getValues('category'))
 
+            if (props.isEditMode) {
+                data.append('id', getValues('id'))
+            } else {
+                data.append('image', file)
+            }
+
+
+            console.log(qs.stringify(formDataToJson(data)))
+
             const fetchAPI = props.isEditMode ? ContributionProductService.updateContributionProduct : ContributionProductService.createContributionProduct;
 
-            fetchAPI(props.isEditMode ? formDataToJson(data) : data)
+            fetchAPI(props.isEditMode ? qs.stringify(formDataToJson(data)) : data)
                 .then(res => {
                     console.log(res)
                     if (res.success) {
                         console.log(res)
+                        dispatch(toggleLoading())
                         setProductId(res.data.contribution_product.id);
                         customToastMsg(`Product is successfully ${props.isEditMode ? "updated" : "created"}`, 1);
-
                         if (!props.isEditMode) {
                             setActive(3)
+                        } else {
+                            props.toggle();
                         }
                     } else {
+                        dispatch(toggleLoading())
                         customToastMsg(res.message, res.status)
                     }
                 })
 
         } else {
-            for (const key in obj) {
-                if (obj[key].length === 0) {
-                    setError(key, {
-                        type: 'required'
-                    })
-                }
-            }
+            customToastMsg("Please select visibility option", 0)
         }
     }
 
@@ -184,18 +195,21 @@ const SubscriptionCreationModal = (props) => {
         console.log(props.tagList)
         if (props.isEditMode) {
             loadDefaultValues(props.selectedData);
+        } else {
+            setVisibilityMode("")
         }
     }, [])
 
     const loadDefaultValues = (data) => {
         console.log(data)
         setValue("productName", data.name)
-        setValue("category", data.categories[0].id)
+        setValue("category", data.categories.length !== 0 ? data.categories[0].id : '')
         setValue("description", data.description)
         setValue("tag", data.tag_id)
         setValue("productImageName", data.image)
         setValue("serviceInfo", data.service_info)
-        setValue("slugUrl", data.slug_url)
+        setValue("id", data.id)
+        // setValue("slugUrl", data.slug_url)
 
         setVisibilityMode(data.visibility)
         setUploadedProductImage(data.image)
@@ -211,6 +225,48 @@ const SubscriptionCreationModal = (props) => {
         }
     }
 
+    const getPackagesList = (subscriptionList) => {
+        const list = [];
+
+        // "subscriptionList": [
+        //     {
+        //         "id": 1,
+        //         "name": "UK",
+        //         "serial": "giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]",
+        //         "available_serial_count": 3,
+        //         "gateway_fee": 12,
+        //         "packages": [
+        //             {
+        //                 "id": 1,
+        //                 "name": "wwww",
+        //                 "price": 1500,
+        //                 "replace_count": 3,
+        //                 "expiry_duration": 13,
+        //                 "payment_method": "card",
+        //                 "subscription": {
+        //                     "id": 1,
+        //                     "contribution_product_id": 1,
+        //                     "name": "UK",
+        //                     "serial": "giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]giacomomason@hotmail.it:Plutino88 : Country = IT \n: Subscription = [Livesport Instalment Charge ITA]",
+        //                     "available_serial_count": 3,
+        //                     "gateway_fee": 12,
+        //                     "created_at": "2025-04-03T20:28:31.000000Z",
+        //                     "updated_at": "2025-04-11T13:18:38.000000Z"
+        //                 }
+        //             }
+        //         ]
+        //     }
+        // ]
+
+        subscriptionList.forEach((item) => {
+            item.packages.forEach((packageItem) => {
+                list.push(packageItem)
+            })
+        })
+
+        return list;
+    }
+
     return (
         <Modal show={props.show} toggle={props.toggle}
                headTitle={!props.isEditMode ? props.isManageMode ? "Manage Service Product" : "Add New Service Product" : "Edit Service Product"}>
@@ -220,7 +276,8 @@ const SubscriptionCreationModal = (props) => {
                     {!props.isManageMode && (
                         <>
                             <NavItem>
-                                <NavLink active={active === 1} onClick={() => onHeaderTabPress(1)}>
+                                <NavLink active={active === 1} disabled={active !== 1}
+                                         onClick={() => onHeaderTabPress(1)}>
                                     <img src={active !== 1 ? imgBlack : imgWhite} alt="img" height={20} width={20}
                                          className="me-1"/>
                                     <span
@@ -229,7 +286,8 @@ const SubscriptionCreationModal = (props) => {
                             </NavItem>
 
                             <NavItem>
-                                <NavLink active={active === 2} onClick={() => onHeaderTabPress(2)}>
+                                <NavLink active={active === 2} disabled={active !== 2}
+                                         onClick={() => onHeaderTabPress(2)}>
                                     <img src={active !== 2 ? imgSEOBlack : imgSEOWhite} alt="img" height={20} width={20}
                                          className="me-1"/>
                                     <span className={`fw-bold fw-bolder ${active !== 2 ? 'text-black' : ''}`}>SEO</span>
@@ -241,7 +299,10 @@ const SubscriptionCreationModal = (props) => {
                     {!props.isEditMode && (
                         <>
                             <NavItem>
-                                <NavLink active={active === 3} onClick={() => onHeaderTabPress(3)}>
+                                <NavLink
+                                    active={active === 3}
+                                    // disabled={active !== 3}
+                                    onClick={() => onHeaderTabPress(3)}>
                                     <img src={active !== 3 ? imgDollarBlack : imgDollarWhite} alt="img" height={20}
                                          width={20}
                                          className="me-1"/>
@@ -250,7 +311,10 @@ const SubscriptionCreationModal = (props) => {
                             </NavItem>
 
                             <NavItem>
-                                <NavLink active={active === 4} onClick={() => onHeaderTabPress(4)}>
+                                <NavLink
+                                    active={active === 4}
+                                    // disabled={active !== 4}
+                                    onClick={() => onHeaderTabPress(4)}>
                                     <img src={active !== 4 ? imgBoxBlack : imgBoxWhite} alt="img" height={20}
                                          width={20} className="me-1"/>
                                     <span
@@ -311,7 +375,11 @@ const SubscriptionCreationModal = (props) => {
                             }}
                         />
                         {errors.category &&
-                        <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please select category</span>}
+                            <span style={{
+                                fontSize: '12px',
+                                color: '#EA5455',
+                                marginTop: 4
+                            }}>Please select category</span>}
                     </Col>
 
                     <Col md={4} xs={12}>
@@ -344,7 +412,7 @@ const SubscriptionCreationModal = (props) => {
                             }}
                         />
                         {errors.tag &&
-                        <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please select a Tag</span>}
+                            <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please select a Tag</span>}
                     </Col>
 
                     <Col md={12} xs={12}>
@@ -403,11 +471,11 @@ const SubscriptionCreationModal = (props) => {
                             )}
                         />
                         {errors.productImageName &&
-                        <span style={{
-                            fontSize: '12px',
-                            color: '#EA5455',
-                            marginTop: 4
-                        }}>Please choose a product image</span>}
+                            <span style={{
+                                fontSize: '12px',
+                                color: '#EA5455',
+                                marginTop: 4
+                            }}>Please choose a product image</span>}
                     </Col>
 
                     <Col md={12} lg={12} xs={12}>
@@ -450,13 +518,13 @@ const SubscriptionCreationModal = (props) => {
                             </Col>
 
                             {productCroppedImage && productImageSrc &&
-                            <Col lg={6} md={6} sm={12}>
-                                <img src={productCroppedImage}
-                                     style={{width: '30%'}}
-                                     loading={"lazy"}
-                                     className='program-modal-image-cropper-output'
-                                />
-                            </Col>
+                                <Col lg={6} md={6} sm={12}>
+                                    <img src={productCroppedImage}
+                                         style={{width: '30%'}}
+                                         loading={"lazy"}
+                                         className='program-modal-image-cropper-output'
+                                    />
+                                </Col>
                             }
 
                         </Row>
@@ -509,35 +577,35 @@ const SubscriptionCreationModal = (props) => {
                         </div>
                     </Col>
 
-                    <Col md={8} xs={12}>
-                        <Label className='form-label mb-1' for='slugUrl'>
-                            Slug Url <span style={{color: 'red'}}>*</span>
-                        </Label>
-                        <Row>
-                            <Col md={8} xs={12}>
-                                <Controller
-                                    name='slugUrl'
-                                    control={control}
-                                    render={({field}) => (
-                                        <Input {...field} id='slugUrl' placeholder='Slug Url' value={field.value}
-                                               invalid={errors.slugUrl && true} autoComplete="off"/>
-                                    )}
-                                />
-                                {errors.slugUrl && <FormFeedback>Please enter a valid slug url</FormFeedback>}
-                            </Col>
-                            <Col md={4} xs={12}>
-                                <Button color='secondary' outline
-                                        onClick={() => {
-                                            console.log("Hellow world");
-                                        }}
-                                >
-                                    Copy Product Name
-                                </Button>
-                            </Col>
-                        </Row>
+                    {/*<Col md={8} xs={12}>*/}
+                    {/*    <Label className='form-label mb-1' for='slugUrl'>*/}
+                    {/*        Slug Url <span style={{color: 'red'}}>*</span>*/}
+                    {/*    </Label>*/}
+                    {/*    <Row>*/}
+                    {/*        <Col md={8} xs={12}>*/}
+                    {/*            <Controller*/}
+                    {/*                name='slugUrl'*/}
+                    {/*                control={control}*/}
+                    {/*                render={({field}) => (*/}
+                    {/*                    <Input {...field} id='slugUrl' placeholder='Slug Url' value={field.value}*/}
+                    {/*                           invalid={errors.slugUrl && true} autoComplete="off"/>*/}
+                    {/*                )}*/}
+                    {/*            />*/}
+                    {/*            {errors.slugUrl && <FormFeedback>Please enter a valid slug url</FormFeedback>}*/}
+                    {/*        </Col>*/}
+                    {/*        <Col md={4} xs={12}>*/}
+                    {/*            <Button color='secondary' outline*/}
+                    {/*                    onClick={() => {*/}
+                    {/*                        console.log("Hellow world");*/}
+                    {/*                    }}*/}
+                    {/*            >*/}
+                    {/*                Copy Product Name*/}
+                    {/*            </Button>*/}
+                    {/*        </Col>*/}
+                    {/*    </Row>*/}
 
 
-                    </Col>
+                    {/*</Col>*/}
 
                     <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
                         <Button type='submit' className='me-1' color='success'>
@@ -555,12 +623,17 @@ const SubscriptionCreationModal = (props) => {
                     productId={props.isManageMode ? props.selectedData?.id : productId}
                     isManageMode={props.isManageMode}
                     subscriptionList={props.selectedData?.subscriptions ?? []}
+                    toggle={props.toggle}
+                    nextButtonAction={() => setActive(active + 1)}
                 />
             )}
 
             {active === 4 && (
                 <RepeatingPackageForm
-                    productId={productId}
+                    productId={props.isManageMode ? props.selectedData?.id : productId}
+                    packageList={getPackagesList(props.selectedData?.subscriptions ?? [])}
+                    isManageMode={props.isManageMode}
+                    toggle={props.toggle}
                 />
             )}
 

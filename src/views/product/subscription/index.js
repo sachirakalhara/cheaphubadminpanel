@@ -145,9 +145,10 @@ const SubscriptionProductList = () => {
         ContributionProductService.getAllContributionProduct()
             .then(res => {
                 if (res.success) {
+                    console.log(res)
                     setStore({
-                        allData: res.data,
-                        data: res.data.contribution_product_list,
+                        allData: res?.data,
+                        data: res?.data?.contribution_product_list ?? [],
                         params,
                         total: 0
                     });
@@ -170,8 +171,8 @@ const SubscriptionProductList = () => {
             .then(res => {
                 if (res.success) {
                     setStore({
-                        allData: res.data.contribution_product_list,
-                        data: res.data.contribution_product_list,
+                        allData: res?.data?.contribution_product_list ?? [],
+                        data: res?.data?.contribution_product_list ?? [],
                         params,
                         total: 0
                     })
@@ -271,7 +272,7 @@ const SubscriptionProductList = () => {
         } else if (store.data?.length === 0 && isFiltered) {
             return []
         } else {
-            return store.allData.slice(0, rowsPerPage)
+            return store.data.slice(0, rowsPerPage)
         }
     }
 
@@ -301,9 +302,26 @@ const SubscriptionProductList = () => {
             'Are you sure you want to remove this?',
             0,
             async () => {
-
+                deleteProduct(id)
             }
         )
+    }
+
+    const deleteProduct=(id)=>{
+        ContributionProductService.deleteContributionProduct(id)
+            .then(async res=>{
+                console.log(res)
+                if (res.success) {
+                    await searchContributionProduct({
+                        searchKey: searchKey,
+                        category: selectedCategoryId,
+                        page: currentPage,
+                        perPage: rowsPerPage
+                    })
+                }else {
+                    customToastMsg(res.message, res.status)
+                }
+            })
     }
 
 
@@ -446,8 +464,15 @@ const SubscriptionProductList = () => {
                     show={show}
                     toggle={() => {
                         setShow(!show)
-                        getDataList({
-                            q: value1,
+                        // getDataList({
+                        //     q: value1,
+                        //     page: currentPage,
+                        //     perPage: rowsPerPage
+                        // })
+
+                        searchContributionProduct({
+                            searchKey: searchKey,
+                            category: selectedCategoryId,
                             page: currentPage,
                             perPage: rowsPerPage
                         })

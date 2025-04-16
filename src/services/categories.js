@@ -19,7 +19,7 @@ export async function createCategory(data) {
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `admin/super-admin/category/create`
+    apiObject.endpoint = `super-admin/category/create`
     apiObject.body = data
     apiObject.multipart = false
 
