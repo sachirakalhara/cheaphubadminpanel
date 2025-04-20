@@ -1,10 +1,14 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Badge, Button, Card, Col, Input, Label, Row} from "reactstrap";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
 import {ArrowRight, ChevronDown, Plus, X} from "react-feather";
-import {customStyles, emptyUI, getCustomDateTimeStamp} from "../../utility/Utils";
+import {customStyles, customToastMsg, emptyUI, getCustomDateTimeStamp} from "../../utility/Utils";
 import {Link} from "react-router-dom";
+import * as TicketServices from "../../services/tickets";
+import {toggleLoading} from "../../redux/loading";
+import {useDispatch} from "react-redux";
+import {tableDataDateTimeConverter} from "../../utility/commonFun";
 
 const CustomHeader = ({
                           onOrderTextChange,
@@ -48,45 +52,10 @@ const CustomHeader = ({
 }
 
 const TicketScreen = () => {
+    const dispatch = useDispatch();
     const [store, setStore] = useState({
-        data: [
-            {
-                id: 1,
-                ticketId: 'Tick12345',
-                email: 'gebush48@gmail.com',
-                status: 'Completed',
-                date: '2024-02-10'
-            },
-            {
-                id: 2,
-                ticketId: 'Tick12346',
-                email: 'samplegmail.com',
-                status: 'Pending',
-                date: '2024-02-12'
-            },
-            {
-                id: 3,
-                ticketId: 'Tick12347',
-                email: 'gebush48@gmail.com',
-                status: 'Completed',
-                date: '2024-02-15'
-            },
-            {
-                id: 4,
-                ticketId: 'Tick12348',
-                email: 'popogebush4568@gmail.com',
-                status: 'Completed',
-                date: '2024-02-18'
-            },
-            {
-                id: 5,
-                ticketId: 'Tick12349',
-                email: 'sadsdgsdsdebush48@gmail.com',
-                status: 'Closed',
-                date: '2024-02-20'
-            }
-        ],
-        total: 1
+        data: [],
+        total: 0
     });
 
     const [currentPage, setCurrentPage] = useState(0);
@@ -94,22 +63,49 @@ const TicketScreen = () => {
     const [isFetched, setIsFetched] = useState(false);
     const [val, setVal] = useState('')
     const [statusValue, setStatusValue] = useState('');
-    const [searchKey, setSearchKey] = useState('')
+    const [searchKey, setSearchKey] = useState('');
+
+
+    useEffect(() => {
+        setSearchKey('');
+        setCurrentPage(1);
+        getAllTickets('', 1);
+    }, []);
+
+    const getAllTickets = async (val, page) => {
+        dispatch(toggleLoading());
+        const body = {
+            "all": 0,
+            "ticket_number": val
+        }
+
+        TicketServices.getAllTickets(body, page)
+            .then(res => {
+                if (res.success) {
+                    dispatch(toggleLoading());
+                    console.log(res)
+                    setStore({data: res.data.data, total: res.data?.meta?.last_page ?? 0});
+                } else {
+                    dispatch(toggleLoading());
+                    customToastMsg(res.message, res.status)
+                }
+            })
+    }
 
     const columns = [
-        {name: 'Ticket Number', selector: row => row.ticketId},
-        {name: 'email', selector: row => row.email},
+        {name: 'Ticket Number', selector: row => row.ticket_number},
+        {name: 'Subject', selector: row => row.subject},
         {
             name: 'Status',
             selector: row => <Badge
-                color={row.status === 'Incomplete' ? 'danger' : row.status === 'Pending' ? 'warning' : 'success'}>{row.status}</Badge>
+                color={row.status === "closed" ? 'danger' : row.status === 'open' ? 'success' : 'secondary'}>{row.status}</Badge>
         },
-        {name: 'Date', selector: row => row.date},
+        {name: 'Date', selector: row => tableDataDateTimeConverter(row.created_at)},
         {
             name: "",
             minWidth: "100px",
             cell: row => (
-                <Link to={`ticket/${row.ticketId}`} state={row}>
+                <Link to={`ticket/${row.ticket_number}`} state={row}>
                     <ArrowRight size={18} className="cursor-pointer"/>
                 </Link>
 
@@ -156,19 +152,20 @@ const TicketScreen = () => {
         } else if (store.data?.length === 0 && isFiltered) {
             return []
         } else {
-            return store.allData.slice(0, rowsPerPage)
+            return store.data.slice(0, rowsPerPage)
         }
     }
 
 
     const handlePagination = page => {
         setCurrentPage(page.selected);
-        // getCustomers();
+        const pageNumber = page.selected + 1;
+        getAllTickets(searchKey, pageNumber);
     };
 
     const handleSearch = value => {
         setSearchKey(value);
-        // getCustomers();
+        getAllTickets(value,currentPage);
     };
 
 

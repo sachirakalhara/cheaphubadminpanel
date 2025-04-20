@@ -13,28 +13,23 @@ import {useDispatch} from 'react-redux'
 import classnames from 'classnames'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import {MessageSquare, Menu, PhoneCall, Video, Search, MoreVertical, Mic, Image, Send} from 'react-feather'
+import {useParams} from "react-router-dom";
 
 // ** Reactstrap Imports
 import {
     Form,
-    Label,
     Input,
     Button,
-    InputGroup,
-    DropdownItem,
-    DropdownMenu,
-    DropdownToggle,
-    InputGroupText,
-    UncontrolledDropdown
+    InputGroup
 } from 'reactstrap'
 
 const ChatLog = props => {
     // ** Props & Store
-    const {handleUser, handleUserSidebarRight, handleSidebar, chatDetails, userSidebarLeft} = props
+    const {handleUser, handleUserSidebarRight, handleSidebar, chatDetails, userSidebarLeft, replyCallback} = props
 
     // ** Refs & Dispatch
-    const chatArea = useRef(null)
-    const dispatch = useDispatch()
+    const chatArea = useRef(null);
+    const dispatch = useDispatch();
 
     // ** State
     const [msg, setMsg] = useState('')
@@ -48,7 +43,7 @@ const ChatLog = props => {
     // ** If user chat is not empty scrollToBottom
     useEffect(() => {
         const chatDetailsLen = Object.keys(chatDetails).length
-console.log(chatDetails)
+        console.log(chatDetails)
         if (chatDetailsLen) {
             scrollToBottom()
         }
@@ -106,7 +101,7 @@ console.log(chatDetails)
                             imgWidth={36}
                             imgHeight={36}
                             className='box-shadow-1 cursor-pointer'
-                            img={chatDetails.customer.avatar}
+                            img={"https://thumbs.dreamstime.com/b/braka-avatar-fotografii-placeholder-profilowa-ikona-124557887.jpg"}
                         />
                     </div>
 
@@ -133,7 +128,9 @@ console.log(chatDetails)
     const handleSendMsg = e => {
         e.preventDefault()
         if (msg.length) {
-            dispatch(sendMsg({...chatDetails, message: msg}))
+            // dispatch(sendMsg({...chatDetails, message: msg}))
+            console.log('msg', msg)
+            replyCallback(msg)
             setMsg('')
         }
     }
@@ -153,25 +150,8 @@ console.log(chatDetails)
             </div>
             {Object.keys(chatDetails).length ? (
                 <div className={classnames('active-chat', {'d-none': chatDetails === null})}>
-                    <div className='chat-navbar'>
-                        <header className='chat-header'>
-                            <div className='d-flex align-items-center'>
-                                <div className='sidebar-toggle d-block d-lg-none me-1' onClick={handleSidebar}>
-                                    <Menu size={21}/>
-                                </div>
-                                <Avatar
-                                    imgHeight='36'
-                                    imgWidth='36'
-                                    img={chatDetails.customer.avatar}
-                                    status={'online'}
-                                    className='avatar-border user-profile-toggle m-0 me-1 cursor-default'
-                                />
-                                <h6 className='mb-0'>{chatDetails.customer.fullName}</h6>
-                            </div>
-                        </header>
-                    </div>
-
-                    <ChatWrapper ref={chatArea} className='user-chats' options={{wheelPropagation: false}}>
+                    <ChatWrapper ref={chatArea} className='user-chats' style={{height: '85%'}}
+                                 options={{wheelPropagation: false}}>
                         {chatDetails.chat ? <div className='chats'>{renderChats()}</div> : null}
                     </ChatWrapper>
 

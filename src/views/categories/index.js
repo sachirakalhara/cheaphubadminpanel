@@ -16,14 +16,14 @@ import '@styles/react/apps/app-invoice.scss'
 
 
 import * as stylesService from "../../services/style-resources"
-import {customSweetAlert, customToastMsg, emptyUI} from "../../utility/Utils"
+import {customSweetAlert, customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile} from "../../utility/Utils"
 import {useForm} from "react-hook-form"
 import {toggleLoading} from '@store/loading'
 
 import AdditionModal from "../../@core/components/modal/categoryModal/AdditionModal"
 import * as CategoryServices from "../../services/categories";
 
-let prev = 0
+let prev = 0;
 
 const CustomHeader = (props) => {
     return (
@@ -73,6 +73,7 @@ const CustomHeader = (props) => {
 const defaultValues = {
     name: '',
     description: '',
+    categoryImageName: ''
 }
 
 const CategoryList = () => {
@@ -114,6 +115,17 @@ const CategoryList = () => {
     })
 
 
+    const [uploadedCategoryImage, setUploadedCategoryImage] = useState(null);
+    const [categoryImageSrc, setCategoryImageSrc] = useState('');
+    const [categoryImageCrop, setCategoryImageCrop] = useState({x: 0, y: 0});
+    const [categoryImageCroppedAreaPixels, setCategoryImageCroppedAreaPixels] = useState(null);
+    const [categoryCroppedImage, setCategoryCroppedImage] = useState(null);
+    const [categoryImageIsCropVisible, setCategoryImageIsCropVisible] = useState(false);
+    const [categoryImageZoom, setCategoryImageZoom] = useState(1);
+    const [categoryImageName, setCategoryImageName] = useState('');
+    const [file, setFile] = useState(null);
+
+
     const getDatass = async (params) => {
         dispatch(toggleLoading())
         await CategoryServices.getAllCategories()
@@ -148,7 +160,7 @@ const CategoryList = () => {
                         total: 0
                     })
                 } else {
-                    customToastMsg(res.message, 0,'',()=>{
+                    customToastMsg(res.message, 0, '', () => {
                         setStore({allData: [], data: [], params, total: 0})
                     })
                 }
@@ -178,7 +190,7 @@ const CategoryList = () => {
             })
         } else {
             await searchData({
-                searchKey:searchKey,
+                searchKey: searchKey,
                 perPage: rowsPerPage,
                 page: page.selected
             })
@@ -243,19 +255,61 @@ const CategoryList = () => {
         )
     }
 
+    const onCropChange = (crop) => {
+        setCategoryImageCrop(crop);
+    };
+
+    const onCropComplete = async (croppedArea, croppedAreaPixels) => {
+        setCategoryImageCroppedAreaPixels(croppedAreaPixels);
+        try {
+            const croppedImage = await getCroppedImg(
+                categoryImageSrc,
+                croppedAreaPixels,
+                0 // rotation
+            );
+            setCategoryCroppedImage(croppedImage);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleChangeFileShare = async (file) => {
+        if (isImageFile(file.name)) {
+            setUploadedCategoryImage(null);
+            setCategoryImageIsCropVisible(true);
+            setCategoryImageName(file.name);
+            const imageDataUrl = await fileReader(file);
+            setFile(file)
+            setCategoryImageSrc(imageDataUrl);
+            setValue("categoryImageName", file.name);
+        } else {
+            setCategoryImageIsCropVisible(false);
+        }
+    };
+
+
     const onSubmit = async data => {
         if (Object.values(data).every(field => field.length > 0)) {
             const body = {
                 name: data.name,
                 description: data.description,
+                // image: file
             }
             dispatch(toggleLoading())
 
             if (isEditMode) {
 
                 Object.assign(body, {
-                    id: selectedId
+                    id: selectedId,
+                    // image: file,
                 })
+
+                // const formData = new FormData();
+                // for (const key in body) {
+                //     if (body[key] !== null) {
+                //         formData.append(key, body[key]);
+                //     }
+                // }
 
                 await CategoryServices.updateCategory(body)
                     .then(res => {
@@ -380,6 +434,12 @@ const CategoryList = () => {
             )
         },
         {
+            name: 'Image',
+            cell: row => <img src={row.image ?? "https://www.svgrepo.com/show/508699/landscape-placeholder.svg"} alt={row.name}
+                              style={{width: '40px', height: '40px', borderRadius: '50%'}}/>,
+            center: true,
+        },
+        {
             sortable: false,
             width: '35%',
             name: 'Category Description',
@@ -452,11 +512,35 @@ const CategoryList = () => {
                     toggle={() => {
                         setShow(!show)
                         reset()
+
+                        setCategoryImageSrc('')
+                        setCategoryImageCrop({x: 0, y: 0});
+                        setCategoryImageCroppedAreaPixels(null);
+                        setCategoryCroppedImage(null);
+                        setCategoryImageIsCropVisible(false);
+                        setCategoryImageZoom(1);
+                        setCategoryImageName('');
+                        setUploadedCategoryImage(null);
+                        setIsEditMode(false);
+                        setSelectedId('')
+
                     }}
                     onSubmit={handleSubmit(onSubmit)}
                     control={control}
                     errors={errors}
                     isEditMode={isEditMode}
+
+                    handleChangeFileShare={handleChangeFileShare}
+                    uploadedCategoryImage={uploadedCategoryImage}
+                    categoryImageName={categoryImageName}
+                    categoryImageIsCropVisible={categoryImageIsCropVisible}
+                    categoryImageSrc={categoryImageSrc}
+                    categoryImageCrop={categoryImageCrop}
+                    categoryImageZoom={categoryImageZoom}
+                    onCropChange={onCropChange}
+                    onCropComplete={onCropComplete}
+                    onCropChangeHandle={(e) => setCategoryImageZoom(e.target.value)}
+                    categoryCroppedImage={categoryCroppedImage}
                 />
             </div>
         </Fragment>

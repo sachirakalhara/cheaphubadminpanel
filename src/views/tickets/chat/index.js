@@ -15,9 +15,16 @@ import {getUserProfile, getChatContacts} from './store'
 import '@styles/base/pages/app-chat.scss'
 import '@styles/base/pages/app-chat-list.scss'
 
+import {useParams} from "react-router-dom";
+import * as TicketServices from "../../../services/tickets";
+import {toggleLoading} from "../../../redux/loading";
+import {notifyMessage} from "../../../utility/commonFun";
+import {getTicketChat} from "../../../services/tickets";
+
 const AppChat = () => {
     // ** Store Vars
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
+    const {id} = useParams();
     const store = useSelector(state => state.chat)
 
     // ** States
@@ -25,6 +32,8 @@ const AppChat = () => {
     const [sidebar, setSidebar] = useState(false)
     const [userSidebarRight, setUserSidebarRight] = useState(false)
     const [userSidebarLeft, setUserSidebarLeft] = useState(false)
+    const [chatList, setChatList] = useState({});
+    const [ticketDetails, setTicketDetails] = useState({});
 
     // ** Sidebar & overlay toggle functions
     const handleSidebar = () => setSidebar(!sidebar)
@@ -45,14 +54,80 @@ const AppChat = () => {
         dispatch(getUserProfile())
     }, [dispatch])
 
+    useEffect(() => {
+        getAllChatList();
+    }, [])
+
+    const getAllChatList = () => {
+        dispatch(toggleLoading())
+        const body = {
+            "all": 1,
+            "ticket_number": id
+        }
+        TicketServices.getTicketChat(body)
+            .then((res) => {
+                if (res.success) {
+                    dispatch(toggleLoading())
+                    setTicketDetails(res.data[0]);
+
+                    const list = [];
+                    if (res.data[0]) {
+                        res.data[0].comments.map((item) => {
+                            if (item.user.user_level_id === 2) {
+                                list.push({senderId: 2, message: item.message, time: item.created_at});
+                            } else {
+                                list.push({senderId: 11, message: item.message, time: item.created_at});
+                            }
+                        })
+                    }
+
+                    const chatObj = {
+                        "chat": {
+                            "id": 1,
+                            chat: list
+                        }
+                    }
+
+                    setChatList(chatObj);
+
+
+                } else {
+                    dispatch(toggleLoading())
+                    notifyMessage(res.message, res.status);
+                }
+            })
+    }
+
+    const replyHandler = (msg) => {
+        dispatch(toggleLoading())
+        const body = {
+            "id": ticketDetails?.id,
+            "message": msg
+        }
+        TicketServices.createTicketComment(body)
+            .then((res) => {
+                if (res.success) {
+                    dispatch(toggleLoading())
+
+                    setChatList({
+                        "chat": {
+                            "id": 1,
+                            chat: [...chatList.chat.chat, {senderId: 11, message: msg, time: new Date()}]
+                        }
+                    })
+
+                } else {
+                    dispatch(toggleLoading())
+                    notifyMessage(res.message, res.status);
+                }
+            })
+    }
+
     return (
         <Fragment>
             <Sidebar
                 store={store}
-                sidebar={sidebar}
-                handleSidebar={handleSidebar}
-                userSidebarLeft={userSidebarLeft}
-                handleUserSidebarLeft={handleUserSidebarLeft}
+                ticketDetails={ticketDetails}
             />
             <div className='content-right'>
                 <div className='content-wrapper'>
@@ -64,46 +139,14 @@ const AppChat = () => {
                             onClick={handleOverlayClick}
                         ></div>
                         <Chat
-                            chatDetails={{
-                                "chat": {
-                                    "id": 1,
-                                    "chat": [
-                                        {
-                                            "message": "Hi",
-                                            "time": "Mon Dec 10 2018 07:45:00 GMT+0000 (GMT)",
-                                            "senderId": 11
-                                        }, {
-                                            "message": "Hello. How can I help You?",
-                                            "time": "Mon Dec 11 2018 07:45:15 GMT+0000 (GMT)",
-                                            "senderId": 2
-                                        }, {
-                                            "message": "Can I get details of my last transaction I made last month?",
-                                            "time": "Mon Dec 11 2018 07:46:10 GMT+0000 (GMT)",
-                                            "senderId": 11
-                                        }, {
-                                            "message": "We need to check if we can provide you such information.",
-                                            "time": "Mon Dec 11 2018 07:45:15 GMT+0000 (GMT)",
-                                            "senderId": 2
-                                        }, {
-                                            "message": "I will inform you as I get update on this.",
-                                            "time": "Mon Dec 11 2018 07:46:15 GMT+0000 (GMT)",
-                                            "senderId": 2
-                                        }, {
-                                            "message": "If it takes long you can mail me at my mail address.",
-                                            "time": "2025-02-19T18:36:51.629Z",
-                                            "senderId": 11
-                                        }]
-                                },
-                                "customer": {
-                                    "id": 1,
-                                    "fullName": "Felecia Rower",
-                                    "avatar": "/static/media/avatar-s-2.d21f2121.jpg"
-                                }
-                            }}
+                            chatDetails={chatList}
                             handleUser={handleUser}
                             handleSidebar={handleSidebar}
                             userSidebarLeft={userSidebarLeft}
                             handleUserSidebarRight={handleUserSidebarRight}
+                            replyCallback={(e) => {
+                                replyHandler(e)
+                            }}
                         />
                     </div>
                 </div>

@@ -175,3 +175,11 @@ export const defaultImageBinder = (image) => {
         return image;
     }
 }
+
+export const tableDataDateTimeConverter = (date) => {
+    if (date === null || date === undefined || date === "") {
+        return "N/A";
+    } else {
+        return moment(date).format("YYYY-MM-DD | HH:mm:ss");
+    }
+};

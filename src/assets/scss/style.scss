@@ -118,3 +118,15 @@ $font-family-sans-serif: 'Montserrat', Helvetica, Arial, serif !default;
 .ms-05{
   margin-left: 5px!important;
 }
+
+.separator{
+  border-top: 1px solid #E6E8EC;
+}
+
+.three-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
