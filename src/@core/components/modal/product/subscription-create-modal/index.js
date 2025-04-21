@@ -95,7 +95,7 @@ const SubscriptionCreationModal = (props) => {
             // Convert the cropped image to a File object
             const response = await fetch(croppedImage);
             const blob = await response.blob();
-            const file = new File([blob], productImageName, { type: blob.type });
+            const file = new File([blob], productImageName, {type: blob.type});
 
             // console.log("croppedImg::::::::::::::", croppedImage);
             // console.log("file::::::::::::::", file);
@@ -305,7 +305,7 @@ const SubscriptionCreationModal = (props) => {
                             <NavItem>
                                 <NavLink
                                     active={active === 3}
-                                    // disabled={active !== 3}
+                                    disabled={active !== 3 && active !== 4 && (!props.isManageMode)}
                                     onClick={() => onHeaderTabPress(3)}>
                                     <img src={active !== 3 ? imgDollarBlack : imgDollarWhite} alt="img" height={20}
                                          width={20}
@@ -317,7 +317,7 @@ const SubscriptionCreationModal = (props) => {
                             <NavItem>
                                 <NavLink
                                     active={active === 4}
-                                    // disabled={active !== 4}
+                                    disabled={active !== 3 && active !== 4 && (!props.isManageMode)}
                                     onClick={() => onHeaderTabPress(4)}>
                                     <img src={active !== 4 ? imgBoxBlack : imgBoxWhite} alt="img" height={20}
                                          width={20} className="me-1"/>

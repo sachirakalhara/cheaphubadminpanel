@@ -139,20 +139,22 @@ const RepeatingPackageForm = (props) => {
         };
         ContributionProductService.getAllSubscriptionPackages(body).then((res) => {
             if (res.success) {
-                const list = res.data.subscription_list.map((item) => ({
-                    value: item.id,
-                    label: item.name,
-                }));
-                setSubscriptionList(list);
+                if (res.data?.subscription_list){
+                    const list = res.data?.subscription_list.map((item) => ({
+                        value: item.id,
+                        label: item.name,
+                    })) ?? []
+
+                    setSubscriptionList(list);
+                }
+
             }
         });
     };
 
     const addNewPackage = (list, index) => {
 
-
-        if (validateFields(index)) {
-            setCount(count + 1);
+        if (packages.length === 0) {
             setPackages([
                 ...list,
                 {
@@ -167,7 +169,26 @@ const RepeatingPackageForm = (props) => {
                     errors: {},
                 },
             ]);
+        }else {
+            if (validateFields(index)) {
+                setCount(count + 1);
+                setPackages([
+                    ...list,
+                    {
+                        id: null,
+                        subscription: '',
+                        packageName: '',
+                        duration: '',
+                        quantity: '',
+                        replaceCount: '',
+                        paymentMethods: [],
+                        price: '',
+                        errors: {},
+                    },
+                ]);
+            }
         }
+
     };
 
     const handleInputChange = (index, key, value) => {
@@ -248,7 +269,6 @@ const RepeatingPackageForm = (props) => {
                 .then((res) => {
                     if (res.success) {
                         if (pkg.id === null) {
-                            addNewPackage(packages, selectedObj);
 
                             const newPackage = {
                                 id: res.data.package.id,
@@ -265,8 +285,30 @@ const RepeatingPackageForm = (props) => {
                                 errors: {},
                             }
                             const updatedPackages = [...packages];
-                            updatedPackages[selectedObj] = newPackage;
-                            setPackages(updatedPackages);
+
+                            //array should be update when pkg. id  === res.data.package.id
+
+                            console.log("selectedObj", selectedObj)
+                            updatedPackages[selectedObj].id = res.data.package.id;
+                            updatedPackages[selectedObj].subscription = res.data.package.subscription.id;
+                            updatedPackages[selectedObj].packageName = res.data.package.name;
+                            updatedPackages[selectedObj].duration = res.data.package.expiry_duration.toString();
+                            updatedPackages[selectedObj].quantity = res.data.package.subscription.available_serial_count.toString();
+                            updatedPackages[selectedObj].replaceCount = res.data.package.replace_count.toString();
+                            updatedPackages[selectedObj].paymentMethods = res.data.package.payment_method.split(',').map((method) => ({
+                                value: method,
+                                label: method
+                            }));
+                            updatedPackages[selectedObj].price = res.data.package.price.toString();
+                            updatedPackages[selectedObj].errors = {};
+
+
+                            addNewPackage(packages, selectedObj);
+
+
+                            // updatedPackages[selectedObj] = newPackage;
+                            // console.log(updatedPackages);
+                            // setPackages(updatedPackages);
                         }
 
                         customToastMsg(`Package was successfully ${pkg.id !== null ? 'updated' : 'created'}`, 1);
@@ -457,11 +499,11 @@ const RepeatingPackageForm = (props) => {
                                                     outline
                                                 >
                                                     <Save size={14} className="me-50"/>
-                                                    <span>{pkg.id === null ? "Save & Add More" : "Update"}</span>
+                                                    <span>{pkg.id === null ? "Save" : "Update"}</span>
                                                 </Button>
                                             </Col>
 
-                                            {i !== 0 && (
+                                            {(i !== 0 || props.isManageMode) && (
                                                 <Col md={2}>
                                                     <Button
                                                         color="danger"
@@ -486,13 +528,13 @@ const RepeatingPackageForm = (props) => {
                         )
                     })}
 
-                    {props.isManageMode && (
+                    {/*{props.isManageMode && (*/}
                         <Button className="btn-icon" color="primary"
                                 onClick={() => addNewPackage(packages, selectedObj)}>
                             <Plus size={14}/>
                             <span className="align-middle ms-25">Add New</span>
                         </Button>
-                    )}
+                    {/*)}*/}
 
                 </CardBody>
             </Card>

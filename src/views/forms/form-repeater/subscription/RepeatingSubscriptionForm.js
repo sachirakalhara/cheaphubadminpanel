@@ -22,23 +22,38 @@ const RepeatingSubscriptionForm = (props) => {
     const getFormatterRepeatArray = (array) => {
         let list = [];
 
-        if (props.isManageMode) {
-            if (array.length === 0) {
-                list = [{id: null, name: '', gateway_fee: '', serials: '', errors: {}}]
-            } else {
-                array.map(item => {
-                    list.push({
-                        id: item.id,
-                        name: item.name,
-                        gateway_fee: item.gateway_fee.toString(),
-                        serials: item.serial,
-                        errors: {}
-                    })
-                })
-            }
-        } else {
+        // if (props.isManageMode) {
+        //     if (array.length === 0) {
+        //         list = [{id: null, name: '', gateway_fee: '', serials: '', errors: {}}]
+        //     } else {
+        //         array.map(item => {
+        //             list.push({
+        //                 id: item.id,
+        //                 name: item.name,
+        //                 gateway_fee: item.gateway_fee.toString(),
+        //                 serials: item.serial,
+        //                 errors: {}
+        //             })
+        //         })
+        //     }
+        // } else {
+        //     list = [{id: null, name: '', gateway_fee: '', serials: '', errors: {}}]
+        // }
+
+        if (array.length === 0) {
             list = [{id: null, name: '', gateway_fee: '', serials: '', errors: {}}]
+        } else {
+            array.map(item => {
+                list.push({
+                    id: item.id,
+                    name: item.name,
+                    gateway_fee: item.gateway_fee.toString(),
+                    serials: item.serial,
+                    errors: {}
+                })
+            })
         }
+
         console.log("list???????????????????????", list)
         return list;
     }
@@ -56,9 +71,12 @@ const RepeatingSubscriptionForm = (props) => {
             .then(res => {
                 if (res.success) {
                     const formattedList = getFormatterRepeatArray(res.data.contribution_product.subscriptions);
-                    setSubscriptions(formattedList)
+                    console.log("formattedList", formattedList)
+
                     if (isIncreased) {
                         increaseCount(formattedList, selectedObj);
+                    }else {
+                        setSubscriptions(formattedList)
                     }
                 } else {
                     customToastMsg(res.message, res.status)
@@ -67,11 +85,14 @@ const RepeatingSubscriptionForm = (props) => {
     }
 
     const increaseCount = (list, index) => {
-        if (validateFields(index)) {
-            setCount(count + 1);
+        if (subscriptions.length === 0) {
             setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', errors: {}}]);
+        } else {
+            if (validateFields(index)) {
+                setCount(count + 1);
+                setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', errors: {}}]);
+            }
         }
-
     };
 
     const handleInputChange = (index, key, value) => {
@@ -148,11 +169,12 @@ const RepeatingSubscriptionForm = (props) => {
                     if (res.success) {
                         customToastMsg("Subscription was successfully created", 1);
                         getContributionProductDetails(true);
-                        if (subscription.id !== null){
-                            props.toggle();
-                        }else {
-                            updateNextButtonState();
-                        }
+
+                        // if (subscription.id !== null){
+                        //     props.toggle();
+                        // }else {
+                        //     updateNextButtonState();
+                        // }
 
                     } else {
                         customToastMsg(res.message, res.status)
@@ -273,7 +295,7 @@ const RepeatingSubscriptionForm = (props) => {
                                             <Button color='primary' className='text-nowrap mt-2'
                                                     onClick={(e) => saveForm(e, index, subscription)} outline>
                                                 <Save size={14} className='me-50'/>
-                                                <span>{subscription.id === null ? "Save & Add More" : "Update"}</span>
+                                                <span>{subscription.id === null ? "Save" : "Update"}</span>
                                             </Button>
                                         </Col>
                                         {(index !== 0 || props.isManageMode) && (
@@ -287,6 +309,7 @@ const RepeatingSubscriptionForm = (props) => {
 
                                         )}
 
+
                                         <Col sm={12}>
                                             <hr/>
                                         </Col>
@@ -296,19 +319,19 @@ const RepeatingSubscriptionForm = (props) => {
                         );
                     })}
 
-                    {props.isManageMode && (
+                    {/*{props.isManageMode && (*/}
                         <Button className='btn-icon' color='primary'
                                 onClick={() => increaseCount(subscriptions, selectedObj)}>
                             <Plus size={14}/>
                             <span className='align-middle ms-25'>Add New</span>
                         </Button>
-                    )}
+                    {/*)}*/}
 
                 </CardBody>
             </Card>
 
             <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
-                <Button className='me-1' color='success' disabled={!isNextEnabled}
+                <Button className='me-1' color='success'
                         onClick={() => onNextPage()}
                 >
                     Next
