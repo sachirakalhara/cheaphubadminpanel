@@ -196,13 +196,13 @@ export async function getOrdersByCustomerId(customerId,page) {
     return await ApiService.callApi(apiObject)
 }
 
-export async function filterOrderList(body) {
+export async function filterOrderList(body,page) {
     const apiObject = {}
     apiObject.method = 'POST'
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `order/filter`
+    apiObject.endpoint = `order/filter?page=${page}&size=10`
     apiObject.body = body
     apiObject.multipart = false
 

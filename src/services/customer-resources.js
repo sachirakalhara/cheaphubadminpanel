@@ -14,13 +14,13 @@ export async function getAllColors() {
 }
 
 
-export async function getAllCustomers(body) {
+export async function getAllCustomers(body,page) {
     const apiObject = {}
     apiObject.method = 'POST'
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
-    apiObject.endpoint = `user/get-all`
+    apiObject.endpoint = `user/get-all?page=${page}&size=10`
     apiObject.body = body
     apiObject.multipart = false
 

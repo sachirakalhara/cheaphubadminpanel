@@ -41,7 +41,7 @@ const CustomerList = () => {
     const [statusValue, setStatusValue] = useState('')
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isFetched, setIsFetched] = useState(false);
 
@@ -53,7 +53,7 @@ const CustomerList = () => {
 
     useEffect(() => {
         // Fetch customers from API
-        getCustomers('');
+        getCustomers('', currentPage);
         getTotalSpend();
     }, []);
 
@@ -77,21 +77,21 @@ const CustomerList = () => {
             })
     }
 
-    const getCustomers = async (searchKey) => {
+    const getCustomers = async (searchKey, page) => {
         const body = {
             "all": 0,
             "search": searchKey,
             "user_type": "customer"
         }
-        CustomerResourcesServices.getAllCustomers(body)
+        CustomerResourcesServices.getAllCustomers(body, page)
             .then(response => {
                 console.log(response)
-                if (response.success){
+                if (response.success) {
                     setStore({
                         data: response.data.user_list,
-                        total: response.data.meta.total
+                        total: response.data.meta.last_page
                     })
-                }else {
+                } else {
                     customToastMsg(response.message, response.status)
                 }
                 setIsFetched(true)
@@ -102,13 +102,13 @@ const CustomerList = () => {
     }
 
     const handlePagination = page => {
-        setCurrentPage(page.selected);
-        // getCustomers();
+        setCurrentPage(page.selected + 1);
+        getCustomers(searchQuery, page.selected + 1);
     };
 
     const handleSearch = value => {
         setSearchQuery(value);
-        getCustomers(value);
+        getCustomers(value, currentPage);
     };
 
     const columns = [
@@ -121,7 +121,7 @@ const CustomerList = () => {
             name: "",
             minWidth: "100px",
             cell: row => (
-                <Link to={{ pathname: `customers/${row.display_name}`, state: row }}>
+                <Link to={{pathname: `customers/${row.display_name}`, state: row}}>
                     <ArrowRight size={18} className="cursor-pointer"/>
                 </Link>
 

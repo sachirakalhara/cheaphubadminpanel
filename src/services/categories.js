@@ -21,20 +21,20 @@ export async function createCategory(data) {
     apiObject.urlencoded = false
     apiObject.endpoint = `super-admin/category/create`
     apiObject.body = data
-    apiObject.multipart = false
+    apiObject.multipart = true
 
     return await ApiService.callApi(apiObject)
 }
 
 export async function updateCategory(data) {
     const apiObject = {}
-    apiObject.method = 'PUT'
+    apiObject.method = 'POST'
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
     apiObject.endpoint = `super-admin/category/update`
     apiObject.body = data
-    apiObject.multipart = false
+    apiObject.multipart = true
 
     return await ApiService.callApi(apiObject)
 }

@@ -57,7 +57,7 @@ const App = (props) => {
                 <div className={`file-picker-mini-sub`}>
                     <div className={`${props.invalid ? 'error' : ''}`}>
                         {props.defaultImg ? (
-                            <p className="active-lbl">
+                            <p className="active-lbl w-100">
                                 {props.defaultImg}
                             </p>
                         ) : (

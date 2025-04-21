@@ -129,7 +129,7 @@ const OrdersScreen = () => {
         total: 0
     });
 
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isFetched, setIsFetched] = useState(false);
     const [val, setVal] = useState('')
@@ -147,7 +147,7 @@ const OrdersScreen = () => {
     }, []);
 
 
-    const getAllOrders = async (type, status, searchKey, startDate = null, endDate = null) => {
+    const getAllOrders = async (type, status, searchKey, startDate = null, endDate = null, page=1) => {
         const body = {
             "all": 0,
             "type": type,
@@ -157,7 +157,7 @@ const OrdersScreen = () => {
             "from_date": formDataDateConverter(startDate) === "N/A" ? null : formDataDateConverter(startDate),
             "to_date": formDataDateConverter(endDate) === "N/A" ? null : formDataDateConverter(endDate),
         }
-        OrderResourcesServices.filterOrderList(body)
+        OrderResourcesServices.filterOrderList(body, page)
             .then(response => {
                 console.log(response)
                 if (response.success) {
@@ -253,95 +253,96 @@ const OrdersScreen = () => {
 
 
     const handlePagination = page => {
-        setCurrentPage(page.selected);
-        // getCustomers();
-    };
-
-    const handleSearch = (value) => {
-        setSearchQuery(value);
+        setCurrentPage(page.selected+1);
         const [startDate, endDate] = picker.length === 2 ? picker : [null, null];
-        getAllOrders(productCategory, statusValue, value, startDate, endDate);
-    };
+        getAllOrders(productCategory, statusValue, searchQuery, startDate, endDate, page.selected + 1);
+    }
+
+        const handleSearch = (value) => {
+            setSearchQuery(value);
+            const [startDate, endDate] = picker.length === 2 ? picker : [null, null];
+            getAllOrders(productCategory, statusValue, value, startDate, endDate, currentPage);
+        };
 
 
-    return (
-        <Fragment>
-            <Card className='mt-2'>
-                <CustomHeader
-                    value={val}
-                    onClearQuery={() => handleSearch("", 'order_key')}
-                    onSearchQueryChange={e => handleSearch(e.target.value, 'order_key')}
-                    searchQuery={searchQuery}
-                    productCategory={productCategory}
-                    statusValue={statusValue}
-                    selectStatusValue={e => setStatusValue(e.target.value)}
-                    selectProductCategory={e => setProductCategory(e.target.value)}
-                    picker={picker}
-                    onClearPicker={() => setPicker([])}
-                    onChangeDateRange={async (date) => {
-                        if (date.length === 2) {
-                            setPicker(date);
-                            const [startDate, endDate] = date;
-                            getAllOrders(productCategory, statusValue, searchQuery, startDate, endDate);
-                        }
-                    }}
-                    onCloseDateRange={(selectedDates, dateStr, instance) => {
-                        if (selectedDates.length === 1) {
-                            instance.setDate([picker[0], picker[1]], true)
-                        }
-                    }}
-                />
-
-                <div className='invoice-list-dataTable react-dataTable'>
-                    <DataTable
-                        noHeader={true}
-                        pagination
-                        sortServer
-                        paginationServer
-                        subHeader={true}
-                        columns={columns}
-                        responsive={true}
-                        data={dataToRender()}
-                        sortIcon={<ChevronDown/>}
-                        className="dataTables_wrapper"
-                        paginationDefaultPage={currentPage}
-                        paginationComponent={CustomPagination}
-                        customStyles={customStyles}
-                        noDataComponent={emptyUI(isFetched)}
+        return (
+            <Fragment>
+                <Card className='mt-2'>
+                    <CustomHeader
+                        value={val}
+                        onClearQuery={() => handleSearch("", 'order_key')}
+                        onSearchQueryChange={e => handleSearch(e.target.value, 'order_key')}
+                        searchQuery={searchQuery}
+                        productCategory={productCategory}
+                        statusValue={statusValue}
+                        selectStatusValue={e => setStatusValue(e.target.value)}
+                        selectProductCategory={e => setProductCategory(e.target.value)}
+                        picker={picker}
+                        onClearPicker={() => setPicker([])}
+                        onChangeDateRange={async (date) => {
+                            if (date.length === 2) {
+                                setPicker(date);
+                                const [startDate, endDate] = date;
+                                getAllOrders(productCategory, statusValue, searchQuery, startDate, endDate, currentPage);
+                            }
+                        }}
+                        onCloseDateRange={(selectedDates, dateStr, instance) => {
+                            if (selectedDates.length === 1) {
+                                instance.setDate([picker[0], picker[1]], true)
+                            }
+                        }}
                     />
-                </div>
-            </Card>
 
-            <Modal show={modalOpen} toggle={() => setModalOpen(!modalOpen)} headTitle={"Order Detail"} size={'lg'}>
-                <div className="p-3">
-                    {selectedRow && (
-                        <>
-                            <div className="mb-2">
-                                <label className="form-label">Order Number</label>
-                                <Input type="text" value={selectedRow.order_id} readOnly/>
-                            </div>
-                            <div className="mb-2">
-                                <label className="form-label">Amount</label>
-                                <Input type="text" value={selectedRow.amount} readOnly/>
-                            </div>
-                            <div className="mb-2">
-                                <label className="form-label">Status</label>
-                                <Input type="text" value={selectedRow.payment_status} readOnly/>
-                            </div>
-                            <div className="mb-2">
-                                <label className="form-label">Date</label>
-                                <Input type="text" value={formDataDateConverter(selectedRow.created_at)} readOnly/>
-                            </div>
-                            <div className="mb-2">
-                                <label className="form-label">Description</label>
-                                <Input type="text-area" value={selectedRow.description} readOnly/>
-                            </div>
-                        </>
-                    )}
-                </div>
-            </Modal>
-        </Fragment>
-    )
-}
+                    <div className='invoice-list-dataTable react-dataTable'>
+                        <DataTable
+                            noHeader={true}
+                            pagination
+                            sortServer
+                            paginationServer
+                            subHeader={true}
+                            columns={columns}
+                            responsive={true}
+                            data={dataToRender()}
+                            sortIcon={<ChevronDown/>}
+                            className="dataTables_wrapper"
+                            paginationDefaultPage={currentPage}
+                            paginationComponent={CustomPagination}
+                            customStyles={customStyles}
+                            noDataComponent={emptyUI(isFetched)}
+                        />
+                    </div>
+                </Card>
 
-export default OrdersScreen;
+                <Modal show={modalOpen} toggle={() => setModalOpen(!modalOpen)} headTitle={"Order Detail"} size={'lg'}>
+                    <div className="p-3">
+                        {selectedRow && (
+                            <>
+                                <div className="mb-2">
+                                    <label className="form-label">Order Number</label>
+                                    <Input type="text" value={selectedRow.order_id} readOnly/>
+                                </div>
+                                <div className="mb-2">
+                                    <label className="form-label">Amount</label>
+                                    <Input type="text" value={selectedRow.amount} readOnly/>
+                                </div>
+                                <div className="mb-2">
+                                    <label className="form-label">Status</label>
+                                    <Input type="text" value={selectedRow.payment_status} readOnly/>
+                                </div>
+                                <div className="mb-2">
+                                    <label className="form-label">Date</label>
+                                    <Input type="text" value={formDataDateConverter(selectedRow.created_at)} readOnly/>
+                                </div>
+                                <div className="mb-2">
+                                    <label className="form-label">Description</label>
+                                    <Input type="text-area" value={selectedRow.description} readOnly/>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </Modal>
+            </Fragment>
+        )
+    }
+
+    export default OrdersScreen;

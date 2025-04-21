@@ -104,7 +104,6 @@ const CategoryList = () => {
     const [selectedId, setSelectedId] = useState('')
 
     const [store, setStore] = useState({
-        allData: [],
         data: [],
         params: {
             page: currentPage,
@@ -128,46 +127,28 @@ const CategoryList = () => {
 
     const getDatass = async (params) => {
         dispatch(toggleLoading())
-        await CategoryServices.getAllCategories()
-            .then(res => {
-                console.log(res)
-                if (res.success) {
-                    if (res.data?.category_list !== undefined) {
-                        setStore({allData: res.data?.category_list, data: res.data?.category_list, params, total: 0})
-                    }
-                } else {
-                    customToastMsg(res.message, res.status)
-                }
-                dispatch(toggleLoading())
-                setIsFetched(true)
-            })
-    }
-
-
-    const searchData = async (params) => {
-        dispatch(toggleLoading())
+        setIsFetched(false)
         const data = {
-            "all": 1,
+            "all": 0,
             "category_name": params.searchKey
         }
         await CategoryServices.filterCategories(data)
             .then(res => {
                 if (res.success) {
                     setStore({
-                        allData: res.data.category_list,
-                        data: res.data.category_list,
+                        data: res.data?.category_list ?? [],
                         params,
-                        total: 0
+                        total: res.data?.meta?.last_page ?? 0
                     })
                 } else {
                     customToastMsg(res.message, 0, '', () => {
-                        setStore({allData: [], data: [], params, total: 0})
+                        setStore({data: [], params, total: 0})
                     })
                 }
+                setIsFetched(true)
                 dispatch(toggleLoading())
             })
     }
-
 
     useEffect(async () => {
         await getDatass({
@@ -189,7 +170,7 @@ const CategoryList = () => {
                 page: page.selected
             })
         } else {
-            await searchData({
+            await getDatass({
                 searchKey: searchKey,
                 perPage: rowsPerPage,
                 page: page.selected
@@ -237,7 +218,7 @@ const CategoryList = () => {
         } else if (store.data?.length === 0 && isFiltered) {
             return []
         } else {
-            return store.allData.slice(0, rowsPerPage)
+            return store.data.slice(0, rowsPerPage)
         }
     }
 
@@ -290,28 +271,21 @@ const CategoryList = () => {
 
     const onSubmit = async data => {
         if (Object.values(data).every(field => field.length > 0)) {
-            const body = {
-                name: data.name,
-                description: data.description,
-                // image: file
-            }
+
+            const formData = new FormData();
+            formData.append('name', data.name);
+            formData.append('description', data.description);
+
             dispatch(toggleLoading())
 
             if (isEditMode) {
 
-                Object.assign(body, {
-                    id: selectedId,
-                    // image: file,
-                })
+                if (file !== null) {
+                    formData.append('image', file);
+                }
+                formData.append('id', selectedId);
 
-                // const formData = new FormData();
-                // for (const key in body) {
-                //     if (body[key] !== null) {
-                //         formData.append(key, body[key]);
-                //     }
-                // }
-
-                await CategoryServices.updateCategory(body)
+                await CategoryServices.updateCategory(formData)
                     .then(res => {
                         if (res.success) {
                             customToastMsg("Category updated successfully!", 1)
@@ -332,7 +306,8 @@ const CategoryList = () => {
                         dispatch(toggleLoading())
                     })
             } else {
-                await CategoryServices.createCategory(body)
+                formData.append('image', file);
+                await CategoryServices.createCategory(formData)
                     .then(res => {
                         if (res.success) {
                             customToastMsg("New category added successfully!", 1)
@@ -389,7 +364,7 @@ const CategoryList = () => {
     const onSearch = async (searchKey) => {
         if (searchKey.length !== 0) {
             setCurrentPage(0)
-            await searchData({
+            await getDatass({
                 searchKey: searchKey,
                 page: 0,
                 perPage: 0
@@ -414,9 +389,14 @@ const CategoryList = () => {
     }
 
     const onUpdateHandler = (data) => {
+        console.log(data)
         setSelectedId(data.id)
         setValue("name", data.name !== null ? data.name : "")
         setValue("description", data.description)
+        setValue("categoryImageName", data.image)
+
+        setCategoryImageName(data.image);
+        setUploadedCategoryImage(data.image);
 
         setShow(true)
         setIsEditMode(true)
@@ -435,7 +415,8 @@ const CategoryList = () => {
         },
         {
             name: 'Image',
-            cell: row => <img src={row.image ?? "https://www.svgrepo.com/show/508699/landscape-placeholder.svg"} alt={row.name}
+            cell: row => <img src={row.image ?? "https://www.svgrepo.com/show/508699/landscape-placeholder.svg"}
+                              alt={row.name}
                               style={{width: '40px', height: '40px', borderRadius: '50%'}}/>,
             center: true,
         },
@@ -529,6 +510,7 @@ const CategoryList = () => {
                     control={control}
                     errors={errors}
                     isEditMode={isEditMode}
+                    selectedId={selectedId}
 
                     handleChangeFileShare={handleChangeFileShare}
                     uploadedCategoryImage={uploadedCategoryImage}
