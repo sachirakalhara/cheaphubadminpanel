@@ -15,7 +15,7 @@ import { Card, CardHeader, CardTitle, CardFooter, CardText, Input, Label, Row, C
 
 const DataTableWithButtons = () => {
   // ** State
-  const [currentPage, setCurrentPage] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const [searchValue, setSearchValue] = useState('')
   const [filteredData, setFilteredData] = useState([])
 

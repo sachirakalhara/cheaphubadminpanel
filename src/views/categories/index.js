@@ -1,24 +1,24 @@
-import React, {useState, useEffect, Fragment} from 'react'
+import React, { useState, useEffect, Fragment } from 'react'
 
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
-import {Calendar, ChevronDown, Eye, Plus, Trash, Umbrella, X} from 'react-feather'
+import { Calendar, ChevronDown, Eye, Plus, Trash, Umbrella, X } from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
-import {Button, Input, Row, Col, Card, Label, CardHeader, CardTitle, CardBody, CardSubtitle} from 'reactstrap'
+import { Button, Input, Row, Col, Card, Label, CardHeader, CardTitle, CardBody, CardSubtitle } from 'reactstrap'
 
 
-import {useDispatch} from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 
 
 import * as stylesService from "../../services/style-resources"
-import {customSweetAlert, customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile} from "../../utility/Utils"
-import {useForm} from "react-hook-form"
-import {toggleLoading} from '@store/loading'
+import { customSweetAlert, customToastMsg, emptyUI, fileReader, getCroppedImg, isImageFile } from "../../utility/Utils"
+import { set, useForm } from "react-hook-form"
+import { toggleLoading } from '@store/loading'
 
 import AdditionModal from "../../@core/components/modal/categoryModal/AdditionModal"
 import * as CategoryServices from "../../services/categories";
@@ -28,7 +28,7 @@ let prev = 0;
 const CustomHeader = (props) => {
     return (
         <Card>
-            <div className='invoice-list-table-header w-100 py-2 px-1' style={{whiteSpace: 'nowrap'}}>
+            <div className='invoice-list-table-header w-100 py-2 px-1' style={{ whiteSpace: 'nowrap' }}>
                 <h3 className='text-primary invoice-logo ms-0 mb-2'>Categories</h3>
                 <Row>
                     <Col lg='6' className='d-flex align-items-center px-0 px-lg-1'>
@@ -48,8 +48,8 @@ const CustomHeader = (props) => {
                                 />
                                 {props.searchKey.length !== 0 && (
                                     <X size={18}
-                                       className='cursor-pointer close-btn'
-                                       onClick={async () => props.onClearText()}
+                                        className='cursor-pointer close-btn'
+                                        onClick={async () => props.onClearText()}
                                     />
                                 )}
                             </div>
@@ -61,7 +61,7 @@ const CustomHeader = (props) => {
                         className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1 p-0'
                     >
                         <Button onClick={() => props.setShow(true)}>
-                            <Plus size={15}/> Add Category
+                            <Plus size={15} /> Add Category
                         </Button>
                     </Col>
                 </Row>
@@ -83,17 +83,17 @@ const CategoryList = () => {
         control,
         setError,
         handleSubmit,
-        formState: {errors},
+        formState: { errors },
         reset,
         setValue
-    } = useForm({defaultValues})
+    } = useForm({ defaultValues })
 
     // ** States
     // eslint-disable-next-line no-unused-vars
     const [value1, setValue1] = useState('')
     const [sort, setSort] = useState('desc')
     const [sortColumn, setSortColumn] = useState('id')
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     // eslint-disable-next-line no-unused-vars
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [show, setShow] = useState(false)
@@ -116,7 +116,7 @@ const CategoryList = () => {
 
     const [uploadedCategoryImage, setUploadedCategoryImage] = useState(null);
     const [categoryImageSrc, setCategoryImageSrc] = useState('');
-    const [categoryImageCrop, setCategoryImageCrop] = useState({x: 0, y: 0});
+    const [categoryImageCrop, setCategoryImageCrop] = useState({ x: 0, y: 0 });
     const [categoryImageCroppedAreaPixels, setCategoryImageCroppedAreaPixels] = useState(null);
     const [categoryCroppedImage, setCategoryCroppedImage] = useState(null);
     const [categoryImageIsCropVisible, setCategoryImageIsCropVisible] = useState(false);
@@ -142,7 +142,7 @@ const CategoryList = () => {
                     })
                 } else {
                     customToastMsg(res.message, 0, '', () => {
-                        setStore({data: [], params, total: 0})
+                        setStore({ data: [], params, total: 0 })
                     })
                 }
                 setIsFetched(true)
@@ -249,6 +249,18 @@ const CategoryList = () => {
                 0 // rotation
             );
             setCategoryCroppedImage(croppedImage);
+
+            // Convert the cropped image to a File object
+            const response = await fetch(croppedImage);
+            const blob = await response.blob();
+            const file = new File([blob], categoryImageName, { type: blob.type });
+
+            // console.log("croppedImg::::::::::::::", croppedImage);
+            // console.log("file::::::::::::::", file);
+
+            setFile(file); // Set the file state with the cropped image
+
+            return file; // Return the file object
         } catch (e) {
             console.error(e);
         }
@@ -260,7 +272,9 @@ const CategoryList = () => {
             setCategoryImageIsCropVisible(true);
             setCategoryImageName(file.name);
             const imageDataUrl = await fileReader(file);
-            setFile(file)
+            // setFile(file)
+            // console.log("actual file::::::::::::::", file)
+            // console.log("src file::::::::::::::", imageDataUrl)
             setCategoryImageSrc(imageDataUrl);
             setValue("categoryImageName", file.name);
         } else {
@@ -300,6 +314,18 @@ const CategoryList = () => {
                                 page: 0
                             })
                             reset()
+
+                            setCategoryImageSrc('')
+                            setCategoryImageCrop({ x: 0, y: 0 });
+                            setCategoryImageCroppedAreaPixels(null);
+                            setCategoryCroppedImage(null);
+                            setCategoryImageIsCropVisible(false);
+                            setCategoryImageZoom(1);
+                            setCategoryImageName('');
+                            setUploadedCategoryImage(null);
+                            setIsEditMode(false);
+                            setSelectedId('')
+
                         } else {
                             customToastMsg(res.message, res.status)
                         }
@@ -409,15 +435,15 @@ const CategoryList = () => {
             center: true,
             cell: row => (
                 <div className='d-flex align-items-center w-100 justify-content-around'>
-                    <span style={{maxWidth: 90}}>{row.name}</span>
+                    <span style={{ maxWidth: 90 }}>{row.name}</span>
                 </div>
             )
         },
         {
             name: 'Image',
             cell: row => <img src={row.image ?? "https://www.svgrepo.com/show/508699/landscape-placeholder.svg"}
-                              alt={row.name}
-                              style={{width: '40px', height: '40px', borderRadius: '50%'}}/>,
+                alt={row.name}
+                style={{ width: '40px', height: '40px', borderRadius: '50%' }} />,
             center: true,
         },
         {
@@ -435,10 +461,10 @@ const CategoryList = () => {
                 <div className='d-flex align-items-center w-100 justify-content-evenly'>
                     <Button
                         color='success' outline
-                        style={{width: 80, padding: 5, alignItems: 'center'}}
+                        style={{ width: 80, padding: 5, alignItems: 'center' }}
                         onClick={() => onUpdateHandler(row)}
                     >
-                        <Eye size={15} style={{marginRight: 5, marginBottom: 3}}/>
+                        <Eye size={15} style={{ marginRight: 5, marginBottom: 3 }} />
                         Edit
                     </Button>
                     {/*<Button*/}
@@ -478,7 +504,7 @@ const CategoryList = () => {
                             responsive={true}
                             onSort={handleSort}
                             data={dataToRender()}
-                            sortIcon={<ChevronDown/>}
+                            sortIcon={<ChevronDown />}
                             className='react-dataTable'
                             defaultSortField='invoiceId'
                             paginationDefaultPage={currentPage}
@@ -495,7 +521,7 @@ const CategoryList = () => {
                         reset()
 
                         setCategoryImageSrc('')
-                        setCategoryImageCrop({x: 0, y: 0});
+                        setCategoryImageCrop({ x: 0, y: 0 });
                         setCategoryImageCroppedAreaPixels(null);
                         setCategoryCroppedImage(null);
                         setCategoryImageIsCropVisible(false);

@@ -39,7 +39,7 @@ const ProductionAnalysis = () => {
     const [picker, setPicker] = useState([])
     const [intervalPicker, setIntervalPicker] = useState([])
     // eslint-disable-next-line no-unused-vars
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [currentDateTime, setCurrentDateTime] = useState('')
 
     // eslint-disable-next-line no-unused-vars

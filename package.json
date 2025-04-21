@@ -25,6 +25,7 @@
     "axios": "^0.25.0",
     "axios-mock-adapter": "1.19.0",
     "bootstrap": "5.1.0",
+    "browser-image-compression": "^2.0.2",
     "bs-stepper": "1.7.0",
     "chart.js": "3.6.0",
     "chartjs-adapter-moment": "^1.0.0",

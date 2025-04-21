@@ -164,7 +164,7 @@ const InvoiceList = () => {
     // ** States
     // eslint-disable-next-line no-unused-vars
     const [value1, setValue1] = useState('')
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [show, setShow] = useState(false)
     // eslint-disable-next-line no-unused-vars
@@ -210,13 +210,7 @@ const InvoiceList = () => {
 
 
     const [store, setStore] = useState({
-        allData: [],
         data: [],
-        params: {
-            page: currentPage,
-            perPage: rowsPerPage,
-            q: value1
-        },
         total: 0
     })
 
@@ -245,7 +239,7 @@ const InvoiceList = () => {
         //         setIsFetched(true)
         //     })
 
-        setStore({allData: list, data: list, params, total: 1})
+        setStore({data: list, total: 1})
     }
 
     const searchOrder = (params) => {
@@ -258,7 +252,7 @@ const InvoiceList = () => {
         OrderService.searchOrders(params.page, body)
             .then(res => {
                 if (res.success) {
-                    setStore({allData: res.data.content, data: res.data.content, params, total: res.data.totalPages})
+                    setStore({data: res.data.content, total: res.data.totalPages})
                 } else {
                     customToastMsg(res.data.title, res.status)
                 }
@@ -369,7 +363,7 @@ const InvoiceList = () => {
         } else if (store.data?.length === 0 && isFiltered) {
             return []
         } else {
-            return store.allData.slice(0, rowsPerPage)
+            return store.data.slice(0, rowsPerPage)
         }
     }
 

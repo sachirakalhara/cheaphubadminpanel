@@ -117,7 +117,7 @@ const ConsumptionList = () => {
     // eslint-disable-next-line no-unused-vars
     const [sortColumn, setSortColumn] = useState('id')
     // eslint-disable-next-line no-unused-vars
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [styleNumber, setStyleNumber] = useState('')
     const [articleNumber, setArticleNumber] = useState('')
     const [isFetched, setIsFetched] = useState(false)

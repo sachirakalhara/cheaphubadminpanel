@@ -87,7 +87,7 @@ const YarnRequirement = () => {
     // eslint-disable-next-line no-unused-vars
     const [sortColumn, setSortColumn] = useState('id')
     // eslint-disable-next-line no-unused-vars
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [isFetched, setIsFetched] = useState(false)
     const [currentDateTime, setCurrentDateTime] = useState('')
     const [csvData, setCsvData] = useState([])

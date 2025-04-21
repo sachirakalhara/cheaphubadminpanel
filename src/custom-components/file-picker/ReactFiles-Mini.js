@@ -8,7 +8,7 @@ import {
     notifyMessage,
     stringTrimFunction
 } from "../../utility/commonFun";
-
+import imageCompression from 'browser-image-compression'; // Import the library
 
 const App = (props) => {
     const [fileName, setFileName] = useState(null);
@@ -22,19 +22,29 @@ const App = (props) => {
                 setFileName(fileObj.name);
                 props.sendImageData(fileObj.name, fileObj);
             } else {
-                getRealFileExtension(fileObj).then(res => {
-                    if (res) {
-                        setFileName(fileObj.name);
-                        props.sendImageData(fileObj.name, fileObj);
-                    } else {
-                        notifyMessage("You have uploaded file extension is mismatched with actual file extension");
-                        setFileName('');
-                        props.sendImageData('', {});
-                    }
+                try {
+                    // Compress the image
+                    const options = {
+                        maxSizeMB: 1, // Maximum size in MB
+                        maxWidthOrHeight: 1920, // Max width or height
+                        useWebWorker: true
+                    };
+                    const compressedFile = await imageCompression(fileObj, options);
 
-                })
+                    getRealFileExtension(compressedFile).then(res => {
+                        if (res) {
+                            setFileName(compressedFile.name);
+                            props.sendImageData(compressedFile.name, compressedFile);
+                        } else {
+                            notifyMessage("You have uploaded file extension is mismatched with actual file extension");
+                            setFileName('');
+                            props.sendImageData('', {});
+                        }
+                    });
+                } catch (error) {
+                    notifyMessage("Error compressing the image: " + error.message);
+                }
             }
-
         }
     };
 

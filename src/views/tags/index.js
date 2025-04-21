@@ -86,7 +86,7 @@ const MachineryList = () => {
     const [val, setVal] = useState('')
     const [sort, setSort] = useState('desc')
     const [sortColumn, setSortColumn] = useState('id')
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [statusValue, setStatusValue] = useState('')
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [show, setShow] = useState(false)

@@ -50,7 +50,7 @@ const defaultValues = {
     price: '',
     gatewayFee: '',
     cryptoRadio: false,
-    stripeRadio: false,
+    marxRadio: false,
     selectedPaymentMethods: [],
     // slugUrl: '',
 }
@@ -87,18 +87,18 @@ const BulCreationModal = (props) => {
     const [productImageName, setProductImageName] = useState('')
 
     const [productType, setProductType] = useState(1);
-    const [visibilityMode, setVisibilityMode] = useState('');
+    const [visibilityMode, setVisibilityMode] = useState('open');
 
     const [file, setFile] = useState(null);
 
     // react hook form configurations
-    const {control, setError, handleSubmit, formState: {errors}, setValue, getValues, reset} = useForm({defaultValues});
+    const {control, setError, handleSubmit, formState: {errors}, setValue, getValues, reset,clearErrors} = useForm({defaultValues});
 
     useEffect(() => {
         if (props.isEditMode) {
             loadDefaultValues(props.selectedData);
         }else {
-            setVisibilityMode("")
+            setVisibilityMode("open")
         }
     }, [])
 
@@ -118,7 +118,7 @@ const BulCreationModal = (props) => {
         setValue("minimumQty", data.minimum_quantity.toString())
         setValue("maximumQty", data.maximum_quantity.toString())
         setValue("cryptoRadio", data.payment_method.includes("crypto"))
-        setValue("stripeRadio", data.payment_method.includes("stripe"))
+        setValue("marxRadio", data.payment_method.includes("stripe"))
         // setValue("selectedPaymentMethods", data.image)
 
         // setValue("slugUrl", data.slug_url)
@@ -132,24 +132,30 @@ const BulCreationModal = (props) => {
         setProductImageCrop(crop)
     }
 
-    const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    const onCropComplete = async (croppedArea, croppedAreaPixels) => {
         setProductImageCroppedAreaPixels(croppedAreaPixels)
-        showCroppedImage(croppedAreaPixels)
-    }
-
-    const showCroppedImage = async (croppedRatios) => {
-        const rotation = 0;
         try {
             const croppedImage = await getCroppedImg(
                 productImageSrc,
-                croppedRatios ?? {width: 1640, height: 1640, x: 0, y: 360},
-                rotation
-            )
-            setProductCroppedImage(croppedImage)
-        } catch (e) {
-            console.error(e)
-        }
+                croppedAreaPixels ?? {width: 1640, height: 1640, x: 0, y: 360},
+                0
+            );
+            setProductCroppedImage(croppedImage);
 
+            // Convert the cropped image to a File object
+            const response = await fetch(croppedImage);
+            const blob = await response.blob();
+            const file = new File([blob], productImageName, { type: blob.type });
+
+            // console.log("croppedImg::::::::::::::", croppedImage);
+            // console.log("file::::::::::::::", file);
+
+            setFile(file); // Set the file state with the cropped image
+
+            return file; // Return the file object
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     const handleChangeFileShare = async (file, type) => {
@@ -158,7 +164,7 @@ const BulCreationModal = (props) => {
             setProductImageIsCropVisible(true);
             setProductImageName(file.name);
             let imageDataUrl = await fileReader(file);
-            setFile(file)
+            // setFile(file)
             setProductImageSrc(imageDataUrl);
             setValue("productImageName", file.name)
         } else {
@@ -229,9 +235,11 @@ const BulCreationModal = (props) => {
             list.push('crypto')
         }
 
-        if (data.stripeRadio) {
-            list.push('stripe')
+        if (data.marxRadio) {
+            list.push('marx')
         }
+
+        console.log(list)
 
         setValue('selectedPaymentMethods', list);
 
@@ -242,6 +250,15 @@ const BulCreationModal = (props) => {
         }
 
         if (Object.values(obj).every(field => field.length > 0)) {
+            if (list.length === 0) {
+                console.log("checked")
+                setError('selectedPaymentMethods', {
+                    type: 'required',
+                    message: 'Please select at least one payment method',
+                })
+                return
+            };
+
             setActive(active + 1)
         } else {
             for (const key in obj) {
@@ -255,10 +272,7 @@ const BulCreationModal = (props) => {
     }
 
 
-    const onSubmitSEODetails = async data => {
-
-
-        if (visibilityMode !== "") {
+    const onSubmitSEODetails = async form => {
             dispatch(toggleLoading())
             let data = new FormData();
             data.append('name', getValues('productName'))
@@ -295,10 +309,6 @@ const BulCreationModal = (props) => {
                     }
                 })
 
-
-        } else {
-            customToastMsg("Please select visibility option", 0)
-        }
     }
 
     useEffect(() => {
@@ -694,9 +704,11 @@ const BulCreationModal = (props) => {
                                                            value={value}
                                                            onClick={() => {
                                                                onChange(!value)
+                                                               clearErrors('selectedPaymentMethods')
                                                            }}
                                                            onChange={() => {
                                                                onChange(!value)
+                                                               clearErrors('selectedPaymentMethods')
                                                            }}
                                                            checked={value}
                                                     />
@@ -711,27 +723,29 @@ const BulCreationModal = (props) => {
 
                                 <ListGroupItem className='border-0 px-0'>
                                     <Controller
-                                        name='stripeRadio'
+                                        name='marxRadio'
                                         control={control}
                                         render={({field: {onChange, value, name}}) => {
                                             return (
-                                                <label htmlFor='stripeRadio' className='d-flex cursor-pointer'>
+                                                <label htmlFor='marxRadio' className='d-flex cursor-pointer'>
                                                 <span className='avatar avatar-tag bg-light-warning me-1'>
                                                     <img src={stripeLogo} alt='stripeLogo' height='25'/>
                                                 </span>
                                                     <span
                                                         className='d-flex align-items-center justify-content-between flex-grow-1'>
-                                                    <div className='me-1'><h5 className='d-block fw-bolder'>Stripe</h5></div>
+                                                    <div className='me-1'><h5 className='d-block fw-bolder'>Marx</h5></div>
                                                     <span>
                                                         <Input type='radio'
-                                                               id='stripeRadio'
+                                                               id='marxRadio'
                                                                name={name}
                                                                value={value}
                                                                onClick={() => {
                                                                    onChange(!value)
+                                                                   clearErrors('selectedPaymentMethods')
                                                                }}
                                                                onChange={() => {
                                                                    onChange(!value)
+                                                                   clearErrors('selectedPaymentMethods')
                                                                }}
                                                                checked={value}
                                                         />
@@ -745,7 +759,7 @@ const BulCreationModal = (props) => {
                                 </ListGroupItem>
                             </ListGroup>
 
-                            {getValues("selectedPaymentMethods").length === 0 &&
+                            {errors.selectedPaymentMethods &&
                                 <div className="invalid-feedback-custom">Please select a payment method</div>}
 
                         </Col>

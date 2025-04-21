@@ -55,7 +55,7 @@ const DiameterList = ({componentList, components}) => {
     // eslint-disable-next-line no-unused-vars
     const [colorsFull, setColorsFull] = useState([])
     // eslint-disable-next-line no-unused-vars
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(0)
     const [knittingDiaList, setKnittingDiaList] = useState([])
     // eslint-disable-next-line no-unused-vars

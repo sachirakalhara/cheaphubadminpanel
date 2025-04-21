@@ -66,7 +66,7 @@ const SubscriptionCreationModal = (props) => {
     const [productImageZoom, setProductImageZoom] = useState(1)
     const [productImageName, setProductImageName] = useState('')
 
-    const [visibilityMode, setVisibilityMode] = useState('');
+    const [visibilityMode, setVisibilityMode] = useState('open');
 
     const [file, setFile] = useState(null);
     const [productId, setProductId] = useState(null);
@@ -83,20 +83,28 @@ const SubscriptionCreationModal = (props) => {
 
     const onCropComplete = async (croppedArea, croppedAreaPixels, type) => {
         setProductImageCroppedAreaPixels(croppedAreaPixels)
-        await showCroppedImage(croppedAreaPixels)
-    }
 
-    const showCroppedImage = async (croppedRatio) => {
-        const rotation = 0;
         try {
             const croppedImage = await getCroppedImg(
                 productImageSrc,
-                croppedRatio,
-                rotation
-            )
-            setProductCroppedImage(croppedImage)
+                croppedAreaPixels ?? {width: 1640, height: 1640, x: 0, y: 360},
+                0
+            );
+            setProductCroppedImage(croppedImage);
+
+            // Convert the cropped image to a File object
+            const response = await fetch(croppedImage);
+            const blob = await response.blob();
+            const file = new File([blob], productImageName, { type: blob.type });
+
+            // console.log("croppedImg::::::::::::::", croppedImage);
+            // console.log("file::::::::::::::", file);
+
+            setFile(file); // Set the file state with the cropped image
+
+            return file; // Return the file object
         } catch (e) {
-            console.error(e)
+            console.error(e);
         }
     }
 
@@ -105,7 +113,7 @@ const SubscriptionCreationModal = (props) => {
             setProductImageIsCropVisible(true);
             setProductImageName(file.name);
             let imageDataUrl = await fileReader(file);
-            setFile(file)
+            // setFile(file)
             setProductImageSrc(imageDataUrl);
             setValue("productImageName", file.name)
         } else {
@@ -145,50 +153,46 @@ const SubscriptionCreationModal = (props) => {
         // }
 
 
-        if (visibilityMode !== "") {
-            dispatch(toggleLoading())
-            let data = new FormData();
-            data.append('name', getValues('productName'))
-            data.append('description', getValues('description'))
-            data.append('tag_id', getValues('tag'))
-            data.append('service_info', getValues('serviceInfo'))
-            // data.append('slug_url', getValues('slugUrl'))
-            data.append('visibility', visibilityMode)
-            data.append('categories', getValues('category'))
+        dispatch(toggleLoading())
+        let data = new FormData();
+        data.append('name', getValues('productName'))
+        data.append('description', getValues('description'))
+        data.append('tag_id', getValues('tag'))
+        data.append('service_info', getValues('serviceInfo'))
+        // data.append('slug_url', getValues('slugUrl'))
+        data.append('visibility', visibilityMode)
+        data.append('categories', getValues('category'))
 
-            if (props.isEditMode) {
-                data.append('id', getValues('id'))
-            } else {
-                data.append('image', file)
-            }
-
-
-            console.log(qs.stringify(formDataToJson(data)))
-
-            const fetchAPI = props.isEditMode ? ContributionProductService.updateContributionProduct : ContributionProductService.createContributionProduct;
-
-            fetchAPI(props.isEditMode ? qs.stringify(formDataToJson(data)) : data)
-                .then(res => {
-                    console.log(res)
-                    if (res.success) {
-                        console.log(res)
-                        dispatch(toggleLoading())
-                        setProductId(res.data.contribution_product.id);
-                        customToastMsg(`Product is successfully ${props.isEditMode ? "updated" : "created"}`, 1);
-                        if (!props.isEditMode) {
-                            setActive(3)
-                        } else {
-                            props.toggle();
-                        }
-                    } else {
-                        dispatch(toggleLoading())
-                        customToastMsg(res.message, res.status)
-                    }
-                })
-
+        if (props.isEditMode) {
+            data.append('id', getValues('id'))
         } else {
-            customToastMsg("Please select visibility option", 0)
+            data.append('image', file)
         }
+
+
+        console.log(qs.stringify(formDataToJson(data)))
+
+        const fetchAPI = props.isEditMode ? ContributionProductService.updateContributionProduct : ContributionProductService.createContributionProduct;
+
+        fetchAPI(props.isEditMode ? qs.stringify(formDataToJson(data)) : data)
+            .then(res => {
+                console.log(res)
+                if (res.success) {
+                    console.log(res)
+                    dispatch(toggleLoading())
+                    setProductId(res.data.contribution_product.id);
+                    customToastMsg(`Product is successfully ${props.isEditMode ? "updated" : "created"}`, 1);
+                    if (!props.isEditMode) {
+                        setActive(3)
+                    } else {
+                        props.toggle();
+                    }
+                } else {
+                    dispatch(toggleLoading())
+                    customToastMsg(res.message, res.status)
+                }
+            })
+
     }
 
     useEffect(() => {
@@ -196,7 +200,7 @@ const SubscriptionCreationModal = (props) => {
         if (props.isEditMode) {
             loadDefaultValues(props.selectedData);
         } else {
-            setVisibilityMode("")
+            setVisibilityMode("open")
         }
     }, [])
 

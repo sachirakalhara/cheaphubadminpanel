@@ -29,7 +29,7 @@ const OrderDetails = () => {
         total: 1
     });
 
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isFetched, setIsFetched] = useState(false);
     const [val, setVal] = useState('')

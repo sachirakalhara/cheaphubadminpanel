@@ -27,7 +27,7 @@ const CouponList = () => {
 
 
     const [couponCode, setCouponCode] = useState('');
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const [show, setShow] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);

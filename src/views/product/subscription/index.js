@@ -114,7 +114,7 @@ const SubscriptionProductList = () => {
     // ** States
     // eslint-disable-next-line no-unused-vars
     const [value1, setValue1] = useState('')
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [show, setShow] = useState(false)
     // eslint-disable-next-line no-unused-vars
@@ -129,56 +129,28 @@ const SubscriptionProductList = () => {
     const [selectedData, setSelectedData] = useState({})
 
     const [store, setStore] = useState({
-        allData: [],
         data: [],
-        params: {
-            page: currentPage,
-            perPage: rowsPerPage,
-            q: value1
-        },
         total: 0
     })
 
-
-    const getDataList = (params) => {
-        dispatch(toggleLoading());
-        ContributionProductService.getAllContributionProduct()
-            .then(res => {
-                if (res.success) {
-                    console.log(res)
-                    setStore({
-                        allData: res?.data,
-                        data: res?.data?.contribution_product_list ?? [],
-                        params,
-                        total: 0
-                    });
-                } else {
-                    customToastMsg(res.message, res.status);
-                }
-                dispatch(toggleLoading());
-                setIsFetched(true);
-            });
-    }
 
     const searchContributionProduct = (params) => {
         dispatch(toggleLoading())
         const body = {
             "products_name": params.searchKey,
             "product_category_id": params.category,
-            "all": 1,
+            "all": 0,
         }
-        BulkProductService.filterContributionProduct(body)
+        BulkProductService.filterContributionProduct(body, params.page)
             .then(res => {
                 if (res.success) {
                     setStore({
-                        allData: res?.data?.contribution_product_list ?? [],
                         data: res?.data?.contribution_product_list ?? [],
-                        params,
-                        total: 0
+                        total: res.data?.meta?.last_page ?? 0
                     })
                 } else {
                     customToastMsg(res.message, 0, '', () => {
-                        setStore({allData: [], data: [], params, total: 0})
+                        setStore({data: [], total: 0})
                     })
                 }
                 dispatch(toggleLoading())
@@ -221,17 +193,26 @@ const SubscriptionProductList = () => {
     }
 
     useEffect(async () => {
-        getDataList({
-            q: value1,
+        await getAllCategories()
+        await getAllTags()
+
+        await searchContributionProduct({
+            searchKey: searchKey,
+            category: selectedCategoryId,
             page: currentPage,
             perPage: rowsPerPage
         })
-        await getAllCategories()
-        await getAllTags()
+
     }, [])
 
     const handlePagination = async page => {
         setCurrentPage(page.selected + 1)
+        await searchContributionProduct({
+            searchKey: searchKey,
+            category: selectedCategoryId,
+            page: page.selected + 1,
+            perPage: rowsPerPage
+        })
     }
 
     const CustomPagination = () => {
@@ -307,9 +288,9 @@ const SubscriptionProductList = () => {
         )
     }
 
-    const deleteProduct=(id)=>{
+    const deleteProduct = (id) => {
         ContributionProductService.deleteContributionProduct(id)
-            .then(async res=>{
+            .then(async res => {
                 console.log(res)
                 if (res.success) {
                     await searchContributionProduct({
@@ -318,7 +299,7 @@ const SubscriptionProductList = () => {
                         page: currentPage,
                         perPage: rowsPerPage
                     })
-                }else {
+                } else {
                     customToastMsg(res.message, res.status)
                 }
             })
@@ -338,7 +319,8 @@ const SubscriptionProductList = () => {
         },
         {
             name: 'Visibility',
-            cell: row => <Badge color={row.visibility === 'onHold' ? 'danger' : 'success'}>{row.visibility}</Badge>,
+            cell: row => <Badge
+                color={row.visibility === 'onHold' ? 'danger' : row.visibility === 'open' ? 'success' : 'warning'}>{row.visibility}</Badge>,
             center: true,
         },
         {
@@ -464,12 +446,6 @@ const SubscriptionProductList = () => {
                     show={show}
                     toggle={() => {
                         setShow(!show)
-                        // getDataList({
-                        //     q: value1,
-                        //     page: currentPage,
-                        //     perPage: rowsPerPage
-                        // })
-
                         searchContributionProduct({
                             searchKey: searchKey,
                             category: selectedCategoryId,

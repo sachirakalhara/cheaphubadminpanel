@@ -98,7 +98,7 @@ const MaterialsRequirements = () => {
     // eslint-disable-next-line no-unused-vars
     const [val, setVal] = useState('')
     // eslint-disable-next-line no-unused-vars
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     // eslint-disable-next-line no-unused-vars
     const [statusValue, setStatusValue] = useState('')
     // eslint-disable-next-line no-unused-vars

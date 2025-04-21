@@ -38,7 +38,7 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
 const DataTableWithButtons = () => {
   // ** States
   const [modal, setModal] = useState(false)
-  const [currentPage, setCurrentPage] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const [searchValue, setSearchValue] = useState('')
   const [filteredData, setFilteredData] = useState([])
 

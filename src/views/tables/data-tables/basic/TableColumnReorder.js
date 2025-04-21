@@ -14,7 +14,7 @@ import { Card, CardHeader, CardTitle } from 'reactstrap'
 
 const DataTablesReOrder = () => {
   // ** States
-  const [currentPage, setCurrentPage] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // ** Function to handle Pagination
   const handlePagination = page => {

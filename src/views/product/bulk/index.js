@@ -102,7 +102,7 @@ const BulkProductList = () => {
     // ** States
     // eslint-disable-next-line no-unused-vars
     const [value1, setValue1] = useState('')
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState(10)
     const [show, setShow] = useState(false)
     // eslint-disable-next-line no-unused-vars
@@ -117,56 +117,28 @@ const BulkProductList = () => {
 
 
     const [store, setStore] = useState({
-        allData: [],
         data: [],
-        params: {
-            page: currentPage,
-            perPage: rowsPerPage,
-            q: value1
-        },
         total: 0
     })
 
-
-    const getDataList = (params) => {
-        dispatch(toggleLoading())
-        BulkProductService.getAllBulkProducts(params.page)
-            // eslint-disable-next-line no-unused-vars
-            .then(res => {
-                if (res.success) {
-                    setStore({
-                        allData: res.data.product_list.bulk_product_list,
-                        data: res.data.product_list.bulk_product_list,
-                        params,
-                        total: 0
-                    })
-                } else {
-                    customToastMsg(res.data.title, res.status)
-                }
-                dispatch(toggleLoading())
-                setIsFetched(true)
-            })
-    }
 
     const searchBulkProduct = (params) => {
         dispatch(toggleLoading())
         const body = {
             "products_name": params.searchKey,
             "product_category_id": params.category,
-            "all": 1,
+            "all": 0,
         }
-        BulkProductService.filterBulkProduct(body)
+        BulkProductService.filterBulkProduct(body, params.page)
             .then(res => {
                 if (res.success) {
                     setStore({
-                        allData: res.data?.product_list?.bulk_product_list ?? [],
                         data: res.data?.product_list?.bulk_product_list ?? [],
-                        params,
-                        total: 0
+                        total: res.data?.meta?.last_page ?? 0
                     })
                 } else {
                     customToastMsg(res.message, 0, '', () => {
-                        setStore({allData: [], data: [], params, total: 0})
+                        setStore({data: [], total: 0})
                     })
                 }
                 dispatch(toggleLoading())
@@ -210,17 +182,25 @@ const BulkProductList = () => {
     }
 
     useEffect(async () => {
-        getDataList({
-            q: value1,
+        await searchBulkProduct({
+            searchKey: searchKey,
+            category: selectedCategoryId,
             page: currentPage,
             perPage: rowsPerPage
         })
+
         await getAllCategories()
         await getAllTags()
     }, [])
 
     const handlePagination = async page => {
         setCurrentPage(page.selected + 1)
+        await searchBulkProduct({
+            searchKey: searchKey,
+            category: selectedCategoryId,
+            page: page.selected + 1,
+            perPage: rowsPerPage
+        })
     }
 
     const CustomPagination = () => {
@@ -261,7 +241,7 @@ const BulkProductList = () => {
         } else if (store.data?.length === 0 && isFiltered) {
             return []
         } else {
-            return store.allData.slice(0, rowsPerPage)
+            return store.data.slice(0, rowsPerPage)
         }
     }
 
@@ -325,13 +305,14 @@ const BulkProductList = () => {
             .then(res => {
                 if (res.success) {
                     customToastMsg(res.message, 1)
-                    getDataList({
-                        q: value1,
+                    searchBulkProduct({
+                        searchKey: searchKey,
+                        category: selectedCategoryId,
                         page: currentPage,
                         perPage: rowsPerPage
                     })
                 } else {
-                    customToastMsg(res.message,0)
+                    customToastMsg(res.message, 0)
                 }
                 dispatch(toggleLoading())
             })
@@ -350,7 +331,8 @@ const BulkProductList = () => {
         },
         {
             name: 'Visibility',
-            cell: row => <Badge color={row.visibility === 'onHold' ? 'danger' : 'success'}>{row.visibility}</Badge>,
+            cell: row => <Badge
+                color={row.visibility === 'onHold' ? 'danger' : row.visibility === 'open' ? 'success' : 'warning'}>{row.visibility}</Badge>,
             center: true,
         },
         {
@@ -441,8 +423,9 @@ const BulkProductList = () => {
                     show={show}
                     toggle={() => {
                         setShow(!show)
-                        getDataList({
-                            q: value1,
+                        searchBulkProduct({
+                            searchKey: searchKey,
+                            category: selectedCategoryId,
                             page: currentPage,
                             perPage: rowsPerPage
                         })

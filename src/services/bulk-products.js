@@ -52,27 +52,27 @@ export async function getAllBulkProducts() {
     return await ApiService.callApi(apiObject)
 }
 
-export async function filterBulkProduct(body) {
+export async function filterBulkProduct(body,page) {
     const apiObject = {}
     apiObject.method = 'POST'
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
     apiObject.multipart = false
-    apiObject.endpoint = `bulk/product/filter`
+    apiObject.endpoint = `bulk/product/filter?page=${page}&size=10`
     apiObject.body = body
 
     return await ApiService.callApi(apiObject)
 }
 
-export async function filterContributionProduct(body) {
+export async function filterContributionProduct(body,page) {
     const apiObject = {}
     apiObject.method = 'POST'
     apiObject.authentication = true
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
     apiObject.multipart = false
-    apiObject.endpoint = `contribution/product/filter`
+    apiObject.endpoint = `contribution/product/filter?page=${page}&size=10`
     apiObject.body = body
 
     return await ApiService.callApi(apiObject)

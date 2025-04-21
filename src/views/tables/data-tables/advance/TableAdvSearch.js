@@ -22,7 +22,7 @@ const DataTableAdvSearch = () => {
   const [searchName, setSearchName] = useState('')
   const [searchPost, setSearchPost] = useState('')
   const [searchCity, setSearchCity] = useState('')
-  const [currentPage, setCurrentPage] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const [searchEmail, setSearchEmail] = useState('')
   const [searchSalary, setSearchSalary] = useState('')
   const [filteredData, setFilteredData] = useState([])
