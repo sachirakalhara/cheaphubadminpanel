@@ -3,7 +3,7 @@ import React, {useState, useEffect, Fragment} from 'react'
 
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
-import {Eye, Plus, Trash, X} from 'react-feather'
+import {Copy, Eye, Plus, Trash, X} from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
@@ -352,6 +352,22 @@ const BulkProductList = () => {
             center: true,
             cell: row => (
                 <div className='d-flex align-items-center w-100 justify-content-evenly'>
+                    <Button
+                        color='primary' outline
+                        disabled={row.visibility === "onHold"}
+                        style={{padding: 5, alignItems: 'center'}}
+                        onClick={() => {
+                            navigator.clipboard.writeText(`https://${row.url}`)
+                                .then(() => {
+                                    customToastMsg('Copied to clipboard!', 1)
+                                })
+                                .catch((err) => {
+                                    customToastMsg('Failed to copy!', 0)
+                                })
+                        }}
+                    >
+                        <Copy size={15}/>
+                    </Button>
                     <Button
                         color='success' outline
                         style={{width: 80, padding: 5, alignItems: 'center'}}

@@ -92,12 +92,21 @@ const BulCreationModal = (props) => {
     const [file, setFile] = useState(null);
 
     // react hook form configurations
-    const {control, setError, handleSubmit, formState: {errors}, setValue, getValues, reset,clearErrors} = useForm({defaultValues});
+    const {
+        control,
+        setError,
+        handleSubmit,
+        formState: {errors},
+        setValue,
+        getValues,
+        reset,
+        clearErrors
+    } = useForm({defaultValues});
 
     useEffect(() => {
         if (props.isEditMode) {
             loadDefaultValues(props.selectedData);
-        }else {
+        } else {
             setVisibilityMode("open")
         }
     }, [])
@@ -145,7 +154,7 @@ const BulCreationModal = (props) => {
             // Convert the cropped image to a File object
             const response = await fetch(croppedImage);
             const blob = await response.blob();
-            const file = new File([blob], productImageName, { type: blob.type });
+            const file = new File([blob], productImageName, {type: blob.type});
 
             // console.log("croppedImg::::::::::::::", croppedImage);
             // console.log("file::::::::::::::", file);
@@ -257,7 +266,8 @@ const BulCreationModal = (props) => {
                     message: 'Please select at least one payment method',
                 })
                 return
-            };
+            }
+            ;
 
             setActive(active + 1)
         } else {
@@ -273,41 +283,41 @@ const BulCreationModal = (props) => {
 
 
     const onSubmitSEODetails = async form => {
-            dispatch(toggleLoading())
-            let data = new FormData();
-            data.append('name', getValues('productName'))
-            data.append('description', getValues('description'))
-            data.append('price', getValues('price'))
-            data.append('gateway_fee', getValues('gatewayFee'))
-            data.append('categories', getValues('category'))
-            data.append('tag_id', getValues('tag'))
-            data.append('payment_method', getValues('selectedPaymentMethods'))
-            data.append('serial', getValues('serialList'))
-            data.append('minimum_quantity', getValues('minimumQty'))
-            data.append('maximum_quantity', getValues('maximumQty'))
-            data.append('service_info', getValues('serviceInfo'))
-            // data.append('slug_url', getValues('slugUrl'))
-            data.append('visibility', visibilityMode)
-            // data.append('image', file)
+        dispatch(toggleLoading())
+        let data = new FormData();
+        data.append('name', getValues('productName'))
+        data.append('description', getValues('description'))
+        data.append('price', getValues('price'))
+        data.append('gateway_fee', getValues('gatewayFee'))
+        data.append('categories', getValues('category'))
+        data.append('tag_id', getValues('tag'))
+        data.append('payment_method', getValues('selectedPaymentMethods'))
+        data.append('serial', getValues('serialList'))
+        data.append('minimum_quantity', getValues('minimumQty'))
+        data.append('maximum_quantity', getValues('maximumQty'))
+        data.append('service_info', getValues('serviceInfo'))
+        // data.append('slug_url', getValues('slugUrl'))
+        data.append('visibility', visibilityMode)
+        // data.append('image', file)
 
-            if (props.isEditMode) {
-                data.append('id', props.selectedData.id)
-            } else {
-                data.append('image', file)
-            }
+        if (props.isEditMode) {
+            data.append('id', props.selectedData.id)
+        } else {
+            data.append('image', file)
+        }
 
-            const fetchAPI = props.isEditMode ? BulkProductServices.updateBulkProduct : BulkProductServices.createBulkProduct
-            fetchAPI(props.isEditMode ? formDataToJson(data) : data)
-                .then(res => {
-                    if (res.success) {
-                        dispatch(toggleLoading())
-                        customToastMsg(`Bulk Product was successfully ${props.isEditMode ? 'updated' : 'created'}`, 1);
-                        props.toggle();
-                    } else {
-                        dispatch(toggleLoading())
-                        customToastMsg(res.message, res.status)
-                    }
-                })
+        const fetchAPI = props.isEditMode ? BulkProductServices.updateBulkProduct : BulkProductServices.createBulkProduct
+        fetchAPI(props.isEditMode ? formDataToJson(data) : data)
+            .then(res => {
+                if (res.success) {
+                    dispatch(toggleLoading())
+                    customToastMsg(`Bulk Product was successfully ${props.isEditMode ? 'updated' : 'created'}`, 1);
+                    props.toggle();
+                } else {
+                    dispatch(toggleLoading())
+                    customToastMsg(res.message, res.status)
+                }
+            })
 
     }
 
@@ -733,7 +743,8 @@ const BulCreationModal = (props) => {
                                                 </span>
                                                     <span
                                                         className='d-flex align-items-center justify-content-between flex-grow-1'>
-                                                    <div className='me-1'><h5 className='d-block fw-bolder'>Marx</h5></div>
+                                                    <div className='me-1'><h5
+                                                        className='d-block fw-bolder'>Marx</h5></div>
                                                     <span>
                                                         <Input type='radio'
                                                                id='marxRadio'
@@ -848,31 +859,36 @@ const BulCreationModal = (props) => {
                         </div>
                     </Col>
 
-                    {/*<Col md={8} xs={12}>*/}
-                    {/*    <Label className='form-label mb-1' for='slugUrl'>*/}
-                    {/*        Slug Url <span style={{color: 'red'}}>*</span>*/}
-                    {/*    </Label>*/}
-                    {/*    <Row>*/}
-                    {/*        <Col md={8} xs={12}>*/}
-                    {/*            <Controller*/}
-                    {/*                name='slugUrl'*/}
-                    {/*                control={control}*/}
-                    {/*                render={({field}) => (*/}
-                    {/*                    <Input {...field} id='slugUrl' placeholder='Slug Url' value={field.value}*/}
-                    {/*                           invalid={errors.slugUrl && true} autoComplete="off"/>*/}
-                    {/*                )}*/}
-                    {/*            />*/}
-                    {/*            {errors.slugUrl && <FormFeedback>Please enter a valid slug url</FormFeedback>}*/}
-                    {/*        </Col>*/}
-                    {/*        <Col md={4} xs={12}>*/}
-                    {/*            <Button color='secondary' outline*/}
-                    {/*                    onClick={() => {*/}
-                    {/*                    }}*/}
-                    {/*            >*/}
-                    {/*                Copy Product Name*/}
-                    {/*            </Button>*/}
-                    {/*        </Col>*/}
-                    {/*    </Row>*/}
+                    {props.isEditMode && (
+                        <Col md={8} xs={12}>
+                            <Label className='form-label mb-1' for='ProductUrl'>
+                                Product Url
+                            </Label>
+                            <Row>
+                                <Col md={8} xs={12}>
+                                    <Input id='slugUrl' placeholder='Product Url'
+                                           disabled={props.selectedData.visibility === "onHold"}
+                                           value={`https://${props.selectedData.url}`}/>
+                                </Col>
+                                <Col md={4} xs={12}>
+                                    <Button color='secondary' outline
+                                            disabled={props.selectedData.visibility === "onHold"}
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(`https://${props.selectedData.url}`)
+                                                    .then(() => {
+                                                        customToastMsg('Copied to clipboard!', 1)
+                                                    })
+                                                    .catch((err) => {
+                                                        customToastMsg('Failed to copy!', 0)
+                                                    })
+                                            }}
+                                    >
+                                        Copy Product Name
+                                    </Button>
+                                </Col>
+                            </Row>
+                        </Col>
+                    )}
 
 
                     {/*</Col>*/}

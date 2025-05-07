@@ -268,7 +268,7 @@ const SubscriptionCreationModal = (props) => {
             })
         })
 
-        console.log("subscriptionList::::",list)
+        console.log("subscriptionList::::", list)
 
         return list;
     }
@@ -554,6 +554,7 @@ const SubscriptionCreationModal = (props) => {
                         Product visibility settings
                     </label>
 
+
                     <Col xs={12}>
                         <div className='form-check mb-1'>
                             <Input
@@ -583,35 +584,36 @@ const SubscriptionCreationModal = (props) => {
                         </div>
                     </Col>
 
-                    {/*<Col md={8} xs={12}>*/}
-                    {/*    <Label className='form-label mb-1' for='slugUrl'>*/}
-                    {/*        Slug Url <span style={{color: 'red'}}>*</span>*/}
-                    {/*    </Label>*/}
-                    {/*    <Row>*/}
-                    {/*        <Col md={8} xs={12}>*/}
-                    {/*            <Controller*/}
-                    {/*                name='slugUrl'*/}
-                    {/*                control={control}*/}
-                    {/*                render={({field}) => (*/}
-                    {/*                    <Input {...field} id='slugUrl' placeholder='Slug Url' value={field.value}*/}
-                    {/*                           invalid={errors.slugUrl && true} autoComplete="off"/>*/}
-                    {/*                )}*/}
-                    {/*            />*/}
-                    {/*            {errors.slugUrl && <FormFeedback>Please enter a valid slug url</FormFeedback>}*/}
-                    {/*        </Col>*/}
-                    {/*        <Col md={4} xs={12}>*/}
-                    {/*            <Button color='secondary' outline*/}
-                    {/*                    onClick={() => {*/}
-                    {/*                        console.log("Hellow world");*/}
-                    {/*                    }}*/}
-                    {/*            >*/}
-                    {/*                Copy Product Name*/}
-                    {/*            </Button>*/}
-                    {/*        </Col>*/}
-                    {/*    </Row>*/}
-
-
-                    {/*</Col>*/}
+                    {props.isEditMode && (
+                        <Col md={8} xs={12}>
+                            <Label className='form-label mb-1' for='ProductUrl'>
+                                Product Url
+                            </Label>
+                            <Row>
+                                <Col md={8} xs={12}>
+                                    <Input id='slugUrl' placeholder='Product Url'
+                                           disabled={props.selectedData.visibility === "onHold"}
+                                           value={`https://${props.selectedData.url}`}/>
+                                </Col>
+                                <Col md={4} xs={12}>
+                                    <Button color='secondary' outline
+                                            disabled={props.selectedData.visibility === "onHold"}
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(`https://${props.selectedData.url}`)
+                                                    .then(() => {
+                                                        customToastMsg('Copied to clipboard!', 1)
+                                                    })
+                                                    .catch((err) => {
+                                                        customToastMsg('Failed to copy!', 0)
+                                                    })
+                                            }}
+                                    >
+                                        Copy Product Name
+                                    </Button>
+                                </Col>
+                            </Row>
+                        </Col>
+                    )}
 
                     <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
                         <Button type='submit' className='me-1' color='success'>
