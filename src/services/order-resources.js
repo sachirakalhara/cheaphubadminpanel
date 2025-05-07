@@ -221,3 +221,16 @@ export async function getOrderByOrderId(id) {
 
     return await ApiService.callApi(apiObject)
 }
+
+export async function changeOrderStatus(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/order/status-change`
+    apiObject.body = body
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}

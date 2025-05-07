@@ -101,9 +101,29 @@ const OrderDetails = () => {
             'You are about to process this order manually. Once you confirm below, we’ll mark this order paid and deliver the product to the customer.',
             2,
             async () => {
+                changeOrderStatus();
             },
             'Proceed Order'
         )
+    }
+
+    const changeOrderStatus = () => {
+        dispatch(toggleLoading())
+        const body = {
+            "id": navigationParam.id,//order id
+            "status": "paid"  // pending', 'paid', 'failed
+        }
+        OrderResourcesServices.changeOrderStatus(body)
+            .then(async (res) => {
+                console.log(res)
+                if (res.success) {
+                    dispatch(toggleLoading())
+                    await getOrderDetails();
+                } else {
+                    dispatch(toggleLoading())
+                    customToastMsg(res.message, 0)
+                }
+            })
     }
 
     return (
@@ -143,16 +163,23 @@ const OrderDetails = () => {
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Payment Status</CardText>
-                                <CardText tag="h6" className='text-black-50'>{orderDetails.payment_status}</CardText>
+                                {/*<CardText tag="h6" className='text-black-50'>{orderDetails.payment_status}</CardText>*/}
+                                <CardText tag="h6" className='text-black-50'>
+                                    <Badge
+                                        color={orderDetails.payment_status === 'paid' ? 'success' : orderDetails.payment_status === 'pending' ? 'warning' : 'danger'}>{orderDetails.payment_status}
+                                    </Badge>
+                                </CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Date</CardText>
-                                <CardText tag="h6" className='text-black-50'>{formDataDateTimeConverter(orderDetails.created_at)}</CardText>
+                                <CardText tag="h6"
+                                          className='text-black-50'>{formDataDateTimeConverter(orderDetails.created_at)}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-center">
                                 <Button color='primary' className="mt-2 d-flex align-self-center" outline
+                                        disabled={orderDetails.payment_status === 'paid'}
                                         onClick={async () => {
                                             await proceedOrder()
                                         }}>
@@ -170,22 +197,26 @@ const OrderDetails = () => {
                         <CardBody className='invoice-padding'>
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Name</CardText>
-                                <CardText tag="h6" className='text-black-50'>{dataBinder(orderDetails?.user_id?.display_name)}</CardText>
+                                <CardText tag="h6"
+                                          className='text-black-50'>{dataBinder(orderDetails?.user_id?.display_name)}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Email</CardText>
-                                <CardText tag="h6" className='text-black-50'>{dataBinder(orderDetails?.user_id?.email)}</CardText>
+                                <CardText tag="h6"
+                                          className='text-black-50'>{dataBinder(orderDetails?.user_id?.email)}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Email Verified At</CardText>
-                                <CardText tag="h6" className='text-black-50'>{formDataDateTimeConverter(orderDetails?.user_id?.email_verified_at)}</CardText>
+                                <CardText tag="h6"
+                                          className='text-black-50'>{formDataDateTimeConverter(orderDetails?.user_id?.email_verified_at)}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Mobile Number</CardText>
-                                <CardText tag="h6" className='text-black-50'>{dataBinder(orderDetails?.user_id?.contact_no)}</CardText>
+                                <CardText tag="h6"
+                                          className='text-black-50'>{dataBinder(orderDetails?.user_id?.contact_no)}</CardText>
                             </div>
 
 

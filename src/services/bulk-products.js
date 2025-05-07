@@ -59,7 +59,7 @@ export async function filterBulkProduct(body,page) {
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
     apiObject.multipart = false
-    apiObject.endpoint = `bulk/product/filter?page=${page}&size=10`
+    apiObject.endpoint = `super-admin/bulk/product/get-all-visibility?page=${page}&size=10`
     apiObject.body = body
 
     return await ApiService.callApi(apiObject)
@@ -72,7 +72,7 @@ export async function filterContributionProduct(body,page) {
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
     apiObject.multipart = false
-    apiObject.endpoint = `contribution/product/filter?page=${page}&size=10`
+    apiObject.endpoint = `super-admin/contribution/product/get-all-visibility?page=${page}&size=10`
     apiObject.body = body
 
     return await ApiService.callApi(apiObject)

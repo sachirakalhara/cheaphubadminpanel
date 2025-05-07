@@ -127,7 +127,7 @@ const BulkProductList = () => {
         const body = {
             "products_name": params.searchKey,
             "product_category_id": params.category,
-            "all": 0,
+            "all": false,
         }
         BulkProductService.filterBulkProduct(body, params.page)
             .then(res => {

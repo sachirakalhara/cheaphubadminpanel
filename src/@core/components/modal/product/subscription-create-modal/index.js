@@ -268,6 +268,8 @@ const SubscriptionCreationModal = (props) => {
             })
         })
 
+        console.log("subscriptionList::::",list)
+
         return list;
     }
 

@@ -11,6 +11,7 @@ import {filterOrderList} from "../../services/order-resources";
 import {formDataDateConverter} from "../../utility/commonFun";
 import Modal from "../../@core/components/modal";
 
+let prev = 0
 
 const CustomHeader = ({
                           onSearchQueryChange,
@@ -162,8 +163,8 @@ const OrdersScreen = () => {
                 console.log(response)
                 if (response.success) {
                     setStore({
-                        data: response.data.order_list,
-                        total: response.data.meta.last_page
+                        data: response.data?.order_list ?? [],
+                        total: response.data.meta?.last_page ?? 0
                     })
                 } else {
                     customToastMsg(response.message, response.status)
@@ -261,7 +262,14 @@ const OrdersScreen = () => {
         const handleSearch = (value) => {
             setSearchQuery(value);
             const [startDate, endDate] = picker.length === 2 ? picker : [null, null];
-            getAllOrders(productCategory, statusValue, value, startDate, endDate, currentPage);
+
+            prev = new Date().getTime()
+            setTimeout(async () => {
+                const now = new Date().getTime()
+                if (now - prev >= 1000) {
+                   await getAllOrders(productCategory, statusValue, value, startDate, endDate, currentPage);
+                }
+            }, 1000)
         };
 
 
@@ -275,8 +283,16 @@ const OrdersScreen = () => {
                         searchQuery={searchQuery}
                         productCategory={productCategory}
                         statusValue={statusValue}
-                        selectStatusValue={e => setStatusValue(e.target.value)}
-                        selectProductCategory={e => setProductCategory(e.target.value)}
+                        selectStatusValue={e => {
+                            const [startDate, endDate] = picker.length === 2 ? picker : [null, null];
+                            setStatusValue(e.target.value)
+                            getAllOrders(productCategory, e.target.value, searchQuery, startDate, endDate, currentPage);
+                        }}
+                        selectProductCategory={e => {
+                            const [startDate, endDate] = picker.length === 2 ? picker : [null, null];
+                            setProductCategory(e.target.value)
+                            getAllOrders(e.target.value, statusValue, searchQuery, startDate, endDate, currentPage)
+                        }}
                         picker={picker}
                         onClearPicker={() => setPicker([])}
                         onChangeDateRange={async (date) => {
