@@ -60,7 +60,7 @@ const CouponList = () => {
         CouponsServices.getAllCouponCodes(body)
             .then(res => {
                 if (res.success) {
-                    setStore({data: res.data.coupon_list, total: res.data.meta.last_page || 0});
+                    setStore({data: res.data?.coupon_list, total: res.data.meta?.last_page || 0});
                 } else {
                     customToastMsg(res.message, res.status);
                 }

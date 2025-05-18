@@ -90,6 +90,7 @@ const BulCreationModal = (props) => {
     const [visibilityMode, setVisibilityMode] = useState('open');
 
     const [file, setFile] = useState(null);
+    const [bulkType, setBulkType] = useState("serial_based");
 
     // react hook form configurations
     const {
@@ -108,6 +109,11 @@ const BulCreationModal = (props) => {
             loadDefaultValues(props.selectedData);
         } else {
             setVisibilityMode("open")
+        }
+
+        if (productType === 2) {
+            setValue("minimumQty", "0")
+            setValue("maximumQty", "0")
         }
     }, [])
 
@@ -133,6 +139,9 @@ const BulCreationModal = (props) => {
         // setValue("slugUrl", data.slug_url)
         setVisibilityMode(data.visibility)
         setUploadedProductImage(data.image)
+        setBulkType(data.bulk_type)
+
+        setProductType(data.bulk_type === "serial_based" ? 1 : 2)
     }
 
 
@@ -292,12 +301,13 @@ const BulCreationModal = (props) => {
         data.append('categories', getValues('category'))
         data.append('tag_id', getValues('tag'))
         data.append('payment_method', getValues('selectedPaymentMethods'))
-        data.append('serial', getValues('serialList'))
+        data.append('serial', bulkType === "serial_based" ? getValues('serialList') : "")
         data.append('minimum_quantity', getValues('minimumQty'))
         data.append('maximum_quantity', getValues('maximumQty'))
         data.append('service_info', getValues('serviceInfo'))
         // data.append('slug_url', getValues('slugUrl'))
         data.append('visibility', visibilityMode)
+        data.append('bulk_type', bulkType)
         // data.append('image', file)
 
         if (props.isEditMode) {
@@ -337,7 +347,8 @@ const BulCreationModal = (props) => {
     }
 
     return (
-        <Modal show={props.show} toggle={toogleModal} headTitle="Add New Bulk Product">
+        <Modal show={props.show} toggle={toogleModal}
+               headTitle={props.isEditMode ? "Update Bulk Product" : "Add New Bulk Product"}>
             <Fragment>
                 <Nav pills className='mt-1 mb-0 pb-0'>
                     <NavItem>
@@ -577,7 +588,8 @@ const BulCreationModal = (props) => {
                          className={'program-modal-text-input-filed program-modal-row'}>
                         <label className='program-modal-label'>Product Type
                         </label>
-                        <div className='program-modal-radio-btn-group'>
+                        <div className='program-modal-radio-btn-group'
+                             style={!props.isEditMode ? {} : {pointerEvents: 'none', opacity: 0.5}}>
                             <Radio
                                 label='Serials Based'
                                 className="program-modal-radio-btn"
@@ -586,6 +598,10 @@ const BulCreationModal = (props) => {
                                     setProductType(1);
                                     setValue('serialList', '');
                                     setValue('serviceInfo', '');
+                                    setBulkType("serial_based");
+
+                                    setValue("minimumQty", "")
+                                    setValue("maximumQty", "")
                                 }}
                             />
 
@@ -597,6 +613,10 @@ const BulCreationModal = (props) => {
                                     setProductType(2);
                                     setValue('serialList', '');
                                     setValue('serviceInfo', '');
+                                    setBulkType("service_based");
+
+                                    setValue("minimumQty", "0")
+                                    setValue("maximumQty", "0")
                                 }}
                             />
                         </div>
@@ -638,38 +658,45 @@ const BulCreationModal = (props) => {
                             </Col>
                         )}
 
+                        {productType === 1 && (
+                            <>
+                                <Col md={6} xs={12}>
+                                    <Label className='form-label mb-1' for='qty'>
+                                        Minimum Quantity <span style={{color: 'red'}}>*</span>
+                                    </Label>
+                                    <Controller
+                                        name='minimumQty'
+                                        control={control}
+                                        render={({field}) => (
+                                            <Input {...field} type="number" id='minimumQty'
+                                                   placeholder='Minimum Quantity'
+                                                   value={field.value}
+                                                   invalid={errors.minimumQty && true} autoComplete="off"/>
+                                        )}
+                                    />
+                                    {errors.minimumQty &&
+                                        <FormFeedback>Please enter a valid minimum quantity</FormFeedback>}
+                                </Col>
 
-                        <Col md={6} xs={12}>
-                            <Label className='form-label mb-1' for='qty'>
-                                Minimum Quantity <span style={{color: 'red'}}>*</span>
-                            </Label>
-                            <Controller
-                                name='minimumQty'
-                                control={control}
-                                render={({field}) => (
-                                    <Input {...field} type="number" id='minimumQty' placeholder='Minimum Quantity'
-                                           value={field.value}
-                                           invalid={errors.minimumQty && true} autoComplete="off"/>
-                                )}
-                            />
-                            {errors.minimumQty && <FormFeedback>Please enter a valid minimum quantity</FormFeedback>}
-                        </Col>
-
-                        <Col md={6} xs={12}>
-                            <Label className='form-label mb-1' for='qty'>
-                                Maximum Quantity <span style={{color: 'red'}}>*</span>
-                            </Label>
-                            <Controller
-                                name='maximumQty'
-                                control={control}
-                                render={({field}) => (
-                                    <Input {...field} type="number" id='maximumQty' placeholder='Maximum Quantity'
-                                           value={field.value}
-                                           invalid={errors.maximumQty && true} autoComplete="off"/>
-                                )}
-                            />
-                            {errors.maximumQty && <FormFeedback>Please enter a valid maximum quantity</FormFeedback>}
-                        </Col>
+                                <Col md={6} xs={12}>
+                                    <Label className='form-label mb-1' for='qty'>
+                                        Maximum Quantity <span style={{color: 'red'}}>*</span>
+                                    </Label>
+                                    <Controller
+                                        name='maximumQty'
+                                        control={control}
+                                        render={({field}) => (
+                                            <Input {...field} type="number" id='maximumQty'
+                                                   placeholder='Maximum Quantity'
+                                                   value={field.value}
+                                                   invalid={errors.maximumQty && true} autoComplete="off"/>
+                                        )}
+                                    />
+                                    {errors.maximumQty &&
+                                        <FormFeedback>Please enter a valid maximum quantity</FormFeedback>}
+                                </Col>
+                            </>
+                        )}
 
                         <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
                             <Button type='submit' className='me-1' color='success'>
@@ -857,6 +884,19 @@ const BulCreationModal = (props) => {
                                 On Hold
                             </Label>
                         </div>
+                        <div className='form-check mb-1'>
+                            <Input
+                                type='radio'
+                                value='open'
+                                id='open'
+                                name='payment-method-radio'
+                                checked={visibilityMode === 'open'}
+                                onChange={() => setVisibilityMode('open')}
+                            />
+                            <Label className='form-check-label' for='open'>
+                                Open
+                            </Label>
+                        </div>
                     </Col>
 
                     {props.isEditMode && (
@@ -909,3 +949,4 @@ const BulCreationModal = (props) => {
 }
 
 export default BulCreationModal;
+

@@ -163,7 +163,9 @@ const ChatLog = props => {
                                 placeholder='Type your message or use speech to text'
                             />
                         </InputGroup>
-                        <Button className='send' color='primary'>
+                        <Button className='send' color='primary'
+                                disabled={props.ticketDetails.status !== "open"}
+                        >
                             <Send size={14} className='d-lg-none'/>
                             <span className='d-none d-lg-block'>Send</span>
                         </Button>

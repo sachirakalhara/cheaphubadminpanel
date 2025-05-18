@@ -82,8 +82,8 @@ export const callApi = async (apiObject) => {
                 status: response.data.message === 'Success' || response.data.message === 'OK' ? 1 : 0,
                 success: response.data?.success ? response.data?.success :
                     (response.data.message === 'Success' ||
-                    response.data.message === 'OK' ||
-                    response.data.message === undefined),
+                        response.data.message === 'OK' ||
+                        response.data.message === undefined || response.data.message === "Ticket status updated successfully."),
                 message: response.data.message,
             };
         }

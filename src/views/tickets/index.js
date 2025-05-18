@@ -74,6 +74,7 @@ const TicketScreen = () => {
 
     const getAllTickets = async (val, page) => {
         dispatch(toggleLoading());
+        setIsFetched(false);
         const body = {
             "all": 0,
             "ticket_number": val
@@ -84,11 +85,12 @@ const TicketScreen = () => {
                 if (res.success) {
                     dispatch(toggleLoading());
                     console.log(res)
-                    setStore({data: res.data.data, total: res.data?.meta?.last_page ?? 0});
+                    setStore({data: res.data?.data ?? [], total: res.data?.meta?.last_page ?? 0});
                 } else {
                     dispatch(toggleLoading());
                     customToastMsg(res.message, res.status)
                 }
+                setIsFetched(true);
             })
     }
 
@@ -105,7 +107,7 @@ const TicketScreen = () => {
             name: "",
             minWidth: "100px",
             cell: row => (
-                <Link to={`ticket/${row.ticket_number}`} state={row}>
+                <Link to={{pathname: `/ticket/${row.ticket_number}`, state: row}} state={row}>
                     <ArrowRight size={18} className="cursor-pointer"/>
                 </Link>
 

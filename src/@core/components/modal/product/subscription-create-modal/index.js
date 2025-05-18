@@ -262,6 +262,8 @@ const SubscriptionCreationModal = (props) => {
         //     }
         // ]
 
+        console.log("subscriptionList::::", subscriptionList)
+
         subscriptionList.forEach((item) => {
             item.packages.forEach((packageItem) => {
                 list.push(packageItem)

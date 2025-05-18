@@ -5,6 +5,7 @@ import {Slide, toast} from "react-toastify";
 import Avatar from '@components/avatar'
 import moment from "moment";
 import logo from "../assets/images/logo/logo.png";
+import {CURRENCY_FORMAT} from "../const/constant";
 
 
 const ToastContent = ({title, body, assets}) => (
@@ -182,4 +183,14 @@ export const tableDataDateTimeConverter = (date) => {
     } else {
         return moment(date).format("YYYY-MM-DD | HH:mm:ss");
     }
+};
+
+const amountFormat = (amount) => {
+    return amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2
+    });
+};
+
+export const setCurrencyWithSymbol = (amount) => {
+    return (amount || amount === 0) ? `${CURRENCY_FORMAT} ${amountFormat(amount)}` : "-";
 };

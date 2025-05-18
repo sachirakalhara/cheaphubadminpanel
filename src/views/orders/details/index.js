@@ -8,7 +8,10 @@ import {Link, useLocation, useParams} from "react-router-dom";
 import * as OrderResourcesServices from "../../../services/order-resources";
 import {useDispatch} from "react-redux";
 import {toggleLoading} from "../../../redux/loading";
-import {formDataDateConverter, formDataDateTimeConverter} from "../../../utility/commonFun";
+import {formDataDateConverter, formDataDateTimeConverter, tableDataDateTimeConverter} from "../../../utility/commonFun";
+import * as TicketServices from "../../../services/tickets";
+import {getAllTicketsByOrders} from "../../../services/tickets";
+import {CURRENCY} from "../../../const/constant";
 
 
 const OrderDetails = () => {
@@ -17,16 +20,7 @@ const OrderDetails = () => {
     const dispatch = useDispatch()
 
     const [store, setStore] = useState({
-        data: [
-            {
-                id: 1,
-                ticketId: 'Tick12345',
-                email: 'gebush48@gmail.com',
-                status: 'Completed',
-                date: '2024-02-10'
-            },
-        ],
-        total: 1
+        data: []
     });
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -35,9 +29,11 @@ const OrderDetails = () => {
     const [val, setVal] = useState('')
     const [statusValue, setStatusValue] = useState('');
     const [orderDetails, setOrderDetails] = useState({});
+    const [productItems, setProductItems] = useState([]);
 
     useEffect(() => {
         getOrderDetails()
+        getAllTickets()
     }, [])
 
 
@@ -48,10 +44,40 @@ const OrderDetails = () => {
                 if (res.success) {
                     dispatch(toggleLoading())
                     setOrderDetails(res.data.order)
+                    setProductItems(res.data.order.order_items);
                 } else {
                     dispatch(toggleLoading())
                     customToastMsg(res.message, 0)
                 }
+            })
+    }
+
+    const getAllTickets = async () => {
+        dispatch(toggleLoading());
+        setIsFetched(false);
+        const body = {
+            "all": 1
+        }
+
+        TicketServices.getAllTicketsByOrders(body)
+            .then(res => {
+                if (res.success) {
+                    dispatch(toggleLoading());
+                    const list = [];
+                    res.data.map((item) => {
+                        if (item.order_id === navigationParam.id) {
+                            list.push(item);
+                        }
+                    })
+
+                    console.log(list)
+
+                    setStore({data: list ?? []});
+                } else {
+                    dispatch(toggleLoading());
+                    customToastMsg(res.message, res.status)
+                }
+                setIsFetched(true);
             })
     }
 
@@ -76,22 +102,21 @@ const OrderDetails = () => {
     }
 
     const columns = [
-        {name: 'Ticket Number', selector: row => row.ticketId},
-        {name: 'email', selector: row => row.email},
+        {name: 'Ticket Number', selector: row => row.ticket_number},
+        {name: 'Subject', selector: row => row.subject},
         {
             name: 'Status',
             selector: row => <Badge
-                color={row.status === 'Incomplete' ? 'danger' : row.status === 'Pending' ? 'warning' : 'success'}>{row.status}</Badge>
+                color={row.status === "closed" ? 'danger' : row.status === 'open' ? 'success' : 'secondary'}>{row.status}</Badge>
         },
-        {name: 'Date', selector: row => row.date},
+        {name: 'Date', selector: row => tableDataDateTimeConverter(row.created_at)},
         {
             name: "",
             minWidth: "100px",
             cell: row => (
-                <Link to={`ticket/${row.ticketId}`} state={row}>
+                <Link to={{pathname: `/ticket/${row.ticket_number}`, state: row}} state={row}>
                     <ArrowRight size={18} className="cursor-pointer"/>
                 </Link>
-
             )
         }
     ];
@@ -148,17 +173,18 @@ const OrderDetails = () => {
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Transaction Id</CardText>
-                                <CardText tag="h6" className='text-black-50'>{orderDetails.transaction_id}</CardText>
+                                <CardText tag="h6"
+                                          className='text-black-50'>{orderDetails.transaction_id ?? 'N/A'}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Payment</CardText>
-                                <CardText tag="h6" className='text-black-50'>Marx</CardText>
+                                <CardText tag="h6" className='text-black-50'>{orderDetails.payment_method}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Currency</CardText>
-                                <CardText tag="h6" className='text-black-50'>USD</CardText>
+                                <CardText tag="h6" className='text-black-50'>{CURRENCY}</CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
@@ -185,6 +211,12 @@ const OrderDetails = () => {
                                         }}>
                                     Process Order
                                 </Button>
+
+                                <Link to={{pathname: `/product-details/${navigationParam.order_id}`, state: orderDetails}} state={orderDetails}>
+                                    <Button color='success' className="mt-2 d-flex align-self-center ms-1" outline>
+                                        Product Details
+                                    </Button>
+                                </Link>
                             </div>
                         </CardBody>
                     </Card>

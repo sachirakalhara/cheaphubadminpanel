@@ -88,8 +88,8 @@ const CustomerList = () => {
                 console.log(response)
                 if (response.success) {
                     setStore({
-                        data: response.data.user_list,
-                        total: response.data.meta.last_page
+                        data: response.data?.user_list,
+                        total: response.data.meta?.last_page
                     })
                 } else {
                     customToastMsg(response.message, response.status)

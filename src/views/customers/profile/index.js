@@ -56,8 +56,8 @@ const CustomerProfile = () => {
             .then(response => {
                 if (response.success) {
                     setStore({
-                        data: response.data.order_list,
-                        total: response.data.meta.last_page
+                        data: response.data?.order_list,
+                        total: response.data.meta?.last_page
                     })
                 } else {
                     customToastMsg(response.message, response.status)

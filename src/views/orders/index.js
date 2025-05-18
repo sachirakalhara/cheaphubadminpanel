@@ -10,6 +10,8 @@ import * as OrderResourcesServices from "../../services/order-resources";
 import {filterOrderList} from "../../services/order-resources";
 import {formDataDateConverter} from "../../utility/commonFun";
 import Modal from "../../@core/components/modal";
+import {toggleLoading} from "../../redux/loading";
+import {useDispatch} from "react-redux";
 
 let prev = 0
 
@@ -125,6 +127,7 @@ const CustomHeader = ({
 }
 
 const OrdersScreen = () => {
+    const dispatch = useDispatch();
     const [store, setStore] = useState({
         data: [],
         total: 0
@@ -158,6 +161,8 @@ const OrdersScreen = () => {
             "from_date": formDataDateConverter(startDate) === "N/A" ? null : formDataDateConverter(startDate),
             "to_date": formDataDateConverter(endDate) === "N/A" ? null : formDataDateConverter(endDate),
         }
+        dispatch(toggleLoading());
+        setIsFetched(false)
         OrderResourcesServices.filterOrderList(body, page)
             .then(response => {
                 console.log(response)
@@ -169,6 +174,8 @@ const OrdersScreen = () => {
                 } else {
                     customToastMsg(response.message, response.status)
                 }
+                setIsFetched(true)
+                dispatch(toggleLoading());
             })
 
 
@@ -196,7 +203,7 @@ const OrdersScreen = () => {
             name: "",
             minWidth: "100px",
             cell: row => (
-                <Link to={{pathname: `order/${row.order_id}`, state: row}} state={row}>
+                <Link to={{pathname: `/order/${row.order_id}`, state: row}} state={row}>
                     <ArrowRight size={18} className="cursor-pointer"/>
                 </Link>
 

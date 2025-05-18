@@ -61,7 +61,7 @@ const RepeatingPackageForm = (props) => {
                     subscription: '',
                     packageName: '',
                     duration: '',
-                    // quantity: '',
+                    quantity: '',
                     replaceCount: '',
                     paymentMethods: [],
                     price: '',
@@ -73,9 +73,9 @@ const RepeatingPackageForm = (props) => {
                         id: item.id,
                         subscription: item.subscription.id,
                         packageName: item.name,
-                        duration: item.expiry_duration.toString(),
-                        // quantity: item.subscription?.available_serial_count?item.subscription?.available_serial_count.toString():0,
-                        replaceCount: item.replace_count.toString(),
+                        duration: item.expiry_duration,
+                        quantity: item?.subscription?.available_serial_count ?? 0,
+                        replaceCount: item.replace_count,
                         paymentMethods: item.payment_method.split(',').map((method) => ({
                             value: method,
                             label: method
@@ -91,7 +91,7 @@ const RepeatingPackageForm = (props) => {
                 subscription: '',
                 packageName: '',
                 duration: '',
-                // quantity: '',
+                quantity: '',
                 replaceCount: '',
                 paymentMethods: [],
                 price: '',
@@ -163,7 +163,7 @@ const RepeatingPackageForm = (props) => {
                     subscription: '',
                     packageName: '',
                     duration: '',
-                    // quantity: '',
+                    quantity: '',
                     replaceCount: '',
                     paymentMethods: [],
                     price: '',
@@ -180,7 +180,7 @@ const RepeatingPackageForm = (props) => {
                         subscription: '',
                         packageName: '',
                         duration: '',
-                        // quantity: '',
+                        quantity: '',
                         replaceCount: '',
                         paymentMethods: [],
                         price: '',
@@ -204,7 +204,7 @@ const RepeatingPackageForm = (props) => {
     };
 
     const validateFields = (index) => {
-        const {subscription, packageName, duration, quantity, paymentMethods, price} = packages[index];
+        const {subscription, packageName, duration, quantity,replaceCount, paymentMethods, price} = packages[index];
         const errors = {};
 
         if (!subscription) {
@@ -223,9 +223,9 @@ const RepeatingPackageForm = (props) => {
         //     errors.quantity = 'Quantity is required';
         // }
 
-        // if (!replaceCount.trim()) {
-        //     errors.replaceCount = 'Replace Count is required';
-        // }
+        if (!replaceCount) {
+            errors.replaceCount = 'Replace Count is required';
+        }
 
         if (!paymentMethods.length) {
             errors.paymentMethods = 'At least one payment method is required';
@@ -254,7 +254,7 @@ const RepeatingPackageForm = (props) => {
             data.append('name', formData.packageName);
             data.append('expiry_duration', formData.duration);
             data.append('qty', 0);
-            data.append('replace_count', 0);
+            data.append('replace_count', formData.replaceCount);
             data.append('payment_method', formData.paymentMethods.map((method) => method.value).join(','));
             data.append('price', formData.price);
 
@@ -294,10 +294,10 @@ const RepeatingPackageForm = (props) => {
                             // updatedPackages[selectedObj].subscription = res.data.package.subscription.id;
                             updatedPackages[selectedObj].subscription = formData.subscription;
                             updatedPackages[selectedObj].packageName = res.data.package.name;
-                            updatedPackages[selectedObj].duration = res.data.package.expiry_duration.toString();
+                            updatedPackages[selectedObj].duration = res.data.package.expiry_duration;
                             // updatedPackages[selectedObj].quantity = res.data.package.subscription.available_serial_count.toString();
                             // updatedPackages[selectedObj].quantity = formData.quantity;
-                            // updatedPackages[selectedObj].replaceCount = res.data.package.replace_count.toString();
+                            updatedPackages[selectedObj].replaceCount = res.data.package.replace_count;
                             updatedPackages[selectedObj].paymentMethods = res.data.package.payment_method.split(',').map((method) => ({
                                 value: method,
                                 label: method
@@ -421,22 +421,20 @@ const RepeatingPackageForm = (props) => {
                     </span>
                                             )}
                                         </Col>
-                                        {/*<Col md={4} className="mb-md-0 mb-1">*/}
-                                        {/*    <Label className="form-label" for={`quantity-${i}`}>*/}
-                                        {/*        Quantity*/}
-                                        {/*    </Label>*/}
-                                        {/*    <Input*/}
-                                        {/*        id={`quantity-${i}`}*/}
-                                        {/*        placeholder="Quantity"*/}
-                                        {/*        type="number"*/}
-                                        {/*        value={pkg.quantity}*/}
-                                        {/*        onChange={(e) => handleInputChange(i, 'quantity', e.target.value)}*/}
-                                        {/*        invalid={pkg.errors.quantity && true}*/}
-                                        {/*        autoComplete="off"*/}
-                                        {/*    />*/}
-                                        {/*    {pkg.errors.quantity &&*/}
-                                        {/*        <FormFeedback>Please enter a valid quantity</FormFeedback>}*/}
-                                        {/*</Col>*/}
+                                        <Col md={4} className="mb-md-0 mb-1">
+                                            <Label className="form-label" for={`quantity-${i}`}>
+                                                Quantity
+                                            </Label>
+                                            <Input
+                                                id={`quantity-${i}`}
+                                                placeholder="Quantity"
+                                                type="number"
+                                                value={subscriptionList.find((c) => c.value === pkg.subscription)?.availableCount ?? 0}
+                                                invalid={pkg.errors.quantity && true}
+                                                autoComplete="off"
+                                                disabled={true}
+                                            />
+                                        </Col>
                                         <Col md={4} className="mb-md-0 mb-1">
                                             <Label className="form-label" for={`replaceCount-${i}`}>
                                                 Available Replace Count
@@ -445,15 +443,14 @@ const RepeatingPackageForm = (props) => {
                                                 id={`replaceCount-${i}`}
                                                 placeholder="Replace Count"
                                                 type="number"
-                                                value={subscriptionList.find((c) => c.value === pkg.subscription)?.availableCount ?? 0}
-                                                // onChange={(e) => handleInputChange(i, 'replaceCount', e.target.value)}
+                                                value={pkg.replaceCount}
+                                                onChange={(e) => handleInputChange(i, 'replaceCount', e.target.value)}
                                                 invalid={pkg.errors.replaceCount && true}
                                                 autoComplete="off"
-                                                disabled={true}
                                             />
-                                            {/*{pkg.errors.replaceCount && (*/}
-                                            {/*    <FormFeedback>Please enter a valid replace count</FormFeedback>*/}
-                                            {/*)}*/}
+                                            {pkg.errors.replaceCount && (
+                                                <FormFeedback>Please enter a valid replace count</FormFeedback>
+                                            )}
                                         </Col>
                                         <Col md={4} className="mb-md-0 mb-1">
                                             <Label className="form-label" for={`paymentMethods-${i}`}>

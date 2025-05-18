@@ -13,6 +13,19 @@ export async function getAllTickets(body,page) {
     return await ApiService.callApi(apiObject)
 }
 
+export async function getAllTicketsByOrders(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `ticket/get-all`
+    apiObject.body = body
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
+
 export async function getTicketChat(body) {
     const apiObject = {}
     apiObject.method = 'POST'
@@ -33,6 +46,19 @@ export async function createTicketComment(body) {
     apiObject.isBasicAuth = false
     apiObject.urlencoded = false
     apiObject.endpoint = `ticket/comment`
+    apiObject.body = body
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
+
+export async function changeTicketStatus(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `ticket/status-change`
     apiObject.body = body
     apiObject.multipart = false
 

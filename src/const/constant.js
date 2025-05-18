@@ -46,3 +46,6 @@ export const AUTH_CLIENT_SECRET = ''
 export const REFRESH_CLIENT_SECRET = ''
 
 export const COMPANY_NAME = "CheapHub"
+
+export const CURRENCY_FORMAT = "$";
+export const CURRENCY = "LKR";

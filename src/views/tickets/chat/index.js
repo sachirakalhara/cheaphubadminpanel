@@ -15,17 +15,21 @@ import {getUserProfile, getChatContacts} from './store'
 import '@styles/base/pages/app-chat.scss'
 import '@styles/base/pages/app-chat-list.scss'
 
-import {useParams} from "react-router-dom";
+import {useLocation, useParams} from "react-router-dom";
 import * as TicketServices from "../../../services/tickets";
 import {toggleLoading} from "../../../redux/loading";
 import {notifyMessage} from "../../../utility/commonFun";
 import {getTicketChat} from "../../../services/tickets";
+import * as OrderResourcesServices from "../../../services/order-resources";
 
 const AppChat = () => {
     // ** Store Vars
     const dispatch = useDispatch();
-    const {id} = useParams();
+    const location = useLocation();
+    const {name} = useParams();
     const store = useSelector(state => state.chat)
+
+    const ticketData = location.state;
 
     // ** States
     const [user, setUser] = useState({})
@@ -34,6 +38,7 @@ const AppChat = () => {
     const [userSidebarLeft, setUserSidebarLeft] = useState(false)
     const [chatList, setChatList] = useState({});
     const [ticketDetails, setTicketDetails] = useState({});
+    const [productItems, setProductItems] = useState([]);
 
     // ** Sidebar & overlay toggle functions
     const handleSidebar = () => setSidebar(!sidebar)
@@ -60,15 +65,17 @@ const AppChat = () => {
 
     const getAllChatList = () => {
         dispatch(toggleLoading())
+        console.log(ticketData)
         const body = {
             "all": 1,
-            "ticket_number": id
+            "ticket_number": ticketData.ticket_number
         }
         TicketServices.getTicketChat(body)
             .then((res) => {
                 if (res.success) {
                     dispatch(toggleLoading())
                     setTicketDetails(res.data[0]);
+                    getOrderDetails(res.data[0].order.id);
 
                     const list = [];
                     if (res.data[0]) {
@@ -98,6 +105,22 @@ const AppChat = () => {
             })
     }
 
+    const getOrderDetails = async (id) => {
+        dispatch(toggleLoading());
+        OrderResourcesServices.getOrderByOrderId(id)
+            .then((res) => {
+                if (res.success) {
+                    console.log(res.data);
+                    setProductItems(res.data.order.order_items);
+                    dispatch(toggleLoading());
+                } else {
+                    dispatch(toggleLoading());
+                    notifyMessage(res.message, res.status);
+                }
+            })
+    }
+
+
     const replyHandler = (msg) => {
         dispatch(toggleLoading())
         const body = {
@@ -123,11 +146,34 @@ const AppChat = () => {
             })
     }
 
+    const changeStatusOnTicket=()=>{
+        dispatch(toggleLoading())
+        const body = {
+            "id": ticketDetails?.id,
+            "status": "resolved"
+        }
+
+        TicketServices.changeTicketStatus(body)
+            .then((res) => {
+                console.log(res)
+                if (res.success) {
+                    dispatch(toggleLoading())
+                    notifyMessage(res.message, 1);
+                    getAllChatList();
+                } else {
+                    dispatch(toggleLoading())
+                    notifyMessage(res.message, res.status);
+                }
+            })
+    }
+
     return (
         <Fragment>
             <Sidebar
                 store={store}
                 ticketDetails={ticketDetails}
+                changeStatusHandler={()=>changeStatusOnTicket()}
+                productItems={productItems}
             />
             <div className='content-right'>
                 <div className='content-wrapper'>
@@ -147,6 +193,7 @@ const AppChat = () => {
                             replyCallback={(e) => {
                                 replyHandler(e)
                             }}
+                            ticketDetails={ticketDetails}
                         />
                     </div>
                 </div>

@@ -246,7 +246,15 @@ const AppRoutes = [
   },
   {
     path: '/order/:orderNumber',
-    component: lazy(() => import('../../views/orders/details')),
+    component: lazy(() => import('../../views/orders/details/index')),
+  },
+  {
+    path: '/product-details/:orderNumber',
+    component: lazy(() => import('../../views/orders/product/index')),
+    exact: true,
+    meta: {
+      navLink: '/order/:orderNumber'
+    }
   },
   {
     path: '/ticket/list',
