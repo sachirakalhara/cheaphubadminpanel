@@ -16,10 +16,10 @@ export async function createContributionProduct(body) {
 
 export async function updateContributionProduct(body) {
     const apiObject = {}
-    apiObject.method = 'PUT'
+    apiObject.method = 'POST'
     apiObject.authentication = true
     apiObject.isBasicAuth = false
-    apiObject.urlencoded = true
+    apiObject.urlencoded = false
     apiObject.endpoint = `super-admin/contribution/product/update`
     apiObject.body = body
     apiObject.multipart = true

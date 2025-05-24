@@ -272,10 +272,10 @@ const CouponList = () => {
 
             <Card>
                 <div className='invoice-list-table-header w-100 py-2 px-1 m-0' style={{whiteSpace: 'nowrap'}}>
-                    <h3 className='text-primary invoice-logo mb-2'>Coupon Code Management</h3>
+                    <h3 className='text-primary invoice-logo'>Coupon Code Management</h3>
                     <Row>
-                        <Col lg='4' className='d-flex align-items-center px-0 px-lg-1'>
-                            <div className='d-flex align-items-center'>
+                        <Col lg='4' className='d-flex align-items-center px-lg-1'>
+                            <div className='d-flex align-items-center mt-2'>
                                 <Label className='form-label' for='default-picker'>
                                     Name
                                 </Label>
@@ -298,8 +298,8 @@ const CouponList = () => {
                                 </div>
                             </div>
                         </Col>
-                        <Col lg='4' className='d-flex align-items-center px-0 px-lg-1'>
-                            <div className='d-flex align-items-center'>
+                        <Col lg='4' className='d-flex align-items-center px-lg-1'>
+                            <div className='d-flex align-items-center mt-2'>
                                 <Label className='form-label' for='product-type'>
                                     Product Type
                                 </Label>
@@ -318,7 +318,7 @@ const CouponList = () => {
                         </Col>
                         <Col
                             lg='4'
-                            className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1 p-0'
+                            className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1'
                         >
                             <Button onClick={() => {
                                 setIsEditMode(false)

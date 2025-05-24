@@ -34,7 +34,7 @@ const CustomHeader = ({
             <div className='invoice-list-table-header w-100 py-2 px-1 m-0' style={{whiteSpace: 'nowrap'}}>
                 <h3 className='text-primary invoice-logo mb-2'>Tags</h3>
                 <Row>
-                    <Col lg='4' className='d-flex align-items-center px-0 px-lg-1'>
+                    <Col lg='4' className='d-flex align-items-center px-lg-1'>
                         <div className='d-flex align-items-center'>
                             <Label className='form-label' for='default-picker'>
                                 Name
@@ -60,7 +60,7 @@ const CustomHeader = ({
                     </Col>
                     <Col
                         lg='8'
-                        className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1 p-0'
+                        className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1'
                     >
                         <Button onClick={() => setShow(true)}>
                             <Plus size={15}/> Add Tag

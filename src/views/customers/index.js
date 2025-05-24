@@ -113,9 +113,9 @@ const CustomerList = () => {
 
     const columns = [
         {name: 'Customer Name', selector: row => row.display_name},
-        {name: 'Email', selector: row => row.email},
+        {name: 'Email', minWidth: "30%", selector: row => row.email},
         {name: 'Balance ($)', selector: row => row.wallet},
-        {name: 'Total Spend ($)', selector: row => row.total_spend},
+        // {name: 'Total Spend ($)', selector: row => row.total_spend},
         {name: 'Purchases ($)', selector: row => row.user_spend, center: true},
         {
             name: "",
@@ -202,7 +202,7 @@ const CustomerList = () => {
                 <div className='table-header w-100 py-2 px-1 m-0'>
                     <h3 className='text-primary mb-2'>Customer Management</h3>
                     <Row>
-                        <Col lg='12' className='d-flex align-items-center px-0 px-lg-1'>
+                        <Col lg='12' className='d-flex align-items-center px-lg-1'>
                             <div className='d-flex align-items-center'>
 
                                 <Label className='form-label' for='search'>

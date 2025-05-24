@@ -55,11 +55,13 @@ const CustomerProfile = () => {
         OrderResourcesServices.getOrdersByCustomerId(navigationParam.id, page)
             .then(response => {
                 if (response.success) {
+                    setIsFetched(true);
                     setStore({
-                        data: response.data?.order_list,
-                        total: response.data.meta?.last_page
+                        data: response.data?.order_list ?? [],
+                        total: response.data.meta?.last_page ?? 0
                     })
                 } else {
+                    setIsFetched(true);
                     customToastMsg(response.message, response.status)
                 }
             })

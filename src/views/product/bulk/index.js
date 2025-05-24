@@ -48,9 +48,9 @@ const CustomHeader = (props) => {
     return (
         <Card className="mb-0">
             <Col className='invoice-list-table-header w-100 py-2 px-2' style={{whiteSpace: 'nowrap'}}>
-                <h3 className='text-primary invoice-logo ms-0 mb-2'>Bulk Products</h3>
+                <h3 className='text-primary invoice-logo ms-0'>Bulk Products</h3>
                 <Row>
-                    <Col lg='5' className='d-flex align-items-center'>
+                    <Col lg='5' className='d-flex align-items-center mt-2'>
                         <Label className='form-label' for='default-picker'>
                             Product Name
                         </Label>
@@ -71,7 +71,7 @@ const CustomHeader = (props) => {
                             )}
                         </div>
                     </Col>
-                    <Col lg='4' className='d-flex align-items-center  ms-1'>
+                    <Col lg='4' className='d-flex align-items-center  ms-1 mt-2'>
                         <Label className='form-label' for='default-picker'>
                             Category
                         </Label>

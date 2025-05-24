@@ -31,7 +31,7 @@ const CustomHeader = (props) => {
             <div className='invoice-list-table-header w-100 py-2 px-1' style={{ whiteSpace: 'nowrap' }}>
                 <h3 className='text-primary invoice-logo ms-0 mb-2'>Categories</h3>
                 <Row>
-                    <Col lg='6' className='d-flex align-items-center px-0 px-lg-1'>
+                    <Col lg='6' className='d-flex align-items-center  px-lg-1'>
                         <div className='d-flex align-items-center me-2'>
                             <Label className='form-label' for='default-picker'>
                                 Category Name
@@ -58,7 +58,7 @@ const CustomHeader = (props) => {
                     </Col>
                     <Col
                         lg='6'
-                        className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1 p-0'
+                        className='actions-right d-flex align-items-center justify-content-lg-end flex-lg-nowrap flex-wrap mt-lg-0 mt-1 pe-lg-1'
                     >
                         <Button onClick={() => props.setShow(true)}>
                             <Plus size={15} /> Add Category

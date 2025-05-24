@@ -161,12 +161,15 @@ const SubscriptionCreationModal = (props) => {
         data.append('service_info', getValues('serviceInfo'))
         // data.append('slug_url', getValues('slugUrl'))
         data.append('visibility', visibilityMode)
-        data.append('categories', getValues('category'))
+        data.append('categories', `[${getValues('category')}]`)
 
         if (props.isEditMode) {
             data.append('id', getValues('id'))
-        } else {
-            data.append('image', file)
+            data.append('_method', "PUT")
+        }
+        //
+        if (file !== null) {
+            data.append('image', file);
         }
 
 
@@ -174,7 +177,8 @@ const SubscriptionCreationModal = (props) => {
 
         const fetchAPI = props.isEditMode ? ContributionProductService.updateContributionProduct : ContributionProductService.createContributionProduct;
 
-        fetchAPI(props.isEditMode ? qs.stringify(formDataToJson(data)) : data)
+        fetchAPI(props.isEditMode ? data : data)
+        // fetchAPI(props.isEditMode ? qs.stringify(formDataToJson(data)) : data)
             .then(res => {
                 console.log(res)
                 if (res.success) {
@@ -582,6 +586,19 @@ const SubscriptionCreationModal = (props) => {
                             />
                             <Label className='form-check-label' for='onHold'>
                                 On Hold
+                            </Label>
+                        </div>
+                        <div className='form-check mb-1'>
+                            <Input
+                                type='radio'
+                                value='open'
+                                id='open'
+                                name='payment-method-radio'
+                                checked={visibilityMode === 'open'}
+                                onChange={() => setVisibilityMode('open')}
+                            />
+                            <Label className='form-check-label' for='open'>
+                                Open
                             </Label>
                         </div>
                     </Col>

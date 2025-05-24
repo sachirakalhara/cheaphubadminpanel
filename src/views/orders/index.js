@@ -31,10 +31,10 @@ const CustomHeader = ({
     return (
         <Card>
             <div className='invoice-list-table-header w-100 py-2 px-1 m-0' style={{whiteSpace: 'nowrap'}}>
-                <h3 className='text-primary invoice-logo mb-2'>Orders</h3>
+                <h3 className='text-primary invoice-logo'>Orders</h3>
                 <Row>
-                    <Col lg='4' className='d-flex align-items-center'>
-                        <div className='d-flex align-items-center'>
+                    <Col lg='4' sm={12} className='d-flex align-items-center'>
+                        <div className='d-flex align-items-center mt-2'>
                             <Label className='form-label' for='default-picker'>
                                 Name
                             </Label>
@@ -57,8 +57,8 @@ const CustomHeader = ({
                             </div>
                         </div>
                     </Col>
-                    <Col lg='3' className='d-flex align-items-center'>
-                        <div className='d-flex align-items-center'>
+                    <Col lg='3' sm={12} className='d-flex align-items-center'>
+                        <div className='d-flex align-items-center mt-2'>
                             <Label className='form-label me-2' for='default-picker'>
                                 Product Type
                             </Label>
@@ -74,9 +74,9 @@ const CustomHeader = ({
                             </Input>
                         </div>
                     </Col>
-                    <Col lg='3' className='d-flex align-items-center'>
-                        <div className='d-flex align-items-center'>
-                            <Label className='form-label ms-3 me-2' for='default-picker'>
+                    <Col lg='3' sm={12} className='d-flex align-items-center'>
+                        <div className='d-flex align-items-center mt-2'>
+                            <Label className='form-label ms-lg-3 me-2' for='default-picker'>
                                 Payment Status
                             </Label>
                             <Input
@@ -92,8 +92,8 @@ const CustomHeader = ({
                             </Input>
                         </div>
                     </Col>
-                    <Col lg='10' className='d-flex align-items-center mt-2'>
-                        <div className='d-flex align-items-center'>
+                    <Col lg='10' sm={12} className='d-flex align-items-center mt-2'>
+                        <div className='d-flex align-items-center mt-2'>
                             <Label className='form-label me-2' for='default-picker'>
                                 Transaction Range
                             </Label>

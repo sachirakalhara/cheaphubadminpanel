@@ -87,7 +87,7 @@ const SidebarLeft = props => {
                                     </Col>
 
                                     {props.productItems.map((item, index) => (
-                                        <Col lg={12} className="mt-2 pt-2 separator">
+                                        <Col lg={12} className="mt-2 pt-2 separator" key={index}>
                                             {item.contribution_product !== null ? (
                                                 <>
                                                     <h4 className="text-md font-bold">Product Details</h4>
@@ -137,21 +137,6 @@ const SidebarLeft = props => {
                                             )}
                                         </Col>
                                     ))}
-                                    {/*          <Col lg={12} className="mt-2 pt-2 separator">*/}
-                                    {/*              <h4 className="text-md font-bold">Product Details</h4>*/}
-                                    {/*              <p className='card-text mb-25'><span*/}
-                                    {/*                  className="fw-bold text-black">Name: </span>Spotify Premium</p>*/}
-                                    {/*              <p className='card-text mb-0 three-lines'>*/}
-                                    {/*<span*/}
-                                    {/*    className="fw-bold text-black">Description: </span>*/}
-                                    {/*                  Spotify Premium is a digital music service that gives you access*/}
-                                    {/*                  to ad-free music listen*/}
-                                    {/*              </p>*/}
-                                    {/*              <p className='card-text mb-0'>*/}
-                                    {/*<span*/}
-                                    {/*    className="fw-bold text-black">Price: </span> $120.00*/}
-                                    {/*              </p>*/}
-                                    {/*          </Col>*/}
                                 </Row>
 
                             </div>
