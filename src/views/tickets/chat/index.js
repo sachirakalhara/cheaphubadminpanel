@@ -24,6 +24,7 @@ import * as OrderResourcesServices from "../../../services/order-resources";
 import logo from "../../../assets/images/logo/logo.png";
 import {Badge, Button, Col, Row} from "reactstrap";
 import PerfectScrollbar from "react-perfect-scrollbar";
+import {customSweetAlert} from "../../../utility/Utils";
 
 const AppChat = () => {
     // ** Store Vars
@@ -149,7 +150,18 @@ const AppChat = () => {
             })
     }
 
-    const changeStatusOnTicket=()=>{
+    const changeStatusOnTicket =async () => {
+
+        await customSweetAlert(
+            'Are you sure you did resolved this ticket?',
+            0,
+            () => {
+                changeStatusOffTicket()
+            }
+        )
+    }
+
+    const changeStatusOffTicket = () => {
         dispatch(toggleLoading())
         const body = {
             "id": ticketDetails?.id,
@@ -175,7 +187,7 @@ const AppChat = () => {
             <Sidebar
                 store={store}
                 ticketDetails={ticketDetails}
-                changeStatusHandler={()=>changeStatusOnTicket()}
+                changeStatusHandler={() => changeStatusOnTicket()}
                 productItems={productItems}
             />
 
@@ -215,7 +227,7 @@ const AppChat = () => {
 
                                     <Button color='primary' className="mt-2 d-flex align-self-center" outline
                                             disabled={ticketDetails.status !== 'open'}
-                                            onClick={()=>changeStatusHandler()}>
+                                            onClick={() => changeStatusOnTicket()}>
                                         {ticketDetails?.status === 'open' ? "Resolve" : "Resolved"}
                                     </Button>
                                 </Col>
@@ -277,7 +289,6 @@ const AppChat = () => {
                     </div>
 
                     <div className='content-wrapper'>
-
 
 
                         <div className='content-body'>
