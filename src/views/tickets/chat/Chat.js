@@ -49,7 +49,7 @@ const ChatLog = props => {
         }
     }, [chatDetails])
 
-    // ** Formats chat data based on sender
+    // ** Formats chat data based on sender and groups by date
     const formattedChatData = () => {
         let chatLog = []
         if (chatDetails.chat) {
@@ -57,64 +57,74 @@ const ChatLog = props => {
         }
 
         const formattedChatLog = []
-        let chatMessageSenderId = chatLog[0] ? chatLog[0].senderId : undefined
-        let msgGroup = {
-            senderId: chatMessageSenderId,
+        let currentDate = null
+        let dateGroup = {
+            date: null,
             messages: []
         }
+
         chatLog.forEach((msg, index) => {
-            if (chatMessageSenderId === msg.senderId) {
-                msgGroup.messages.push({
+            const messageDate = new Date(msg.time).toDateString()
+            if (currentDate === messageDate) {
+                dateGroup.messages.push({
+                    senderId: msg.senderId,
                     msg: msg.message,
                     time: msg.time
                 })
             } else {
-                chatMessageSenderId = msg.senderId
-                formattedChatLog.push(msgGroup)
-                msgGroup = {
-                    senderId: msg.senderId,
+                if (dateGroup.messages.length) formattedChatLog.push(dateGroup)
+                currentDate = messageDate
+                dateGroup = {
+                    date: messageDate,
                     messages: [
                         {
+                            senderId: msg.senderId,
                             msg: msg.message,
                             time: msg.time
                         }
                     ]
                 }
             }
-            if (index === chatLog.length - 1) formattedChatLog.push(msgGroup)
+            if (index === chatLog.length - 1) formattedChatLog.push(dateGroup)
         })
         return formattedChatLog
     }
 
-    // ** Renders user chat
+    // ** Renders user chat with date grouping
     const renderChats = () => {
-        return formattedChatData().map((item, index) => {
-            return (
-                <div
-                    key={index}
-                    className={classnames('chat', {
-                        'chat-left': item.senderId !== 11
-                    })}
-                >
-                    <div className='chat-avatar'>
-                        <Avatar
-                            imgWidth={36}
-                            imgHeight={36}
-                            className='box-shadow-1 cursor-pointer'
-                            img={"https://thumbs.dreamstime.com/b/braka-avatar-fotografii-placeholder-profilowa-ikona-124557887.jpg"}
-                        />
-                    </div>
-
-                    <div className='chat-body'>
-                        {item.messages.map(chat => (
-                            <div key={chat.msg} className='chat-content'>
-                                <p>{chat.msg}</p>
-                            </div>
-                        ))}
-                    </div>
+        return formattedChatData().map((group, groupIndex) => (
+            <div key={groupIndex}>
+                <div className='chat-date'>
+                    <h6 className='text-black-50 text-center font-small-3'>{new Date(group.date).toLocaleDateString()}</h6>
                 </div>
-            )
-        })
+                {group.messages.map((item, index) => (
+                    <div
+                        key={index}
+                        className={classnames('chat', {
+                            'chat-left': item.senderId !== 11
+                        })}
+                    >
+                        <div className='chat-avatar'>
+                            <Avatar
+                                imgWidth={36}
+                                imgHeight={36}
+                                className='box-shadow-1 cursor-pointer'
+                                img={"https://thumbs.dreamstime.com/b/braka-avatar-fotografii-placeholder-profilowa-ikona-124557887.jpg"}
+                            />
+                        </div>
+
+                        <div className='chat-body'>
+                            <div className='chat-content'>
+                                <p>{item.msg}</p>
+                                <small className={`${item.senderId !== 11 ? 'text-muted' : 'text-white'}`}>
+                                    {new Date(item.time).toLocaleTimeString()}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        ))
     }
 
     // ** On mobile screen open left sidebar on Start Conversation Click
@@ -177,3 +187,4 @@ const ChatLog = props => {
 }
 
 export default ChatLog
+
