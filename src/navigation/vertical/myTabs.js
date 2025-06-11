@@ -69,7 +69,7 @@ export default [
         id: 'Tickets',
         title: 'Tickets',
         icon: <img src={img6} alt="img" height={20} width={20} style={{marginRight:15}}/>,
-        navLink: '/ticket/list'
+        navLink: '/tickets/list'
     }
 
 ]

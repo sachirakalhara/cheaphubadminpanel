@@ -24,7 +24,7 @@ import 'react-perfect-scrollbar/dist/css/styles.css';
 
 const SidebarLeft = props => {
     // ** Props & Store
-    const {store, ticketDetails} = props
+    const {ticketDetails} = props
 
     // ** Dispatch
     const dispatch = useDispatch()
@@ -32,17 +32,8 @@ const SidebarLeft = props => {
     // ** State
     const [active, setActive] = useState(0)
 
-    useEffect(() => {
-        if (!isObjEmpty(store.selectedUser)) {
-            if (store.selectedUser.chat) {
-                setActive(store.selectedUser.chat.id)
-            } else {
-                setActive(store.selectedUser.contact.id)
-            }
-        }
-    }, [])
 
-    return store ? (
+    return  (
         <div className='sidebar-left'>
             <div className='sidebar p-0 bg-danger'>
                 <div className={classnames('sidebar-content')}>
@@ -145,7 +136,7 @@ const SidebarLeft = props => {
                 </div>
             </div>
         </div>
-    ) : null
+    )
 }
 
 export default SidebarLeft

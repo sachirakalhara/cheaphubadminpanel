@@ -5,6 +5,7 @@ import {Controller} from "react-hook-form"
 import Select from "react-select"
 import {selectThemeColors} from '@utils'
 import Flatpickr from "react-flatpickr";
+import {editDateFormatter} from "../../../../utility/commonFun";
 
 
 const CouponCreationModal = (props) => {
@@ -139,7 +140,7 @@ const CouponCreationModal = (props) => {
                                     className="form-control w-100"
                                     placeholder="Select date"
                                     id="expirationDate"
-                                    value={value}
+                                    value={value!==null?editDateFormatter(value):value}
                                     onChange={([date], dateStr) => {
                                         onChange(dateStr);
                                     }}

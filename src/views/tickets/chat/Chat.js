@@ -171,6 +171,7 @@ const ChatLog = props => {
                                 value={msg}
                                 onChange={e => setMsg(e.target.value)}
                                 placeholder='Type your message or use speech to text'
+                                disabled={props.ticketDetails.status !== "open"}
                             />
                         </InputGroup>
                         <Button className='send' color='primary'

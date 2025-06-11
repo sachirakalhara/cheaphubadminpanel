@@ -9,7 +9,8 @@ import {useForm} from 'react-hook-form';
 import {customSweetAlert, customToastMsg, emptyUI, getCustomDateTimeStamp} from '../../utility/Utils';
 import CouponCreationModal from "../../@core/components/modal/couponCreationModal";
 import * as CouponsServices from "../../services/coupon-code-resources";
-import {backendDateFormatter} from "../../utility/commonFun";
+import {backendDateFormatter, editDateFormatter} from "../../utility/commonFun";
+import moment from "moment";
 
 const defaultValues = {
     couponCode: '',
@@ -142,7 +143,7 @@ const CouponList = () => {
                 "product_type": getProductTypeStatus(data),//'bulk', 'subscription', 'both'
                 "discount_percentage": Number(data.discount),//$table->decimal('discount_percentage', 5, 2);
                 "max_discount_amount": Number(data.maxDiscount),//$table->decimal('max_discount_amount', 10, 2);
-                "expiry_date": isEditMode ? data.expirationDate : backendDateFormatter(data.expirationDate),//25-02-2025
+                "expiry_date": isEditMode ? backendDateFormatter(editDateFormatter(data.expirationDate)) : backendDateFormatter(data.expirationDate),//25-02-2025
                 "coupon_code": data.couponCode
             };
 
@@ -239,6 +240,7 @@ const CouponList = () => {
         setValue('discount', data.discount_percentage);
         setValue('maxDiscount', data.max_discount_amount);
         setValue('expirationDate', data.expiry_date);
+        // setValue('expirationDate', editDateFormatter(data.expiry_date));
 
         if (data.product_type === 'bulk') {
             setValue('bulkProducts', true);

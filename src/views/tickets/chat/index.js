@@ -29,11 +29,8 @@ import {customSweetAlert} from "../../../utility/Utils";
 const AppChat = () => {
     // ** Store Vars
     const dispatch = useDispatch();
-    const location = useLocation();
     const {name} = useParams();
-    const store = useSelector(state => state.chat)
 
-    const ticketData = location.state;
 
     // ** States
     const [user, setUser] = useState({})
@@ -69,10 +66,10 @@ const AppChat = () => {
 
     const getAllChatList = () => {
         dispatch(toggleLoading())
-        console.log(ticketData)
+
         const body = {
             "all": 1,
-            "ticket_number": ticketData.ticket_number
+            "ticket_number": name
         }
         TicketServices.getTicketChat(body)
             .then((res) => {
@@ -185,7 +182,6 @@ const AppChat = () => {
     return (
         <Fragment>
             <Sidebar
-                store={store}
                 ticketDetails={ticketDetails}
                 changeStatusHandler={() => changeStatusOnTicket()}
                 productItems={productItems}

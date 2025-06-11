@@ -125,6 +125,11 @@ export const backendDateFormatter = (date) => {
 
 };
 
+export const editDateFormatter=(dateString)=>{
+    const [day, month, year] = dateString.split("-");
+    return new Date(`${year}-${month}-${day}`);
+}
+
 export const formDataDateTimeConverter = (date) => {
     if (date === null || date === undefined || date === "") {
         return "N/A";

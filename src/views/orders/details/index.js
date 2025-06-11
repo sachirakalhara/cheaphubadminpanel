@@ -114,7 +114,7 @@ const OrderDetails = () => {
             name: "",
             minWidth: "100px",
             cell: row => (
-                <Link to={{pathname: `/ticket/${row.ticket_number}`, state: row}} state={row}>
+                <Link to={{pathname: `/tickets/chat-box/${row.ticket_number}`}}>
                     <ArrowRight size={18} className="cursor-pointer"/>
                 </Link>
             )

@@ -20,7 +20,7 @@ const CustomHeader = ({
             <div className='invoice-list-table-header w-100 py-2 px-1 m-0' style={{whiteSpace: 'nowrap'}}>
                 <h3 className='text-primary invoice-logo mb-2'>Tickets</h3>
                 <Row>
-                    <Col lg='3' className='d-flex align-items-center'>
+                    <Col lg='5' className='d-flex align-items-center'>
                         <div className='d-flex align-items-center'>
                             <Label className='form-label' for='default-picker'>
                                 Name
@@ -85,7 +85,7 @@ const TicketScreen = () => {
                 if (res.success) {
                     dispatch(toggleLoading());
                     console.log(res)
-                    setStore({data: res.data?.data ?? [], total: res.data?.meta?.last_page ?? 0});
+                    setStore({data: res.data?.data ?? [], total: res.data?.last_page ?? 0});
                 } else {
                     dispatch(toggleLoading());
                     customToastMsg(res.message, res.status)
@@ -107,7 +107,7 @@ const TicketScreen = () => {
             name: "",
             minWidth: "100px",
             cell: row => (
-                <Link to={{pathname: `/ticket/${row.ticket_number}`, state: row}} state={row}>
+                <Link to={{pathname: `/tickets/chat-box/${row.ticket_number}`}}>
                     <ArrowRight size={18} className="cursor-pointer"/>
                 </Link>
 
@@ -160,14 +160,14 @@ const TicketScreen = () => {
 
 
     const handlePagination = page => {
-        setCurrentPage(page.selected);
+        setCurrentPage(page.selected + 1);
         const pageNumber = page.selected + 1;
         getAllTickets(searchKey, pageNumber);
     };
 
     const handleSearch = value => {
         setSearchKey(value);
-        getAllTickets(value,currentPage);
+        getAllTickets(value, currentPage);
     };
 
 
