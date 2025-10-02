@@ -1,8 +1,10 @@
 import BreadCrumbs from "../../../@core/components/breadcrumbs";
 import React, {Fragment, useEffect} from "react";
-import {Badge, Card, CardBody, CardHeader, CardTitle, Col, Row, Table} from "reactstrap";
+import {Badge, Button, Card, CardBody, CardHeader, CardTitle, Col, Row, Table} from "reactstrap";
 import {useLocation} from "react-router-dom";
 import {formDataDateTimeConverter} from "../../../utility/commonFun";
+import {customToastMsg} from "../../../utility/Utils";
+import {Copy} from "react-feather";
 
 const ProductDetails = () => {
     const location = useLocation();
@@ -102,34 +104,87 @@ const ProductDetails = () => {
                                                 </Col>
                                             </Row>
                                         ) : (
-                                            <Row>
-                                                <Col lg={2}>
-                                                    <img
-                                                        src={item.bulk_product.image}
-                                                        alt="Product"
-                                                        className="img-fluid rounded shadow object-fit-cover"
-                                                        style={{width: "100%", height: 150, objectFit: "cover"}}
-                                                    />
-                                                </Col>
-                                                <Col lg={10}>
-                                                    <p className="card-text mb-2">
+                                            <Col lg={12}>
+                                                <Row>
+                                                    <Row>
+                                                        <Col lg={2}>
+                                                            <img
+                                                                src={item.bulk_product.image}
+                                                                alt="Product"
+                                                                className="img-fluid rounded shadow object-fit-cover"
+                                                                style={{width: "100%", height: 150, objectFit: "cover"}}
+                                                            />
+                                                        </Col>
+                                                        <Col lg={10}>
+                                                            <p className="card-text mb-2">
                                                         <span
                                                             className="fw-bold text-dark">Name: </span>{item.bulk_product?.name}
-                                                    </p>
-                                                    <p className="card-text mb-2 text-muted">
-                                                        <span className="fw-bold text-dark">Description: </span>
-                                                        {item.bulk_product?.description}
-                                                    </p>
-                                                    <p className="card-text mb-2 text-muted">
-                                                        <span className="fw-bold text-dark">Service Info: </span>
-                                                        {item.bulk_product?.service_info}
-                                                    </p>
-                                                    <p className="card-text mb-2">
-                                                        <span className="fw-bold text-dark">Product Type: </span>
-                                                        <Badge color="danger">Bulk Product</Badge>
-                                                    </p>
-                                                </Col>
-                                            </Row>
+                                                            </p>
+                                                            <p className="card-text mb-2 text-muted">
+                                                                <span className="fw-bold text-dark">Description: </span>
+                                                                {item.bulk_product?.description}
+                                                            </p>
+                                                            <p className="card-text mb-2 text-muted">
+                                                                <span
+                                                                    className="fw-bold text-dark">Service Info: </span>
+                                                                {item.bulk_product?.service_info}
+                                                            </p>
+                                                            <p className="card-text mb-2">
+                                                                <span
+                                                                    className="fw-bold text-dark">Product Type: </span>
+                                                                <Badge color="danger">Bulk Product</Badge>
+                                                            </p>
+                                                        </Col>
+                                                    </Row>
+
+                                                    <div className="mt-3">
+                                                        <span
+                                                            className="fw-bold text-dark">Purchased Serials: </span>
+
+                                                        <Table responsive bordered size="sm"
+                                                               className="mt-2">
+                                                            <thead className="table-light">
+                                                            <tr>
+                                                                <th className="text-center">Purchased
+                                                                    At
+                                                                </th>
+                                                                <th>Serial</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                        {item.user_purchase_serials.map((serialItem, j) => (
+                                                            <tr key={j}>
+                                                                <td className="text-center">
+                                                                    {formDataDateTimeConverter(serialItem.updated_at)}
+                                                                </td>
+                                                                <td>
+                                                                    {serialItem.serial}
+                                                                </td>
+                                                                <td>
+                                                                    <Button
+                                                                        color='primary' outline
+                                                                        style={{padding: 5, alignItems: 'center'}}
+                                                                        onClick={() => {
+                                                                            navigator.clipboard.writeText(serialItem.serial)
+                                                                                .then(() => {
+                                                                                    customToastMsg('Copied to clipboard!', 1)
+                                                                                })
+                                                                                .catch((err) => {
+                                                                                    customToastMsg('Failed to copy!', 0)
+                                                                                })
+                                                                        }}
+                                                                    >
+                                                                        <Copy size={15}/>
+                                                                    </Button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                            </tbody>
+                                                        </Table>
+                                                    </div>
+                                                </Row>
+                                            </Col>
                                         )}
                                     </Col>
                                 )) : (

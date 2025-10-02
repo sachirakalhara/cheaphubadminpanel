@@ -63,7 +63,7 @@ const CustomerList = () => {
                 if (response.success) {
                     setData(prevData => {
                         const newData = [...prevData];
-                        newData[1].title = `$${response.data.total_spend}`;
+                        newData[1].title = `$${Number(response.data.total_spend).toFixed(2)}`;
                         newData[0].title = `${response.data.user_count}`;
                         return newData;
                     });

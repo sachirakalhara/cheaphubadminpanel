@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Badge, Button, Card, Col, Input, Label, Row} from "reactstrap";
+import {Badge, Button, Card, Col, Input, Label, Row, FormGroup} from "reactstrap";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
 import {ArrowRight, ChevronDown, Plus, X} from "react-feather";
@@ -13,14 +13,16 @@ import {tableDataDateTimeConverter} from "../../utility/commonFun";
 const CustomHeader = ({
                           onOrderTextChange,
                           searchKey,
-                          OnClearOrderText
+                          OnClearOrderText,
+                          onStatusChange,
+                          statusValue
                       }) => {
     return (
         <Card>
             <div className='invoice-list-table-header w-100 py-2 px-1 m-0' style={{whiteSpace: 'nowrap'}}>
                 <h3 className='text-primary invoice-logo mb-2'>Tickets</h3>
                 <Row>
-                    <Col lg='5' className='d-flex align-items-center'>
+                    <Col lg='4' className='d-flex align-items-center'>
                         <div className='d-flex align-items-center'>
                             <Label className='form-label' for='default-picker'>
                                 Name
@@ -42,6 +44,24 @@ const CustomHeader = ({
                                     />
                                 )}
                             </div>
+                        </div>
+                    </Col>
+                    <Col lg='3' className='d-flex align-items-center'>
+                    <div className='d-flex align-items-center'>
+                            <Label className='form-label' for='status-filter'>
+                                Status
+                            </Label>
+                            <Input
+                                id='status-filter'
+                                type='select'
+                                value={statusValue}
+                                onChange={onStatusChange}
+                                className='ms-50'
+                            >
+                                <option value=''>All</option>
+                                <option value='open'>Open</option>
+                                <option value='closed'>Resolved</option>
+                            </Input>
                         </div>
                     </Col>
                 </Row>
@@ -72,12 +92,13 @@ const TicketScreen = () => {
         getAllTickets('', 1);
     }, []);
 
-    const getAllTickets = async (val, page) => {
+    const getAllTickets = async (val, page, status = '') => {
         dispatch(toggleLoading());
         setIsFetched(false);
         const body = {
             "all": 0,
-            "ticket_number": val
+            "ticket_number": val,
+            "status": status
         }
 
         TicketServices.getAllTickets(body, page)
@@ -140,21 +161,10 @@ const TicketScreen = () => {
     }
 
     const dataToRender = () => {
-        const filters = {
-            q: val,
-            status: statusValue
-        }
-
-        const isFiltered = Object.keys(filters).some(function (k) {
-            return filters[k].length > 0
-        })
-
         if (store.data?.length > 0) {
             return store.data
-        } else if (store.data?.length === 0 && isFiltered) {
-            return []
         } else {
-            return store.data.slice(0, rowsPerPage)
+            return []
         }
     }
 
@@ -162,12 +172,26 @@ const TicketScreen = () => {
     const handlePagination = page => {
         setCurrentPage(page.selected + 1);
         const pageNumber = page.selected + 1;
-        getAllTickets(searchKey, pageNumber);
+        getAllTickets(searchKey, pageNumber, statusValue);
     };
 
     const handleSearch = value => {
         setSearchKey(value);
-        getAllTickets(value, currentPage);
+        setCurrentPage(1);
+        getAllTickets(value, 1, statusValue);
+    };
+
+    const handleStatusChange = e => {
+        const status = e.target.value;
+        setStatusValue(status);
+        setCurrentPage(1);
+        getAllTickets(searchKey, 1, status);
+    };
+
+    const handleClearSearch = () => {
+        setSearchKey('');
+        setCurrentPage(1);
+        getAllTickets('', 1, statusValue);
     };
 
 
@@ -175,9 +199,11 @@ const TicketScreen = () => {
         <Card className='mt-2'>
             <CustomHeader
                 value={val}
-                OnClearOrderText={() => handleSearch("", 'order_key')}
-                onOrderTextChange={e => handleSearch(e.target.value, 'order_key')}
+                OnClearOrderText={handleClearSearch}
+                onOrderTextChange={e => handleSearch(e.target.value)}
                 searchKey={searchKey}
+                onStatusChange={handleStatusChange}
+                statusValue={statusValue}
             />
 
             <div className='invoice-list-dataTable react-dataTable'>

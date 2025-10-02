@@ -6,7 +6,6 @@ import React, {useState, useEffect, useRef} from 'react'
 import Avatar from '@components/avatar'
 
 // ** Store & Actions
-import {sendMsg} from './store'
 import {useDispatch} from 'react-redux'
 
 // ** Third Party Components
@@ -138,7 +137,6 @@ const ChatLog = props => {
     const handleSendMsg = e => {
         e.preventDefault()
         if (msg.length) {
-            // dispatch(sendMsg({...chatDetails, message: msg}))
             console.log('msg', msg)
             replyCallback(msg)
             setMsg('')
@@ -150,15 +148,15 @@ const ChatLog = props => {
 
     return (
         <div className='chat-app-window'>
-            <div className={classnames('start-chat-area', {'d-none': Object.keys(chatDetails).length})}>
-                <div className='start-chat-icon mb-1'>
-                    <MessageSquare/>
-                </div>
-                <h4 className='sidebar-toggle start-chat-text' onClick={handleStartConversation}>
-                    Start Conversation
-                </h4>
-            </div>
-            {Object.keys(chatDetails).length ? (
+            {/*<div className={classnames('start-chat-area d-flex justify-content-center align-items-center', {'d-none': Object.keys(chatDetails).length})}>*/}
+            {/*    <div className='start-chat-icon me-1'>*/}
+            {/*        <MessageSquare/>*/}
+            {/*    </div>*/}
+            {/*    <h4 className='sidebar-toggle start-chat-text' onClick={handleStartConversation}>*/}
+            {/*        Start Conversation*/}
+            {/*    </h4>*/}
+            {/*</div>*/}
+            {/*{Object.keys(chatDetails).length ? (*/}
                 <div className={classnames('active-chat', {'d-none': chatDetails === null})}>
                     <ChatWrapper ref={chatArea} className='user-chats' style={{height: '85%'}}
                                  options={{wheelPropagation: false}}>
@@ -171,18 +169,15 @@ const ChatLog = props => {
                                 value={msg}
                                 onChange={e => setMsg(e.target.value)}
                                 placeholder='Type your message or use speech to text'
-                                disabled={props.ticketDetails.status !== "open"}
                             />
                         </InputGroup>
-                        <Button className='send' color='primary'
-                                disabled={props.ticketDetails.status !== "open"}
-                        >
+                        <Button className='send' color='primary'>
                             <Send size={14} className='d-lg-none'/>
-                            <span className='d-none d-lg-block'>Send</span>
+                            <span className='d-none d-lg-block'>Add</span>
                         </Button>
                     </Form>
                 </div>
-            ) : null}
+            {/*) : null}*/}
         </div>
     )
 }

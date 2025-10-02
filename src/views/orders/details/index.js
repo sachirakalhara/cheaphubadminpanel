@@ -12,6 +12,7 @@ import {formDataDateConverter, formDataDateTimeConverter, tableDataDateTimeConve
 import * as TicketServices from "../../../services/tickets";
 import {getAllTicketsByOrders} from "../../../services/tickets";
 import {CURRENCY} from "../../../const/constant";
+import PersonalNotes from './notes/index'
 
 
 const OrderDetails = () => {
@@ -260,6 +261,18 @@ const OrderDetails = () => {
                     </Card>
                 </Col>
             </Row>
+
+
+                <Card className='invoice-preview-card h-100 mt-1'>
+                    <CardHeader>
+                        <CardTitle tag='h4'>Special Notes</CardTitle>
+                    </CardHeader>
+                    <CardBody className='invoice-padding pb-0'>
+
+                        <PersonalNotes orderId={navigationParam.id}/>
+
+                    </CardBody>
+                </Card>
 
             <Card className="mt-1">
                 <CardHeader>
