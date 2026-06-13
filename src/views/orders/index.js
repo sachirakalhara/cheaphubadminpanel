@@ -181,8 +181,34 @@ const OrdersScreen = () => {
 
     }
 
+    const getProductNames = (row) => {
+        const items = row.order_items || [];
+        return items.map(item => {
+            if (item.contribution_product?.name) return item.contribution_product.name;
+            if (item.bulk_product?.name) return item.bulk_product.name;
+            return null;
+        }).filter(Boolean);
+    };
+
     const columns = [
-        {name: 'Order Number', selector: row => row.order_id},
+        {name: 'Order Number', selector: row => row.order_id, minWidth: '180px'},
+        {
+            name: 'Product',
+            minWidth: '200px',
+            cell: row => {
+                const names = getProductNames(row);
+                if (!names.length) return <span className="text-muted">—</span>;
+                return (
+                    <div className="d-flex flex-column py-1">
+                        {names.map((name, i) => (
+                            <span key={i} className="text-truncate" style={{maxWidth: 220}} title={name}>
+                                {name}
+                            </span>
+                        ))}
+                    </div>
+                );
+            }
+        },
         {name: 'Amount', selector: row => row.amount},
         {
             name: 'Status',
