@@ -66,8 +66,17 @@ $chat-widget-height: 390px;
         border-radius: $border-radius;
         box-shadow: 0 4px 8px 0 rgba($black, 0.12);
         max-width: 75%;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
         p {
           margin: 0;
+          word-wrap: break-word;
+          word-break: break-word;
+          overflow-wrap: break-word;
+          hyphens: auto;
+          white-space: pre-wrap;
         }
       }
     }
@@ -83,6 +92,17 @@ $chat-widget-height: 390px;
           color: $body-color;
           background: none;
           background-color: lighten($white, 18%);
+          word-wrap: break-word;
+          word-break: break-word;
+          overflow-wrap: break-word;
+          hyphens: auto;
+          p {
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            white-space: pre-wrap;
+          }
         }
       }
     }

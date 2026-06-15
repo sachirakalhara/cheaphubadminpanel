@@ -115,8 +115,14 @@ const ChatLog = props => {
 
                         <div className='chat-body'>
                             <div className='chat-content'>
-                                <p>{item.msg}</p>
-                                <small className={`${item.senderId !== 11 ? 'text-muted' : 'text-white'}`}>
+                                <p className='mb-1' style={{
+                                    wordWrap: 'break-word',
+                                    wordBreak: 'break-word',
+                                    overflowWrap: 'break-word',
+                                    hyphens: 'auto',
+                                    whiteSpace: 'pre-wrap'
+                                }}>{item.msg}</p>
+                                <small className={`${item.senderId !== 11 ? 'text-muted' : 'text-white'} d-block`}>
                                     {new Date(item.time).toLocaleTimeString()}
                                 </small>
                             </div>

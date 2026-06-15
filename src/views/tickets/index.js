@@ -60,7 +60,7 @@ const CustomHeader = ({
                             >
                                 <option value=''>All</option>
                                 <option value='open'>Open</option>
-                                <option value='closed'>Resolved</option>
+                                <option value='resolved'>Resolved</option>
                             </Input>
                         </div>
                     </Col>

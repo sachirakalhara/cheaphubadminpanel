@@ -161,6 +161,7 @@ const RepeatingSubscriptionForm = (props) => {
             } else {
                 data.append('contribution_product_id', props.productId)
             }
+            data.append('service_type', 'serial_based')
 
             const FetchAPI = subscription.id !== null ? ContributionProductService.updateSubscription : ContributionProductService.createSubscription;
 
