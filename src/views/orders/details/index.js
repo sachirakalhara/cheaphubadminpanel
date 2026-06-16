@@ -1,4 +1,4 @@
-import {Badge, Button, Card, CardBody, CardHeader, CardText, CardTitle, Col, Row} from "reactstrap";
+import {Badge, Button, Card, CardBody, CardHeader, CardText, CardTitle, Col, FormGroup, Input, Label, Row} from "reactstrap";
 import React, {Fragment, useEffect, useState} from "react";
 import BreadCrumbs from "../../../@core/components/breadcrumbs";
 import DataTable from "react-data-table-component";
@@ -13,6 +13,7 @@ import * as TicketServices from "../../../services/tickets";
 import {getAllTicketsByOrders} from "../../../services/tickets";
 import {CURRENCY} from "../../../const/constant";
 import PersonalNotes from './notes/index'
+import Modal from "../../../@core/components/modal";
 
 
 const OrderDetails = () => {
@@ -31,6 +32,8 @@ const OrderDetails = () => {
     const [statusValue, setStatusValue] = useState('');
     const [orderDetails, setOrderDetails] = useState({});
     const [productItems, setProductItems] = useState([]);
+    const [refundModalOpen, setRefundModalOpen] = useState(false);
+    const [refundType, setRefundType] = useState('wallet');
 
     useEffect(() => {
         getOrderDetails()
@@ -152,6 +155,42 @@ const OrderDetails = () => {
             })
     }
 
+    const confirmRefund = async () => {
+        const message = refundType === 'wallet'
+            ? 'This will credit the order amount back to the customer’s wallet balance and mark the order as refunded. Serials already delivered will NOT be reclaimed.'
+            : 'This will only MARK the order as refunded. No money is sent automatically — you must process the actual refund yourself from the Marx dashboard or your crypto wallet. Serials already delivered will NOT be reclaimed.';
+
+        await customSweetAlert(
+            message,
+            2,
+            async () => {
+                setRefundModalOpen(false);
+                refundOrderHandler();
+            },
+            'Refund Order'
+        )
+    }
+
+    const refundOrderHandler = () => {
+        dispatch(toggleLoading())
+        const body = {
+            "id": navigationParam.id, // order id
+            "refund_type": refundType // 'wallet' or 'gateway'
+        }
+        OrderResourcesServices.refundOrder(body)
+            .then(async (res) => {
+                console.log(res)
+                if (res.success) {
+                    dispatch(toggleLoading())
+                    customToastMsg(res.message, 1)
+                    await getOrderDetails();
+                } else {
+                    dispatch(toggleLoading())
+                    customToastMsg(res.message, 0)
+                }
+            })
+    }
+
     return (
         <Fragment>
             <BreadCrumbs breadCrumbTitle='Order' breadCrumbParent='Order' breadCrumbActive={'ORD0001'}/>
@@ -193,7 +232,7 @@ const OrderDetails = () => {
                                 {/*<CardText tag="h6" className='text-black-50'>{orderDetails.payment_status}</CardText>*/}
                                 <CardText tag="h6" className='text-black-50'>
                                     <Badge
-                                        color={orderDetails.payment_status === 'paid' ? 'success' : orderDetails.payment_status === 'pending' ? 'warning' : 'danger'}>{orderDetails.payment_status}
+                                        color={orderDetails.payment_status === 'paid' ? 'success' : orderDetails.payment_status === 'pending' ? 'warning' : orderDetails.payment_status === 'refunded' ? 'info' : 'danger'}>{orderDetails.payment_status}
                                     </Badge>
                                 </CardText>
                             </div>
@@ -218,6 +257,15 @@ const OrderDetails = () => {
                                         Product Details
                                     </Button>
                                 </Link>
+
+                                <Button color='danger' className="mt-2 d-flex align-self-center ms-1" outline
+                                        disabled={orderDetails.payment_status !== 'paid'}
+                                        onClick={() => {
+                                            setRefundType('wallet');
+                                            setRefundModalOpen(true);
+                                        }}>
+                                    Refund
+                                </Button>
                             </div>
                         </CardBody>
                     </Card>
@@ -296,6 +344,64 @@ const OrderDetails = () => {
                     />
                 </div>
             </Card>
+
+            <Modal show={refundModalOpen} toggle={() => setRefundModalOpen(!refundModalOpen)}
+                   headTitle={"Refund Order"} size={'md'}>
+                <div className="p-2">
+                    <p className="mb-2">
+                        Refund <strong>{CURRENCY} {orderDetails.amount_paid ?? orderDetails.amount}</strong> for
+                        order <strong>{orderDetails.order_id}</strong>. Choose how to refund:
+                    </p>
+
+                    <FormGroup check className="mb-1">
+                        <Input
+                            type="radio"
+                            name="refundType"
+                            id="refund-wallet"
+                            value="wallet"
+                            checked={refundType === 'wallet'}
+                            onChange={() => setRefundType('wallet')}
+                        />
+                        <Label check for="refund-wallet">
+                            <strong>Refund to customer wallet</strong>
+                            <span className="d-block text-muted" style={{fontSize: 12}}>
+                                Credits the amount back to the customer’s wallet balance instantly.
+                            </span>
+                        </Label>
+                    </FormGroup>
+
+                    <FormGroup check className="mb-2">
+                        <Input
+                            type="radio"
+                            name="refundType"
+                            id="refund-gateway"
+                            value="gateway"
+                            checked={refundType === 'gateway'}
+                            onChange={() => setRefundType('gateway')}
+                        />
+                        <Label check for="refund-gateway">
+                            <strong>Payment gateway refund (mark only)</strong>
+                            <span className="d-block text-muted" style={{fontSize: 12}}>
+                                Only marks the order as refunded. You process the actual refund manually
+                                from the Marx dashboard or your crypto wallet.
+                            </span>
+                        </Label>
+                    </FormGroup>
+
+                    <div className="d-flex justify-content-end mt-2">
+                        <Button color='secondary' outline className="me-1"
+                                onClick={() => setRefundModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button color='danger'
+                                onClick={async () => {
+                                    await confirmRefund()
+                                }}>
+                            Continue
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </Fragment>
 
     )
