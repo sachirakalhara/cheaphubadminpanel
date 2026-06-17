@@ -320,12 +320,14 @@ const OrdersScreen = () => {
                         selectStatusValue={e => {
                             const [startDate, endDate] = picker.length === 2 ? picker : [null, null];
                             setStatusValue(e.target.value)
-                            getAllOrders(productCategory, e.target.value, searchQuery, startDate, endDate, currentPage);
+                            setCurrentPage(1)
+                            getAllOrders(productCategory, e.target.value, searchQuery, startDate, endDate, 1);
                         }}
                         selectProductCategory={e => {
                             const [startDate, endDate] = picker.length === 2 ? picker : [null, null];
                             setProductCategory(e.target.value)
-                            getAllOrders(e.target.value, statusValue, searchQuery, startDate, endDate, currentPage)
+                            setCurrentPage(1)
+                            getAllOrders(e.target.value, statusValue, searchQuery, startDate, endDate, 1)
                         }}
                         picker={picker}
                         onClearPicker={() => setPicker([])}
@@ -333,7 +335,8 @@ const OrdersScreen = () => {
                             if (date.length === 2) {
                                 setPicker(date);
                                 const [startDate, endDate] = date;
-                                getAllOrders(productCategory, statusValue, searchQuery, startDate, endDate, currentPage);
+                                setCurrentPage(1)
+                                getAllOrders(productCategory, statusValue, searchQuery, startDate, endDate, 1);
                             }
                         }}
                         onCloseDateRange={(selectedDates, dateStr, instance) => {
