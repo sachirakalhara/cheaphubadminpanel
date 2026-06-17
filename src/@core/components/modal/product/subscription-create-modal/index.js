@@ -457,12 +457,16 @@ const SubscriptionCreationModal = (props) => {
                             name='serviceInfo'
                             control={control}
                             render={({field}) => (
-                                <Input {...field} id='serviceInfo' placeholder='Service Info' value={field.value}
-                                       type="textarea" rows='4'
-                                       invalid={errors.serviceInfo && true} autoComplete="off"/>
+                                <HtmlEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder='Service Info'
+                                    invalid={errors.serviceInfo && true}
+                                />
                             )}
                         />
-                        {errors.serviceInfo && <FormFeedback>Please enter a valid service info</FormFeedback>}
+                        {errors.serviceInfo &&
+                            <div style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please enter valid service info</div>}
                     </Col>
 
                     <Col md={6} xs={12}>
