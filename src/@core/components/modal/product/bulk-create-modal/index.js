@@ -36,6 +36,7 @@ import * as BulkProductServices from '../../../../../services/bulk-products';
 import {formDataToJson} from "../../../../../utility/commonFun";
 import {useDispatch} from "react-redux";
 import {toggleLoading} from "../../../../../redux/loading";
+import HtmlEditor from "../../../../../custom-components/html-editor";
 
 const defaultValues = {
     productName: '',
@@ -480,12 +481,17 @@ const BulCreationModal = (props) => {
                             name='description'
                             control={control}
                             render={({field}) => (
-                                <Input {...field} id='description' placeholder='Description' value={field.value}
-                                       type="textarea" rows='4'
-                                       invalid={errors.description && true} autoComplete="off"/>
+                                <HtmlEditor
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    placeholder='Description'
+                                    invalid={errors.description && true}
+                                />
                             )}
                         />
-                        {errors.description && <FormFeedback>Please enter a valid description</FormFeedback>}
+                        {errors.description &&
+                            <div style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please enter a valid
+                                description</div>}
                     </Col>
 
                     <Col md={6} xs={12}>

@@ -1,0 +1,48 @@
+.html-editor-wrapper {
+    .html-editor-rdw-wrapper {
+        border: 1px solid #d8d6de;
+        border-radius: 0.357rem;
+    }
+
+    .html-editor-rdw-toolbar {
+        border: none;
+        border-bottom: 1px solid #d8d6de;
+        border-radius: 0.357rem 0.357rem 0 0;
+        margin-bottom: 0;
+        background: transparent;
+    }
+
+    .html-editor-rdw-editor {
+        min-height: 160px;
+        padding: 0 1rem;
+        cursor: text;
+    }
+
+    &.html-editor-invalid .html-editor-rdw-wrapper {
+        border-color: #ea5455;
+    }
+}
+
+// Dark theme support (matches the admin template's dark skin)
+.dark-layout {
+    .html-editor-wrapper {
+        .html-editor-rdw-wrapper {
+            border-color: #404656;
+            background-color: #283046;
+        }
+
+        .html-editor-rdw-toolbar {
+            border-bottom-color: #404656;
+            background-color: #283046;
+
+            a, .rdw-option-wrapper, .rdw-dropdown-wrapper {
+                background-color: #283046;
+                border-color: #404656;
+            }
+        }
+
+        .html-editor-rdw-editor {
+            color: #b4b7bd;
+        }
+    }
+}
