@@ -90,6 +90,7 @@ const CustomHeader = ({
                                 <option value='failed'>Failed</option>
                                 <option value='paid'>Paid</option>
                                 <option value='refunded'>Refunded</option>
+                                <option value='canceled'>Canceled</option>
                             </Input>
                         </div>
                     </Col>
@@ -214,7 +215,7 @@ const OrdersScreen = () => {
         {
             name: 'Status',
             selector: row => <Badge
-                color={row.payment_status === 'paid' ? 'success' : row.payment_status === 'pending' ? 'warning' : row.payment_status === 'refunded' ? 'info' : 'danger'}>{row.payment_status}</Badge>
+                color={row.payment_status === 'paid' ? 'success' : row.payment_status === 'pending' ? 'warning' : row.payment_status === 'refunded' ? 'info' : row.payment_status === 'canceled' ? 'secondary' : 'danger'}>{row.payment_status}</Badge>
         },
         {name: 'Date', selector: row => formDataDateConverter(row.created_at)},
         // {

@@ -232,7 +232,7 @@ const OrderDetails = () => {
                                 {/*<CardText tag="h6" className='text-black-50'>{orderDetails.payment_status}</CardText>*/}
                                 <CardText tag="h6" className='text-black-50'>
                                     <Badge
-                                        color={orderDetails.payment_status === 'paid' ? 'success' : orderDetails.payment_status === 'pending' ? 'warning' : orderDetails.payment_status === 'refunded' ? 'info' : 'danger'}>{orderDetails.payment_status}
+                                        color={orderDetails.payment_status === 'paid' ? 'success' : orderDetails.payment_status === 'pending' ? 'warning' : orderDetails.payment_status === 'refunded' ? 'info' : orderDetails.payment_status === 'canceled' ? 'secondary' : 'danger'}>{orderDetails.payment_status}
                                     </Badge>
                                 </CardText>
                             </div>
