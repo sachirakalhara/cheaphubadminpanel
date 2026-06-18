@@ -245,7 +245,7 @@ const OrderDetails = () => {
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-center">
                                 <Button color='primary' className="mt-2 d-flex align-self-center" outline
-                                        disabled={orderDetails.payment_status === 'paid'}
+                                        disabled={orderDetails.payment_status !== 'pending'}
                                         onClick={async () => {
                                             await proceedOrder()
                                         }}>
