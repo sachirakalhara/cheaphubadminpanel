@@ -93,17 +93,14 @@ const SubscriptionCreationModal = (props) => {
             );
             setProductCroppedImage(croppedImage);
 
-            // Convert the cropped image to a File object
             const response = await fetch(croppedImage);
             const blob = await response.blob();
-            const file = new File([blob], productImageName, {type: blob.type});
+            const jpgName = productImageName.replace(/\.[^.]+$/, '.jpg');
+            const file = new File([blob], jpgName, {type: blob.type});
 
-            // console.log("croppedImg::::::::::::::", croppedImage);
-            // console.log("file::::::::::::::", file);
+            setFile(file);
 
-            setFile(file); // Set the file state with the cropped image
-
-            return file; // Return the file object
+            return file;
         } catch (e) {
             console.error(e);
         }
@@ -149,10 +146,10 @@ const SubscriptionCreationModal = (props) => {
     }
 
     const onSubmitSEODetails = async dataObj => {
-        // const obj = {
-        //     slugUrl: dataObj.slugUrl
-        // }
-
+        if (!props.isEditMode && !file) {
+            customToastMsg('Please upload a product image first', 0)
+            return
+        }
 
         dispatch(toggleLoading())
         let data = new FormData();
@@ -160,7 +157,6 @@ const SubscriptionCreationModal = (props) => {
         data.append('description', getValues('description'))
         data.append('tag_id', getValues('tag'))
         data.append('service_info', getValues('serviceInfo'))
-        // data.append('slug_url', getValues('slugUrl'))
         data.append('visibility', visibilityMode)
         data.append('categories', `[${getValues('category')}]`)
 
@@ -168,23 +164,17 @@ const SubscriptionCreationModal = (props) => {
             data.append('id', getValues('id'))
             data.append('_method', "PUT")
         }
-        //
+
         if (file !== null) {
             data.append('image', file);
         }
 
-
-        console.log(qs.stringify(formDataToJson(data)))
-
         const fetchAPI = props.isEditMode ? ContributionProductService.updateContributionProduct : ContributionProductService.createContributionProduct;
 
-        fetchAPI(props.isEditMode ? data : data)
-        // fetchAPI(props.isEditMode ? qs.stringify(formDataToJson(data)) : data)
+        fetchAPI(data)
             .then(res => {
-                console.log(res)
+                dispatch(toggleLoading())
                 if (res.success) {
-                    console.log(res)
-                    dispatch(toggleLoading())
                     setProductId(res.data.contribution_product.id);
                     customToastMsg(`Product is successfully ${props.isEditMode ? "updated" : "created"}`, 1);
                     if (!props.isEditMode) {
@@ -193,11 +183,13 @@ const SubscriptionCreationModal = (props) => {
                         props.toggle();
                     }
                 } else {
-                    dispatch(toggleLoading())
                     customToastMsg(res.message, res.status)
                 }
             })
-
+            .catch(() => {
+                dispatch(toggleLoading())
+                customToastMsg('Failed to save product. Please try again.', 0)
+            })
     }
 
     useEffect(() => {

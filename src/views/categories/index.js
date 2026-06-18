@@ -250,15 +250,12 @@ const CategoryList = () => {
             );
             setCategoryCroppedImage(croppedImage);
 
-            // Convert the cropped image to a File object
             const response = await fetch(croppedImage);
             const blob = await response.blob();
-            const file = new File([blob], categoryImageName, { type: blob.type });
+            const jpgName = categoryImageName.replace(/\.[^.]+$/, '.jpg');
+            const file = new File([blob], jpgName, { type: blob.type });
 
-            // console.log("croppedImg::::::::::::::", croppedImage);
-            // console.log("file::::::::::::::", file);
-
-            setFile(file); // Set the file state with the cropped image
+            setFile(file);
 
             return file; // Return the file object
         } catch (e) {

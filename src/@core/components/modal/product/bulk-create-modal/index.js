@@ -161,15 +161,12 @@ const BulCreationModal = (props) => {
             );
             setProductCroppedImage(croppedImage);
 
-            // Convert the cropped image to a File object
             const response = await fetch(croppedImage);
             const blob = await response.blob();
-            const file = new File([blob], productImageName, {type: blob.type});
+            const jpgName = productImageName.replace(/\.[^.]+$/, '.jpg');
+            const file = new File([blob], jpgName, {type: blob.type});
 
-            // console.log("croppedImg::::::::::::::", croppedImage);
-            // console.log("file::::::::::::::", file);
-
-            setFile(file); // Set the file state with the cropped image
+            setFile(file);
 
             return file; // Return the file object
         } catch (e) {
@@ -293,6 +290,11 @@ const BulCreationModal = (props) => {
 
 
     const onSubmitSEODetails = async form => {
+        if (!props.isEditMode && !file) {
+            customToastMsg('Please upload a product image first', 0)
+            return
+        }
+
         dispatch(toggleLoading())
         let data = new FormData();
         data.append('name', getValues('productName'))
@@ -306,10 +308,8 @@ const BulCreationModal = (props) => {
         data.append('minimum_quantity', getValues('minimumQty'))
         data.append('maximum_quantity', getValues('maximumQty'))
         data.append('service_info', getValues('serviceInfo'))
-        // data.append('slug_url', getValues('slugUrl'))
         data.append('visibility', visibilityMode)
         data.append('bulk_type', bulkType)
-        // data.append('image', file)
 
         if (props.isEditMode) {
             data.append('id', props.selectedData.id)
@@ -320,16 +320,18 @@ const BulCreationModal = (props) => {
         const fetchAPI = props.isEditMode ? BulkProductServices.updateBulkProduct : BulkProductServices.createBulkProduct
         fetchAPI(props.isEditMode ? formDataToJson(data) : data)
             .then(res => {
+                dispatch(toggleLoading())
                 if (res.success) {
-                    dispatch(toggleLoading())
                     customToastMsg(`Bulk Product was successfully ${props.isEditMode ? 'updated' : 'created'}`, 1);
                     props.toggle();
                 } else {
-                    dispatch(toggleLoading())
                     customToastMsg(res.message, res.status)
                 }
             })
-
+            .catch(() => {
+                dispatch(toggleLoading())
+                customToastMsg('Failed to save product. Please try again.', 0)
+            })
     }
 
     useEffect(() => {

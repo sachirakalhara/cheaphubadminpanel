@@ -324,11 +324,15 @@ export async function getCroppedImg(
     // As Base64 string
     // return canvas.toDataURL('image/jpeg');
 
-    // As a blob
+    // As a blob — use JPEG to keep file size well under server upload limits
     return new Promise((resolve, reject) => {
         canvas.toBlob((file) => {
-            resolve(URL.createObjectURL(file))
-        }, 'image/png')
+            if (file) {
+                resolve(URL.createObjectURL(file))
+            } else {
+                reject(new Error('Canvas toBlob failed'))
+            }
+        }, 'image/jpeg', 0.9)
     })
 }
 
