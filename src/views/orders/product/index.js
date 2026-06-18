@@ -1,18 +1,61 @@
 import BreadCrumbs from "../../../@core/components/breadcrumbs";
-import React, {Fragment, useEffect} from "react";
-import {Badge, Button, Card, CardBody, CardHeader, CardTitle, Col, Row, Table} from "reactstrap";
+import React, {Fragment, useEffect, useState} from "react";
+import {Badge, Button, Card, CardBody, CardHeader, CardTitle, Col, Input, Row, Table} from "reactstrap";
 import {useLocation} from "react-router-dom";
 import {formDataDateTimeConverter} from "../../../utility/commonFun";
-import {customToastMsg} from "../../../utility/Utils";
+import {customSweetAlert, customToastMsg} from "../../../utility/Utils";
 import {Copy} from "react-feather";
+import * as OrderResourcesServices from "../../../services/order-resources";
 
 const ProductDetails = () => {
     const location = useLocation();
     const navigationParam = location.state;
 
+    const [orderItems, setOrderItems] = useState(navigationParam?.order_items ?? []);
+    const [deliveryInputs, setDeliveryInputs] = useState({});
+
     useEffect(() => {
-        console.log(navigationParam);
+        if (navigationParam?.id) {
+            fetchOrder();
+        }
     }, []);
+
+    const fetchOrder = () => {
+        OrderResourcesServices.getOrderByOrderId(navigationParam.id)
+            .then(res => {
+                if (res.success) {
+                    setOrderItems(res.data.order.order_items ?? []);
+                }
+            });
+    };
+
+    const handleDeliver = (item) => {
+        const content = deliveryInputs[item.id];
+        if (!content || content.trim() === '') {
+            customToastMsg('Please enter the delivery content', 0);
+            return;
+        }
+
+        customSweetAlert(
+            'This delivery cannot be edited or removed once submitted. Continue?',
+            2,
+            () => {
+                OrderResourcesServices.deliverOrderItem({
+                    order_item_id: item.id,
+                    delivery_content: content,
+                }).then(res => {
+                    if (res.success) {
+                        customToastMsg('Service delivered successfully', 1);
+                        setDeliveryInputs(prev => ({...prev, [item.id]: ''}));
+                        fetchOrder();
+                    } else {
+                        customToastMsg(res.message, res.status);
+                    }
+                });
+            },
+            'Deliver Service'
+        );
+    };
 
     return (
         <Fragment>
@@ -24,7 +67,7 @@ const ProductDetails = () => {
                         </CardHeader>
                         <CardBody className="px-4">
                             <Row>
-                                {navigationParam ? navigationParam?.order_items?.map((item, i) => (
+                                {orderItems && orderItems.length > 0 ? orderItems.map((item, i) => (
                                     <Col lg={12} className="pt-3 border-top mb-3" key={i}>
                                         {item?.contribution_product !== null ? (
                                             <Row>
@@ -57,50 +100,87 @@ const ProductDetails = () => {
                                                                 <span
                                                                     className="fw-bold text-dark">Product Type: </span>
                                                                 <Badge color="success">Subscription Product</Badge>
+                                                                {item?.is_service_based && (
+                                                                    <Badge color="info" className="ms-1">Service-based</Badge>
+                                                                )}
                                                             </p>
                                                         </Col>
                                                     </Row>
-                                                    <div className="mt-3">
-                                                        <span
-                                                            className="fw-bold text-dark">Replacement Activities: </span>
-                                                        {item?.user_purchase_serials.map((serialItem, j) => (
-                                                            <div key={j} className="ms-3 mt-2 separator pt-2">
-                                                                <p className="card-text mb-2">
-                                                                    <span
-                                                                        className="fw-bold text-dark">⦿ Active Serial: </span>
-                                                                    {serialItem.serial}
-                                                                </p>
-                                                                {serialItem.removed_product_replacement_serials.length > 0 && (
-                                                                    <div className="mt-2 px-2">
-                                                                        <span className="fw-bold text-dark">➣ Replacement History: </span>
-                                                                        <Table responsive bordered size="sm"
-                                                                               className="mt-2">
-                                                                            <thead className="table-light">
-                                                                            <tr>
-                                                                                <th className="text-center">Replaced
-                                                                                    At
-                                                                                </th>
-                                                                                <th className="text-center">Serial</th>
-                                                                            </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                            {serialItem.removed_product_replacement_serials.map((historyItem, k) => (
-                                                                                <tr key={k}>
-                                                                                    <td className="text-center">
-                                                                                        {formDataDateTimeConverter(historyItem.updated_at)}
-                                                                                    </td>
-                                                                                    <td className="text-center">
-                                                                                        {historyItem.product_replacement_serial.serial}
-                                                                                    </td>
-                                                                                </tr>
-                                                                            ))}
-                                                                            </tbody>
-                                                                        </Table>
+
+                                                    {item?.is_service_based ? (
+                                                        <div className="mt-3">
+                                                            {item?.delivery ? (
+                                                                <div className="ms-1">
+                                                                    <span className="fw-bold text-dark">Delivered Content: </span>
+                                                                    <div className="border rounded p-2 mt-2 bg-light"
+                                                                         style={{whiteSpace: 'pre-wrap'}}>
+                                                                        {item.delivery.delivery_content}
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                                    <p className="card-text mt-2 text-muted">
+                                                                        Delivered by <span className="fw-bold">{item.delivery.delivered_by || 'Admin'}</span> on {formDataDateTimeConverter(item.delivery.delivered_at)}
+                                                                    </p>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="ms-1">
+                                                                    <span className="fw-bold text-dark">Delivery Content: </span>
+                                                                    <Input
+                                                                        type="textarea"
+                                                                        rows="4"
+                                                                        className="mt-2"
+                                                                        placeholder="Enter license key, instructions, or any text to deliver to the customer"
+                                                                        value={deliveryInputs[item.id] || ''}
+                                                                        onChange={(e) => setDeliveryInputs(prev => ({...prev, [item.id]: e.target.value}))}
+                                                                    />
+                                                                    <Button color="primary" className="mt-2"
+                                                                            onClick={() => handleDeliver(item)}>
+                                                                        Deliver
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="mt-3">
+                                                            <span
+                                                                className="fw-bold text-dark">Replacement Activities: </span>
+                                                            {item?.user_purchase_serials.map((serialItem, j) => (
+                                                                <div key={j} className="ms-3 mt-2 separator pt-2">
+                                                                    <p className="card-text mb-2">
+                                                                        <span
+                                                                            className="fw-bold text-dark">⦿ Active Serial: </span>
+                                                                        {serialItem.serial}
+                                                                    </p>
+                                                                    {serialItem.removed_product_replacement_serials.length > 0 && (
+                                                                        <div className="mt-2 px-2">
+                                                                            <span className="fw-bold text-dark">➣ Replacement History: </span>
+                                                                            <Table responsive bordered size="sm"
+                                                                                   className="mt-2">
+                                                                                <thead className="table-light">
+                                                                                <tr>
+                                                                                    <th className="text-center">Replaced
+                                                                                        At
+                                                                                    </th>
+                                                                                    <th className="text-center">Serial</th>
+                                                                                </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                {serialItem.removed_product_replacement_serials.map((historyItem, k) => (
+                                                                                    <tr key={k}>
+                                                                                        <td className="text-center">
+                                                                                            {formDataDateTimeConverter(historyItem.updated_at)}
+                                                                                        </td>
+                                                                                        <td className="text-center">
+                                                                                            {historyItem.product_replacement_serial.serial}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                ))}
+                                                                                </tbody>
+                                                                            </Table>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </Col>
                                             </Row>
                                         ) : (

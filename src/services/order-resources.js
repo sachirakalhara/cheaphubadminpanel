@@ -248,6 +248,19 @@ export async function refundOrder(body) {
     return await ApiService.callApi(apiObject)
 }
 
+export async function deliverOrderItem(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/order/deliver`
+    apiObject.body = body
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
+
 export async function getOrderNotesByOrderId(id) {
     const apiObject = {}
     apiObject.method = 'GET'

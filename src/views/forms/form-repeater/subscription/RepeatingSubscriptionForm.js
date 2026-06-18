@@ -41,7 +41,7 @@ const RepeatingSubscriptionForm = (props) => {
         // }
 
         if (array.length === 0) {
-            list = [{id: null, name: '', gateway_fee: '', serials: '', errors: {}}]
+            list = [{id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', errors: {}}]
         } else {
             array.map(item => {
                 list.push({
@@ -49,6 +49,8 @@ const RepeatingSubscriptionForm = (props) => {
                     name: item.name,
                     gateway_fee: item.gateway_fee.toString(),
                     serials: item.serial,
+                    delivery_type: item.delivery_type || 'serial_based',
+                    service_qty: (item.service_qty ?? 0).toString(),
                     errors: {}
                 })
             })
@@ -86,11 +88,11 @@ const RepeatingSubscriptionForm = (props) => {
 
     const increaseCount = (list, index) => {
         if (subscriptions.length === 0) {
-            setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', errors: {}}]);
+            setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', errors: {}}]);
         } else {
             if (validateFields(index)) {
                 setCount(count + 1);
-                setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', errors: {}}]);
+                setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', errors: {}}]);
             }
         }
     };
@@ -113,7 +115,7 @@ const RepeatingSubscriptionForm = (props) => {
     };
 
     const validateFields = (index) => {
-        const {name, gateway_fee, serials} = subscriptions[index];
+        const {name, gateway_fee, serials, delivery_type, service_qty} = subscriptions[index];
         const errors = {};
 
         if (!name.trim()) {
@@ -124,8 +126,16 @@ const RepeatingSubscriptionForm = (props) => {
             errors.gateway_fee = 'Gateway Fee is required'
         }
 
-        if (!serials.trim()) {
-            errors.serials = 'Serial List is required'
+        if (delivery_type === 'service_based') {
+            if (service_qty === undefined || service_qty === null || service_qty.toString().trim() === '') {
+                errors.service_qty = 'Available Quantity is required'
+            } else if (Number(service_qty) < 0) {
+                errors.service_qty = 'Available Quantity cannot be negative'
+            }
+        } else {
+            if (!serials.trim()) {
+                errors.serials = 'Serial List is required'
+            }
         }
 
         const isValid = Object.keys(errors).length === 0;
@@ -152,16 +162,20 @@ const RepeatingSubscriptionForm = (props) => {
             let data = new FormData();
 
             data.append('name', formData.name)
-            data.append('serial', formData.serials)
-            // data.append('refresh_count',props.productId)
             data.append('gateway_fee', formData.gateway_fee)
+            data.append('delivery_type', formData.delivery_type || 'serial_based')
+
+            if ((formData.delivery_type || 'serial_based') === 'service_based') {
+                data.append('service_qty', formData.service_qty)
+            } else {
+                data.append('serial', formData.serials)
+            }
 
             if (subscription.id !== null) {
                 data.append('id', formData.id)
             } else {
                 data.append('contribution_product_id', props.productId)
             }
-            data.append('service_type', 'serial_based')
 
             const FetchAPI = subscription.id !== null ? ContributionProductService.updateSubscription : ContributionProductService.createSubscription;
 
@@ -275,23 +289,77 @@ const RepeatingSubscriptionForm = (props) => {
                                                 <FormFeedback>{subscription.errors.gateway_fee}</FormFeedback>
                                             )}
                                         </Col>
-                                        <Col md={7} className='mb-md-0 mb-1'>
-                                            <Label className='form-label' for={`serial-list-${index}`}>
-                                                Serial List
+                                        <Col md={12} className='mb-md-0 mb-1 mt-1'>
+                                            <Label className='form-label'>
+                                                Delivery Type
                                             </Label>
-                                            <Input
-                                                type="textarea"
-                                                rows='4'
-                                                id={`serial-list-${index}`}
-                                                placeholder='Serial List'
-                                                value={subscription.serials}
-                                                onChange={(e) => handleInputChange(index, 'serials', e.target.value)}
-                                                invalid={subscription.errors.serials && true}
-                                            />
-                                            {subscription.errors.serials && (
-                                                <FormFeedback>{subscription.errors.serials}</FormFeedback>
-                                            )}
+                                            <div className='d-flex'>
+                                                <div className='form-check me-2'>
+                                                    <Input
+                                                        type='radio'
+                                                        id={`delivery-type-serial-${index}`}
+                                                        name={`delivery-type-${index}`}
+                                                        checked={(subscription.delivery_type || 'serial_based') === 'serial_based'}
+                                                        disabled={subscription.id !== null}
+                                                        onChange={() => handleInputChange(index, 'delivery_type', 'serial_based')}
+                                                    />
+                                                    <Label className='form-check-label' for={`delivery-type-serial-${index}`}>
+                                                        Serial-based
+                                                    </Label>
+                                                </div>
+                                                <div className='form-check'>
+                                                    <Input
+                                                        type='radio'
+                                                        id={`delivery-type-service-${index}`}
+                                                        name={`delivery-type-${index}`}
+                                                        checked={subscription.delivery_type === 'service_based'}
+                                                        disabled={subscription.id !== null}
+                                                        onChange={() => handleInputChange(index, 'delivery_type', 'service_based')}
+                                                    />
+                                                    <Label className='form-check-label' for={`delivery-type-service-${index}`}>
+                                                        Service-based
+                                                    </Label>
+                                                </div>
+                                            </div>
                                         </Col>
+
+                                        {subscription.delivery_type === 'service_based' ? (
+                                            <Col md={7} className='mb-md-0 mb-1'>
+                                                <Label className='form-label' for={`service-qty-${index}`}>
+                                                    Available Quantity
+                                                </Label>
+                                                <Input
+                                                    type='number'
+                                                    min='0'
+                                                    id={`service-qty-${index}`}
+                                                    placeholder='Available Quantity'
+                                                    value={subscription.service_qty}
+                                                    onChange={(e) => handleInputChange(index, 'service_qty', e.target.value)}
+                                                    invalid={subscription.errors.service_qty && true}
+                                                />
+                                                {subscription.errors.service_qty && (
+                                                    <FormFeedback>{subscription.errors.service_qty}</FormFeedback>
+                                                )}
+                                            </Col>
+                                        ) : (
+                                            <Col md={7} className='mb-md-0 mb-1'>
+                                                <Label className='form-label' for={`serial-list-${index}`}>
+                                                    Serial List
+                                                </Label>
+                                                <Input
+                                                    type="textarea"
+                                                    rows='4'
+                                                    id={`serial-list-${index}`}
+                                                    placeholder='Serial List'
+                                                    value={subscription.serials}
+                                                    onChange={(e) => handleInputChange(index, 'serials', e.target.value)}
+                                                    invalid={subscription.errors.serials && true}
+                                                />
+                                                {subscription.errors.serials && (
+                                                    <FormFeedback>{subscription.errors.serials}</FormFeedback>
+                                                )}
+                                            </Col>
+                                        )}
                                         <Col md={2}>
                                             <Button color='primary' className='text-nowrap mt-2'
                                                     onClick={(e) => saveForm(e, index, subscription)} outline>
