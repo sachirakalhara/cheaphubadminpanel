@@ -41,7 +41,7 @@ const RepeatingSubscriptionForm = (props) => {
         // }
 
         if (array.length === 0) {
-            list = [{id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', errors: {}}]
+            list = [{id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', errors: {}}]
         } else {
             array.map(item => {
                 list.push({
@@ -51,6 +51,7 @@ const RepeatingSubscriptionForm = (props) => {
                     serials: item.serial,
                     delivery_type: item.delivery_type || 'serial_based',
                     service_qty: (item.service_qty ?? 0).toString(),
+                    service_info: item.service_info || '',
                     errors: {}
                 })
             })
@@ -88,11 +89,11 @@ const RepeatingSubscriptionForm = (props) => {
 
     const increaseCount = (list, index) => {
         if (subscriptions.length === 0) {
-            setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', errors: {}}]);
+            setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', errors: {}}]);
         } else {
             if (validateFields(index)) {
                 setCount(count + 1);
-                setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', errors: {}}]);
+                setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', errors: {}}]);
             }
         }
     };
@@ -167,6 +168,7 @@ const RepeatingSubscriptionForm = (props) => {
 
             if ((formData.delivery_type || 'serial_based') === 'service_based') {
                 data.append('service_qty', formData.service_qty)
+                data.append('service_info', formData.service_info || '')
             } else {
                 data.append('serial', formData.serials)
             }
@@ -324,6 +326,7 @@ const RepeatingSubscriptionForm = (props) => {
                                         </Col>
 
                                         {subscription.delivery_type === 'service_based' ? (
+                                            <>
                                             <Col md={7} className='mb-md-0 mb-1'>
                                                 <Label className='form-label' for={`service-qty-${index}`}>
                                                     Available Quantity
@@ -341,6 +344,20 @@ const RepeatingSubscriptionForm = (props) => {
                                                     <FormFeedback>{subscription.errors.service_qty}</FormFeedback>
                                                 )}
                                             </Col>
+                                            <Col md={12} className='mb-md-0 mb-1 mt-1'>
+                                                <Label className='form-label' for={`service-info-${index}`}>
+                                                    Service Info
+                                                </Label>
+                                                <Input
+                                                    type='textarea'
+                                                    rows='4'
+                                                    id={`service-info-${index}`}
+                                                    placeholder='Enter service information that will be shown to the customer'
+                                                    value={subscription.service_info}
+                                                    onChange={(e) => handleInputChange(index, 'service_info', e.target.value)}
+                                                />
+                                            </Col>
+                                            </>
                                         ) : (
                                             <Col md={7} className='mb-md-0 mb-1'>
                                                 <Label className='form-label' for={`serial-list-${index}`}>
