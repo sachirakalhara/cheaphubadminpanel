@@ -33,6 +33,7 @@ const ChatLog = props => {
 
     // ** State
     const [msg, setMsg] = useState('')
+    const textareaRef = useRef(null)
 
     // ** Scroll to chat bottom
     const scrollToBottom = () => {
@@ -121,7 +122,7 @@ const ChatLog = props => {
                                     overflowWrap: 'break-word',
                                     hyphens: 'auto',
                                     whiteSpace: 'pre-wrap'
-                                }}>{item.msg}</p>
+                                }}>{renderWithLinks(item.msg)}</p>
                                 <small className={`${item.senderId !== 11 ? 'text-muted' : 'text-white'} d-block`}>
                                     {new Date(item.time).toLocaleTimeString()}
                                 </small>
@@ -140,14 +141,39 @@ const ChatLog = props => {
         }
     }
 
+    const handleMsgChange = (e) => {
+        setMsg(e.target.value)
+        const el = e.target
+        el.style.height = 'auto'
+        el.style.height = Math.min(el.scrollHeight, 200) + 'px'
+    }
+
+    const renderWithLinks = (text) => {
+        if (!text) return text
+        const parts = text.split(/(https?:\/\/[^\s]+|www\.[^\s]+)/gi)
+        return parts.map((part, i) => {
+            if (/^(https?:\/\/|www\.)/i.test(part)) {
+                const href = /^www\./i.test(part) ? `https://${part}` : part
+                return (
+                    <a key={i} href={href} target="_blank" rel="noopener noreferrer"
+                       style={{color: '#7367f0', textDecoration: 'underline'}}>
+                        {part}
+                    </a>
+                )
+            }
+            return part
+        })
+    }
+
     // ** Sends New Msg
     const handleSendMsg = e => {
         e.preventDefault()
-        if (msg.length) {
-            // dispatch(sendMsg({...chatDetails, message: msg}))
-            console.log('msg', msg)
+        if (msg.trim().length) {
             replyCallback(msg)
             setMsg('')
+            if (textareaRef.current) {
+                textareaRef.current.style.height = 'auto'
+            }
         }
     }
 
@@ -174,14 +200,18 @@ const ChatLog = props => {
                     <Form className='chat-app-form' onSubmit={e => handleSendMsg(e)}>
                         <InputGroup className='input-group-merge me-1 form-send-message'>
                             <Input
+                                type='textarea'
                                 value={msg}
-                                onChange={e => setMsg(e.target.value)}
+                                onChange={handleMsgChange}
                                 placeholder='Type your message or use speech to text'
                                 disabled={props.ticketDetails.status !== "open"}
+                                rows={1}
+                                innerRef={textareaRef}
+                                style={{resize: 'none', maxHeight: '200px', overflowY: 'auto'}}
                             />
                         </InputGroup>
                         <Button className='send' color='primary'
-                                disabled={props.ticketDetails.status !== "open"}
+                                disabled={props.ticketDetails.status !== "open" || !msg.trim()}
                         >
                             <Send size={14} className='d-lg-none'/>
                             <span className='d-none d-lg-block'>Send</span>
