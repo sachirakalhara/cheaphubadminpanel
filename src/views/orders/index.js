@@ -45,7 +45,7 @@ const CustomHeader = ({
                                     type='text'
                                     value={searchQuery}
                                     onChange={onSearchQueryChange}
-                                    placeholder='Search Order Number'
+                                    placeholder='Search by order number or product name'
                                     autoComplete="off"
                                 />
                                 {searchQuery.length !== 0 && (
