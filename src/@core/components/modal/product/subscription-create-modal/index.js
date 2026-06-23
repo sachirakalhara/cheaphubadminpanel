@@ -23,7 +23,7 @@ import {formDataToJson} from "../../../../../utility/commonFun";
 import {toggleLoading} from "../../../../../redux/loading";
 import {useDispatch} from "react-redux";
 import qs from 'qs';
-import HtmlEditor from "../../../../../custom-components/html-editor";
+import {composeAbout, parseAbout, composeServiceInfo, parseServiceInfo} from "./productContent";
 
 const defaultValues = {
     productName: '',
@@ -73,6 +73,21 @@ const SubscriptionCreationModal = (props) => {
     const [productId, setProductId] = useState(null);
     const [buttonName, setButtonName] = useState(props.isEditMode ? 'Update' : 'Submit');
 
+    // structured product-editor content (About + Service Info)
+    const [aboutHead, setAboutHead] = useState('');
+    const [aboutBody, setAboutBody] = useState('');
+    const [tiers, setTiers] = useState([]);
+    const [features, setFeatures] = useState([]);
+    const [structErrors, setStructErrors] = useState({});
+
+    const updateTier = (i, patch) => setTiers(prev => prev.map((t, j) => (j === i ? {...t, ...patch} : t)));
+    const removeTier = (i) => setTiers(prev => prev.filter((_, j) => j !== i));
+    const addTier = () => setTiers(prev => prev.concat([{emoji: '', name: '', best: false, points: ''}]));
+
+    const updateFeature = (i, patch) => setFeatures(prev => prev.map((f, j) => (j === i ? {...f, ...patch} : f)));
+    const removeFeature = (i) => setFeatures(prev => prev.filter((_, j) => j !== i));
+    const addFeature = () => setFeatures(prev => prev.concat([{emoji: '', title: '', desc: ''}]));
+
     // react hook form configurations
     const {control, setError, handleSubmit, formState: {errors}, setValue, getValues, reset} = useForm({defaultValues});
 
@@ -120,29 +135,39 @@ const SubscriptionCreationModal = (props) => {
     }
 
     const onSubmitGeneralDetails = async data => {
-        const obj = {
+        // compose structured content into the HTML columns the customer site renders
+        const composedDescription = composeAbout({headline: aboutHead, body: aboutBody});
+        const composedServiceInfo = composeServiceInfo({tiers, features});
+
+        // validate structured content
+        const structErr = {};
+        if (!aboutHead.trim()) structErr.aboutHead = true;
+        if (!aboutBody.trim()) structErr.aboutBody = true;
+        const hasTier = tiers.some(t => (t.name || '').trim());
+        const hasFeature = features.some(f => (f.title || '').trim());
+        if (!hasTier && !hasFeature) structErr.serviceInfo = true;
+        setStructErrors(structErr);
+
+        // validate the react-hook-form managed required fields
+        const baseObj = {
             productName: data.productName,
-            category: data.category.toString(),
-            description: data.description,
-            tag: data.tag.toString(),
-            productImageName: data.productImageName,
-            serviceInfo: data.serviceInfo
+            category: (data.category || '').toString(),
+            tag: (data.tag || '').toString(),
+            productImageName: data.productImageName
         }
-
-        if (Object.values(obj).every(field => field.length > 0)) {
-
-            setActive(active + 1)
-
-        } else {
-            for (const key in obj) {
-                if (obj[key].length === 0) {
-                    setError(key, {
-                        type: 'required'
-                    })
-                }
+        let baseValid = true;
+        for (const key in baseObj) {
+            if (!baseObj[key] || baseObj[key].length === 0) {
+                setError(key, {type: 'required'})
+                baseValid = false;
             }
         }
 
+        if (Object.keys(structErr).length === 0 && baseValid) {
+            setValue('description', composedDescription)
+            setValue('serviceInfo', composedServiceInfo)
+            setActive(active + 1)
+        }
     }
 
     const onSubmitSEODetails = async dataObj => {
@@ -211,6 +236,14 @@ const SubscriptionCreationModal = (props) => {
         setValue("serviceInfo", data.service_info)
         setValue("id", data.id)
         // setValue("slugUrl", data.slug_url)
+
+        // hydrate the structured editor from existing HTML (or legacy text)
+        const about = parseAbout(data.description)
+        setAboutHead(about.headline)
+        setAboutBody(about.body)
+        const si = parseServiceInfo(data.service_info)
+        setTiers(si.tiers)
+        setFeatures(si.features)
 
         setVisibilityMode(data.visibility)
         setUploadedProductImage(data.image)
@@ -420,45 +453,149 @@ const SubscriptionCreationModal = (props) => {
                             <span style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please select a Tag</span>}
                     </Col>
 
+                    {/* About — structured headline + body (composed into `description` HTML) */}
                     <Col md={12} xs={12}>
-                        <Label className='form-label mb-1' for='description'>
-                            Description <span style={{color: 'red'}}>*</span>
-                        </Label>
-                        <Controller
-                            name='description'
-                            control={control}
-                            render={({field}) => (
-                                <HtmlEditor
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    placeholder='Description'
-                                    invalid={errors.description && true}
-                                />
-                            )}
-                        />
-                        {errors.description &&
-                            <div style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please enter a valid
-                                description</div>}
+                        <div className='border rounded p-2'>
+                            <Label className='form-label mb-1 fw-bolder d-block'>
+                                About <span style={{color: 'red'}}>*</span>
+                                <span style={{fontSize: '11px', fontWeight: 400, color: '#9a99b3'}} className='ms-1'>— shown as the intro paragraph</span>
+                            </Label>
+                            <Label className='form-label mb-1' for='aboutHead'>Headline</Label>
+                            <Input
+                                id='aboutHead'
+                                placeholder='One punchy line'
+                                value={aboutHead}
+                                onChange={(e) => {
+                                    setAboutHead(e.target.value)
+                                    setStructErrors(prev => ({...prev, aboutHead: undefined}))
+                                }}
+                                invalid={structErrors.aboutHead && true}
+                                autoComplete='off'
+                            />
+                            <Label className='form-label mb-1 mt-1' for='aboutBody'>Body</Label>
+                            <Input
+                                type='textarea'
+                                id='aboutBody'
+                                rows={3}
+                                placeholder='Describe the product…'
+                                value={aboutBody}
+                                onChange={(e) => {
+                                    setAboutBody(e.target.value)
+                                    setStructErrors(prev => ({...prev, aboutBody: undefined}))
+                                }}
+                                invalid={structErrors.aboutBody && true}
+                            />
+                            {(structErrors.aboutHead || structErrors.aboutBody) &&
+                                <div style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Headline and body are required</div>}
+                        </div>
                     </Col>
 
+                    {/* Service Info — comparison tiers + "What's included" features (composed into `service_info` HTML) */}
                     <Col md={12} xs={12}>
-                        <Label className='form-label mb-1' for='serviceInfo'>
-                            Service Info <span style={{color: 'red'}}>*</span>
-                        </Label>
-                        <Controller
-                            name='serviceInfo'
-                            control={control}
-                            render={({field}) => (
-                                <HtmlEditor
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    placeholder='Service Info'
-                                    invalid={errors.serviceInfo && true}
-                                />
-                            )}
-                        />
-                        {errors.serviceInfo &&
-                            <div style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please enter valid service info</div>}
+                        <div className='border rounded p-2'>
+                            <Label className='form-label mb-1 fw-bolder d-block'>
+                                Service Info <span style={{color: 'red'}}>*</span>
+                            </Label>
+
+                            {/* Tiers */}
+                            <div className='d-flex justify-content-between align-items-center mb-1'>
+                                <span className='fw-bold'>Tiers</span>
+                                <Button size='sm' color='primary' outline type='button' onClick={addTier}>
+                                    + Add tier
+                                </Button>
+                            </div>
+                            {tiers.map((t, i) => (
+                                <div key={i} className='border rounded p-1 mb-1'>
+                                    <Row className='g-1 align-items-center'>
+                                        <Col xs={3} md={2}>
+                                            <Input
+                                                placeholder='⚡'
+                                                maxLength={2}
+                                                style={{textAlign: 'center'}}
+                                                value={t.emoji}
+                                                onChange={(e) => updateTier(i, {emoji: e.target.value})}
+                                            />
+                                        </Col>
+                                        <Col>
+                                            <Input
+                                                placeholder='Tier name'
+                                                value={t.name}
+                                                onChange={(e) => updateTier(i, {name: e.target.value})}
+                                                autoComplete='off'
+                                            />
+                                        </Col>
+                                        <Col xs='auto'>
+                                            <Button size='sm' type='button'
+                                                    color={t.best ? 'primary' : 'secondary'}
+                                                    outline={!t.best}
+                                                    onClick={() => updateTier(i, {best: !t.best})}>
+                                                ★ Best
+                                            </Button>
+                                        </Col>
+                                        <Col xs='auto'>
+                                            <Button size='sm' type='button' color='danger' outline
+                                                    onClick={() => removeTier(i)}>
+                                                ✕
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                    <Input
+                                        type='textarea'
+                                        className='mt-1'
+                                        rows={3}
+                                        placeholder='One bullet per line'
+                                        value={t.points}
+                                        onChange={(e) => updateTier(i, {points: e.target.value})}
+                                    />
+                                </div>
+                            ))}
+
+                            {/* Features */}
+                            <div className='d-flex justify-content-between align-items-center mb-1 mt-2'>
+                                <span className='fw-bold'>What's included</span>
+                                <Button size='sm' color='primary' outline type='button' onClick={addFeature}>
+                                    + Add feature
+                                </Button>
+                            </div>
+                            {features.map((f, i) => (
+                                <Row key={i} className='g-1 align-items-center mb-1'>
+                                    <Col xs={3} md={2}>
+                                        <Input
+                                            placeholder='🎬'
+                                            maxLength={2}
+                                            style={{textAlign: 'center'}}
+                                            value={f.emoji}
+                                            onChange={(e) => updateFeature(i, {emoji: e.target.value})}
+                                        />
+                                    </Col>
+                                    <Col xs={12} md={4}>
+                                        <Input
+                                            placeholder='Feature'
+                                            value={f.title}
+                                            onChange={(e) => updateFeature(i, {title: e.target.value})}
+                                            autoComplete='off'
+                                        />
+                                    </Col>
+                                    <Col>
+                                        <Input
+                                            placeholder='Short description'
+                                            value={f.desc}
+                                            onChange={(e) => updateFeature(i, {desc: e.target.value})}
+                                            autoComplete='off'
+                                        />
+                                    </Col>
+                                    <Col xs='auto'>
+                                        <Button size='sm' type='button' color='danger' outline
+                                                onClick={() => removeFeature(i)}>
+                                            ✕
+                                        </Button>
+                                    </Col>
+                                </Row>
+                            ))}
+
+                            {structErrors.serviceInfo &&
+                                <div style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please add at least one tier or feature</div>}
+                        </div>
                     </Col>
 
                     <Col md={6} xs={12}>
