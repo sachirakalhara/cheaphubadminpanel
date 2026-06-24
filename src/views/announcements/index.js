@@ -51,7 +51,7 @@ const Announcements = () => {
             setLoadingCount(true)
             AnnouncementService.getRecipientCount(audience).then(res => {
                 if (res.success) {
-                    setRecipientCount(res.data?.count || 0)
+                    setRecipientCount(res.data?.data?.count ?? 0)
                 } else {
                     setRecipientCount(null)
                 }
@@ -138,7 +138,7 @@ const Announcements = () => {
     }
 
     const handleSend = () => {
-        const recipientText = recipientCount !== null ? recipientCount : '...'
+        const recipientText = recipientCount !== null && recipientCount !== undefined ? recipientCount : '...'
 
         customSweetAlert(
             `You are about to send this email to ${recipientText} customers. This cannot be undone. Continue?`,
@@ -158,7 +158,7 @@ const Announcements = () => {
                     const res = await AnnouncementService.sendAnnouncement(body)
                     if (res.success) {
                         customToastMsg(
-                            `Announcement sent successfully to ${res.data?.total_sent || 0} customers!`,
+                            `Announcement sent successfully to ${res.data?.data?.total_sent ?? 0} customers!`,
                             1
                         )
                         resetForm()
