@@ -41,7 +41,7 @@ const RepeatingSubscriptionForm = (props) => {
         // }
 
         if (array.length === 0) {
-            list = [{id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', errors: {}}]
+            list = [{id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', is_manually_out_of_stock: false, errors: {}}]
         } else {
             array.map(item => {
                 list.push({
@@ -52,6 +52,7 @@ const RepeatingSubscriptionForm = (props) => {
                     delivery_type: item.delivery_type || 'serial_based',
                     service_qty: (item.service_qty ?? 0).toString(),
                     service_info: item.service_info || '',
+                    is_manually_out_of_stock: item.is_manually_out_of_stock || false,
                     errors: {}
                 })
             })
@@ -89,11 +90,11 @@ const RepeatingSubscriptionForm = (props) => {
 
     const increaseCount = (list, index) => {
         if (subscriptions.length === 0) {
-            setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', errors: {}}]);
+            setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', is_manually_out_of_stock: false, errors: {}}]);
         } else {
             if (validateFields(index)) {
                 setCount(count + 1);
-                setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', errors: {}}]);
+                setSubscriptions([...list, {id: null, name: '', gateway_fee: '', serials: '', delivery_type: 'serial_based', service_qty: '', service_info: '', is_manually_out_of_stock: false, errors: {}}]);
             }
         }
     };
@@ -165,6 +166,7 @@ const RepeatingSubscriptionForm = (props) => {
             data.append('name', formData.name)
             data.append('gateway_fee', formData.gateway_fee)
             data.append('delivery_type', formData.delivery_type || 'serial_based')
+            data.append('is_manually_out_of_stock', formData.is_manually_out_of_stock ? 1 : 0)
 
             if ((formData.delivery_type || 'serial_based') === 'service_based') {
                 data.append('service_qty', formData.service_qty)
@@ -323,6 +325,22 @@ const RepeatingSubscriptionForm = (props) => {
                                                     </Label>
                                                 </div>
                                             </div>
+                                        </Col>
+                                        <Col md={12} className='mb-md-0 mb-1 mt-1'>
+                                            <div className="form-check form-switch">
+                                                <Input
+                                                    type="switch"
+                                                    id={`is-manually-oos-${index}`}
+                                                    checked={subscription.is_manually_out_of_stock || false}
+                                                    onChange={(e) => handleInputChange(index, 'is_manually_out_of_stock', e.target.checked)}
+                                                />
+                                                <Label for={`is-manually-oos-${index}`} className="form-check-label fw-bold">
+                                                    Mark as Out of Stock
+                                                </Label>
+                                            </div>
+                                            <small className="text-muted">
+                                                When enabled, this variant will show as out of stock on the store and cannot be purchased — even if stock is available.
+                                            </small>
                                         </Col>
 
                                         {subscription.delivery_type === 'service_based' ? (

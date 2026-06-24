@@ -347,6 +347,16 @@ const BulkProductList = () => {
             center: true,
         },
         {
+            name: 'Stock',
+            width: '120px',
+            center: true,
+            cell: row => (
+                row.is_manually_out_of_stock ?
+                    <Badge color='light-danger'>Out of Stock</Badge> :
+                    <Badge color='light-success'>In Stock</Badge>
+            )
+        },
+        {
             name: 'Actions',
             width: '30%',
             center: true,

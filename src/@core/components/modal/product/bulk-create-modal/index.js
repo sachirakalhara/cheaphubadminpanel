@@ -53,6 +53,7 @@ const defaultValues = {
     cryptoRadio: false,
     marxRadio: false,
     selectedPaymentMethods: [],
+    isManuallyOutOfStock: false,
     // slugUrl: '',
 }
 
@@ -138,6 +139,7 @@ const BulCreationModal = (props) => {
         // setValue("selectedPaymentMethods", data.image)
 
         // setValue("slugUrl", data.slug_url)
+        setValue("isManuallyOutOfStock", data.is_manually_out_of_stock || false)
         setVisibilityMode(data.visibility)
         setUploadedProductImage(data.image)
         setBulkType(data.bulk_type)
@@ -310,6 +312,7 @@ const BulCreationModal = (props) => {
         data.append('service_info', getValues('serviceInfo'))
         data.append('visibility', visibilityMode)
         data.append('bulk_type', bulkType)
+        data.append('is_manually_out_of_stock', getValues('isManuallyOutOfStock') ? 1 : 0)
 
         if (props.isEditMode) {
             data.append('id', props.selectedData.id)
@@ -592,6 +595,28 @@ const BulCreationModal = (props) => {
 
             {active === 2 && (
                 <>
+                    <Col xs={12} className="mb-2 mt-2">
+                        <div className="form-check form-switch">
+                            <Controller
+                                name="isManuallyOutOfStock"
+                                control={control}
+                                render={({field}) => (
+                                    <Input
+                                        type="switch"
+                                        id="isManuallyOutOfStock"
+                                        checked={field.value}
+                                        onChange={(e) => field.onChange(e.target.checked)}
+                                    />
+                                )}
+                            />
+                            <Label for="isManuallyOutOfStock" className="form-check-label fw-bold">
+                                Mark as Out of Stock
+                            </Label>
+                        </div>
+                        <small className="text-muted">
+                            When enabled, this product will show as out of stock on the store and cannot be purchased — even if stock is available.
+                        </small>
+                    </Col>
                     <Col lg={4} sm={12}
                          className={'program-modal-text-input-filed program-modal-row'}>
                         <label className='program-modal-label'>Product Type

@@ -330,6 +330,17 @@ const SubscriptionProductList = () => {
             center: true,
         },
         {
+            name: 'Stock',
+            width: '120px',
+            center: true,
+            cell: row => {
+                const hasOOS = (row.subscriptions || []).some(sub => sub.is_manually_out_of_stock);
+                return hasOOS ?
+                    <Badge color='light-danger'>Out of Stock</Badge> :
+                    <Badge color='light-success'>In Stock</Badge>
+            }
+        },
+        {
             name: 'Actions',
             width: '35%',
             center: true,
