@@ -10,7 +10,6 @@ import {customSweetAlert, customToastMsg, emptyUI, getCustomDateTimeStamp} from 
 import CouponCreationModal from "../../@core/components/modal/couponCreationModal";
 import * as CouponsServices from "../../services/coupon-code-resources";
 import {backendDateFormatter, editDateFormatter} from "../../utility/commonFun";
-import moment from "moment";
 
 const defaultValues = {
     couponCode: '',
@@ -19,13 +18,17 @@ const defaultValues = {
     maxDiscount: '',
     bulkProducts: false,
     subscriptionProducts: false,
+    scheduledStart: '',
+    scheduledEnd: '',
+    campaignEnabled: false,
+    campaignAudience: '',
+    campaignSubject: '',
 };
 
 let prev = 0;
 
 const CouponList = () => {
     const dispatch = useDispatch();
-
 
     const [couponCode, setCouponCode] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -35,7 +38,8 @@ const CouponList = () => {
 
     const [selectedId, setSelectedId] = useState('');
     const [isFetched, setIsFetched] = useState(false);
-    const [productType, setProductType] = useState(null); // Add state for productType
+    const [productType, setProductType] = useState(null);
+    const [campaignStatus, setCampaignStatus] = useState(null);
     const [store, setStore] = useState({
         data: [],
         total: 0
@@ -48,6 +52,7 @@ const CouponList = () => {
         setValue,
         setError,
         clearErrors,
+        watch,
         formState: {errors}
     } = useForm({defaultValues});
 
@@ -94,7 +99,8 @@ const CouponList = () => {
 
     const handleProductTypeChange = value => {
         setProductType(value);
-        getCoupons(couponCode, value, currentPage);
+        setCurrentPage(1);
+        getCoupons(couponCode, value, 1);
     };
 
     const getProductTypeStatus = data => {
@@ -106,6 +112,20 @@ const CouponList = () => {
             return 'bulk';
         }
     }
+
+    const getCampaignLabel = (row) => {
+        if (!row.campaign_email_enabled) return '—';
+        if (row.campaign_reminder_sent) return 'Reminder Sent';
+        if (row.campaign_activation_sent) return 'Sent';
+        return 'Scheduled';
+    };
+
+    const getCampaignColor = (row) => {
+        if (!row.campaign_email_enabled) return 'light-secondary';
+        if (row.campaign_reminder_sent) return 'light-info';
+        if (row.campaign_activation_sent) return 'light-success';
+        return 'light-warning';
+    };
 
     const CustomPagination = () => (
         <ReactPaginate
@@ -125,9 +145,7 @@ const CouponList = () => {
     );
 
     const onSubmit = async data => {
-        console.log("data", data);
-        if (Object.values(data).every(field => typeof field === 'boolean' || field.length > 0)) {
-            console.log("data", data);
+        if (Object.values(data).every(field => typeof field === 'boolean' || (typeof field === 'string' ? true : field !== null))) {
 
             if (!data.bulkProducts && !data.subscriptionProducts) {
                 setError('bulkProducts', {type: 'manual', message: 'At least one product type must be selected.'});
@@ -138,14 +156,44 @@ const CouponList = () => {
                 return;
             }
 
+            if (!data.couponCode || !data.discount || !data.expirationDate || !data.maxDiscount) {
+                if (!data.couponCode) setError('couponCode', {type: 'required'});
+                if (!data.discount) setError('discount', {type: 'required'});
+                if (!data.expirationDate) setError('expirationDate', {type: 'required'});
+                if (!data.maxDiscount) setError('maxDiscount', {type: 'required'});
+                return;
+            }
+
+            if (data.scheduledStart && data.scheduledEnd && data.scheduledStart >= data.scheduledEnd) {
+                setError('scheduledEnd', {type: 'manual', message: 'End date must be after activation date'});
+                return;
+            }
+
+            if (data.campaignEnabled && !data.campaignAudience) {
+                setError('campaignAudience', {type: 'required'});
+                return;
+            }
+            if (data.campaignEnabled && !data.campaignSubject) {
+                setError('campaignSubject', {type: 'required'});
+                return;
+            }
+
             dispatch(toggleLoading());
             const body = {
-                "product_type": getProductTypeStatus(data),//'bulk', 'subscription', 'both'
-                "discount_percentage": Number(data.discount),//$table->decimal('discount_percentage', 5, 2);
-                "max_discount_amount": Number(data.maxDiscount),//$table->decimal('max_discount_amount', 10, 2);
-                "expiry_date": isEditMode ? backendDateFormatter(editDateFormatter(data.expirationDate)) : backendDateFormatter(data.expirationDate),//25-02-2025
+                "product_type": getProductTypeStatus(data),
+                "discount_percentage": Number(data.discount),
+                "max_discount_amount": Number(data.maxDiscount),
+                "expiry_date": isEditMode ? backendDateFormatter(editDateFormatter(data.expirationDate)) : backendDateFormatter(data.expirationDate),
                 "coupon_code": data.couponCode
             };
+
+            if (data.scheduledStart) body.scheduled_start = data.scheduledStart;
+            if (data.scheduledEnd) body.scheduled_end = data.scheduledEnd;
+            body.campaign_email_enabled = data.campaignEnabled || false;
+            if (data.campaignEnabled) {
+                body.campaign_audience = data.campaignAudience;
+                body.campaign_subject = data.campaignSubject;
+            }
 
             if (isEditMode) {
                 body.id = selectedId;
@@ -176,8 +224,10 @@ const CouponList = () => {
             }
         } else {
             for (const key in data) {
-                if (!data[key]) {
-                    setError(key, {type: 'required'});
+                if (data[key] === '' || data[key] === null) {
+                    if (['couponCode', 'discount', 'expirationDate', 'maxDiscount'].includes(key)) {
+                        setError(key, {type: 'required'});
+                    }
                 }
             }
         }
@@ -185,33 +235,53 @@ const CouponList = () => {
 
     const columns = [
         {name: 'Coupon Code', selector: row => row.coupon_code, sortable: true},
-        {name: 'Discount', selector: row => row.discount_percentage, sortable: true},
-        {name: 'Max Discount', selector: row => row.max_discount_amount, sortable: true},
-        {name: 'Expiration Date', selector: row => row.expiry_date, sortable: true},
+        {name: 'Discount', selector: row => row.discount_percentage + '%', sortable: true, width: '100px'},
+        {name: 'Max Discount', selector: row => '$' + row.max_discount_amount, sortable: true, width: '120px'},
+        {name: 'Expiry Date', selector: row => row.expiry_date, sortable: true, width: '120px'},
         {
-            name: 'Production Type',
+            name: 'Status',
+            width: '100px',
+            center: true,
+            cell: row => (
+                <Badge color={row.is_active ? 'light-success' : 'light-secondary'}>
+                    {row.is_active ? 'Active' : 'Inactive'}
+                </Badge>
+            )
+        },
+        {
+            name: 'Type',
             cell: row => (
                 <div>
                     {row.product_type === "both" ? (
                         <div className='d-inline-flex align-items-center'>
-                            <Badge color={'success'}>subscription</Badge>
+                            <Badge color={'success'}>sub</Badge>
                             <Badge color={'danger'} className="ms-05">bulk</Badge>
                         </div>
                     ) : (
                         <Badge color={row.product_type === 'bulk' ? 'danger' : 'success'}>{row.product_type}</Badge>
-
                     )}
                 </div>
             ),
             center: true,
+            width: '120px',
+        },
+        {
+            name: 'Campaign',
+            width: '130px',
+            center: true,
+            cell: row => (
+                <Badge color={getCampaignColor(row)}>
+                    {getCampaignLabel(row)}
+                </Badge>
+            )
         },
         {
             name: 'Actions',
-            width: '30%',
+            width: '180px',
             cell: row => (
                 <div className='d-flex'>
                     <Button color='success' outline onClick={() => onUpdateHandler(row)}
-                            style={{width: 80, padding: 5, alignItems: 'center'}}
+                            style={{width: 70, padding: 5, alignItems: 'center'}}
                     >
                         <Eye size={15}/> Edit
                     </Button>
@@ -240,7 +310,6 @@ const CouponList = () => {
         setValue('discount', data.discount_percentage);
         setValue('maxDiscount', data.max_discount_amount);
         setValue('expirationDate', data.expiry_date);
-        // setValue('expirationDate', editDateFormatter(data.expiry_date));
 
         if (data.product_type === 'bulk') {
             setValue('bulkProducts', true);
@@ -252,6 +321,18 @@ const CouponList = () => {
             setValue('bulkProducts', false);
             setValue('subscriptionProducts', true);
         }
+
+        setValue('scheduledStart', data.scheduled_start || '');
+        setValue('scheduledEnd', data.scheduled_end || '');
+        setValue('campaignEnabled', data.campaign_email_enabled || false);
+        setValue('campaignAudience', data.campaign_audience || '');
+        setValue('campaignSubject', data.campaign_subject || '');
+
+        setCampaignStatus(data.campaign_email_enabled ? {
+            activationSent: data.campaign_activation_sent,
+            reminderSent: data.campaign_reminder_sent,
+        } : null);
+
         setShow(true);
         setIsEditMode(true);
     };
@@ -324,6 +405,8 @@ const CouponList = () => {
                         >
                             <Button onClick={() => {
                                 setIsEditMode(false)
+                                setCampaignStatus(null)
+                                reset()
                                 setShow(true)
                             }}>
                                 <Plus size={15}/> Add Coupon
@@ -348,6 +431,7 @@ const CouponList = () => {
                 show={show}
                 toggle={() => {
                     reset();
+                    setCampaignStatus(null);
                     setShow(!show);
                 }}
                 onSubmit={handleSubmit(onSubmit)}
@@ -356,6 +440,8 @@ const CouponList = () => {
                 isEditMode={isEditMode}
                 setValue={setValue}
                 clearErrors={clearErrors}
+                watch={watch}
+                campaignStatus={campaignStatus}
             />
         </Fragment>
     );

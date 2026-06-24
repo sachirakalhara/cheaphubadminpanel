@@ -2,8 +2,6 @@ import React from "react"
 import Modal from "../index"
 import {Button, Col, FormFeedback, Input, InputGroup, InputGroupText, Label, Row} from "reactstrap"
 import {Controller} from "react-hook-form"
-import Select from "react-select"
-import {selectThemeColors} from '@utils'
 import Flatpickr from "react-flatpickr";
 import {editDateFormatter} from "../../../../utility/commonFun";
 
@@ -19,6 +17,8 @@ const CouponCreationModal = (props) => {
         props.setValue('couponCode', promoCode);
         props.clearErrors('couponCode');
     };
+
+    const watchCampaignEnabled = props.watch ? props.watch('campaignEnabled') : false;
 
     return (
         <Modal show={props.show} toggle={props.toggle}
@@ -145,7 +145,6 @@ const CouponCreationModal = (props) => {
                                         onChange(dateStr);
                                     }}
                                     name={name}
-                                    // options={getDatePickerOptions()}
                                 />
                             );
                         }}
@@ -175,6 +174,130 @@ const CouponCreationModal = (props) => {
                     {props.errors.maxDiscount &&
                         <FormFeedback>Please enter a max discount</FormFeedback>}
                 </Col>
+
+                {/* ── Schedule Section ── */}
+                <Col xs={12} className="mt-2">
+                    <hr/>
+                    <h6 className="text-primary fw-bold">Schedule</h6>
+                </Col>
+
+                <Col md={6} xs={12}>
+                    <Label className='form-label mb-1'>Activation Date & Time</Label>
+                    <Controller
+                        control={props.control}
+                        name="scheduledStart"
+                        render={({field: {onChange, value}}) => (
+                            <Flatpickr
+                                className="form-control w-100"
+                                placeholder="Select activation date & time"
+                                value={value || null}
+                                onChange={([date], dateStr) => onChange(dateStr)}
+                                options={{enableTime: true, dateFormat: 'Y-m-d H:i', time_24hr: true}}
+                            />
+                        )}
+                    />
+                    <small className="text-muted">Coupon will auto-activate at this time</small>
+                </Col>
+
+                <Col md={6} xs={12}>
+                    <Label className='form-label mb-1'>Scheduled End Date & Time</Label>
+                    <Controller
+                        control={props.control}
+                        name="scheduledEnd"
+                        render={({field: {onChange, value}}) => (
+                            <Flatpickr
+                                className="form-control w-100"
+                                placeholder="Select end date & time"
+                                value={value || null}
+                                onChange={([date], dateStr) => onChange(dateStr)}
+                                options={{enableTime: true, dateFormat: 'Y-m-d H:i', time_24hr: true}}
+                            />
+                        )}
+                    />
+                    {props.errors.scheduledEnd &&
+                        <FormFeedback className="d-block">{props.errors.scheduledEnd.message || 'End must be after start'}</FormFeedback>}
+                    <small className="text-muted">Coupon will auto-deactivate at this time</small>
+                </Col>
+
+                {/* ── Email Campaign Section ── */}
+                <Col xs={12} className="mt-2">
+                    <hr/>
+                    <div className="d-flex align-items-center gap-2">
+                        <Controller
+                            name="campaignEnabled"
+                            control={props.control}
+                            render={({field}) => (
+                                <div className="form-check form-switch">
+                                    <Input
+                                        type="switch"
+                                        id="campaignEnabled"
+                                        checked={field.value}
+                                        onChange={(e) => field.onChange(e.target.checked)}
+                                    />
+                                    <Label for="campaignEnabled" className="form-check-label fw-bold">
+                                        Send Email Campaign
+                                    </Label>
+                                </div>
+                            )}
+                        />
+                    </div>
+                </Col>
+
+                {watchCampaignEnabled && (
+                    <>
+                        <Col md={6} xs={12}>
+                            <Label className='form-label mb-1'>Audience</Label>
+                            <Controller
+                                name="campaignAudience"
+                                control={props.control}
+                                render={({field}) => (
+                                    <Input type="select" {...field} id="campaignAudience"
+                                           invalid={props.errors.campaignAudience && true}>
+                                        <option value="">Select audience...</option>
+                                        <option value="all_customers">All registered customers</option>
+                                        <option value="purchased_customers">Customers with at least one purchase</option>
+                                    </Input>
+                                )}
+                            />
+                            {props.errors.campaignAudience &&
+                                <FormFeedback className="d-block">Please select an audience</FormFeedback>}
+                        </Col>
+
+                        <Col md={6} xs={12}>
+                            <Label className='form-label mb-1'>Email Subject</Label>
+                            <Controller
+                                name="campaignSubject"
+                                control={props.control}
+                                render={({field}) => (
+                                    <Input {...field} placeholder="🎉 Exclusive Coupon Just for You!"
+                                           invalid={props.errors.campaignSubject && true} autoComplete="off"/>
+                                )}
+                            />
+                            {props.errors.campaignSubject &&
+                                <FormFeedback className="d-block">Please enter an email subject</FormFeedback>}
+                        </Col>
+                    </>
+                )}
+
+                {/* Campaign status (read-only, edit mode only) */}
+                {props.isEditMode && props.campaignStatus && (
+                    <Col xs={12} className="mt-1">
+                        <div className="d-flex gap-3">
+                            <small>
+                                <strong>Activation Email:</strong>{' '}
+                                <span className={props.campaignStatus.activationSent ? 'text-success' : 'text-muted'}>
+                                    {props.campaignStatus.activationSent ? '✓ Sent' : 'Pending'}
+                                </span>
+                            </small>
+                            <small>
+                                <strong>Reminder Email:</strong>{' '}
+                                <span className={props.campaignStatus.reminderSent ? 'text-success' : 'text-muted'}>
+                                    {props.campaignStatus.reminderSent ? '✓ Sent' : 'Pending'}
+                                </span>
+                            </small>
+                        </div>
+                    </Col>
+                )}
 
                 <Col xs={12} className='d-flex justify-content-end mt-2 pt-5'>
                     <Button type='submit' className='me-1' color='success'>
