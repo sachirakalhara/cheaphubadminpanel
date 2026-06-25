@@ -74,7 +74,6 @@ const OrderDetails = () => {
                         }
                     })
 
-                    console.log(list)
 
                     setStore({data: list ?? []});
                 } else {
@@ -144,7 +143,6 @@ const OrderDetails = () => {
         }
         OrderResourcesServices.changeOrderStatus(body)
             .then(async (res) => {
-                console.log(res)
                 if (res.success) {
                     dispatch(toggleLoading())
                     await getOrderDetails();
@@ -179,7 +177,6 @@ const OrderDetails = () => {
         }
         OrderResourcesServices.refundOrder(body)
             .then(async (res) => {
-                console.log(res)
                 if (res.success) {
                     dispatch(toggleLoading())
                     customToastMsg(res.message, 1)

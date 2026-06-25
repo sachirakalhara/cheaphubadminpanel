@@ -120,7 +120,6 @@ const BulCreationModal = (props) => {
     }, [])
 
     const loadDefaultValues = (data) => {
-        console.log("data:::::::::::::::::::::::", data)
 
         setValue("productName", data.name)
         setValue("category", data.categories.length !== 0 ? data.categories[0].id : '')
@@ -192,7 +191,6 @@ const BulCreationModal = (props) => {
 
     const onSubmitGeneralDetails = async data => {
 
-        console.log(data)
 
         const obj = {
             productName: data.productName,
@@ -202,7 +200,6 @@ const BulCreationModal = (props) => {
             productImageName: data.productImageName
         }
 
-        console.log(obj)
 
         if (Object.values(obj).every(field => field.length > 0)) {
 
@@ -257,7 +254,6 @@ const BulCreationModal = (props) => {
             list.push('marx')
         }
 
-        console.log(list)
 
         setValue('selectedPaymentMethods', list);
 
@@ -269,7 +265,6 @@ const BulCreationModal = (props) => {
 
         if (Object.values(obj).every(field => field.length > 0)) {
             if (list.length === 0) {
-                console.log("checked")
                 setError('selectedPaymentMethods', {
                     type: 'required',
                     message: 'Please select at least one payment method',
@@ -338,7 +333,6 @@ const BulCreationModal = (props) => {
     }
 
     useEffect(() => {
-        console.log(props.tagList)
     }, [])
 
     const onHeaderTabPress = (selectedActiveValue) => {

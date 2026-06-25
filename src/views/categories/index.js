@@ -412,7 +412,6 @@ const CategoryList = () => {
     }
 
     const onUpdateHandler = (data) => {
-        console.log(data)
         setSelectedId(data.id)
         setValue("name", data.name !== null ? data.name : "")
         setValue("description", data.description)

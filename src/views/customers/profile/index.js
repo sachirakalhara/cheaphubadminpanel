@@ -47,7 +47,6 @@ const CustomerProfile = () => {
                 } else {
                     customToastMsg(response.message, response.status)
                 }
-                console.log(response)
             })
     }
 

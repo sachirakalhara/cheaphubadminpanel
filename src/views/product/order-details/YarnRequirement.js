@@ -40,7 +40,7 @@ const CustomHeader = ({
                             type='text'
                             value={value}
                             // onChange={e => handleFilter(e.target.value)}
-                            onChange={e => console.log(e)}
+                            onChange={() => {}}
                             placeholder='Search Style Number'
                         />
                     </div>
@@ -61,7 +61,7 @@ const CustomHeader = ({
                             type='text'
                             value={value}
                             // onChange={e => handleFilter(e.target.value)}
-                            onChange={e => console.log(e)}
+                            onChange={() => {}}
                             placeholder='Search Article Description'
                         />
                     </div>

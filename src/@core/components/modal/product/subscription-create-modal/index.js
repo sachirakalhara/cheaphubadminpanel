@@ -218,7 +218,6 @@ const SubscriptionCreationModal = (props) => {
     }
 
     useEffect(() => {
-        console.log(props.tagList)
         if (props.isEditMode) {
             loadDefaultValues(props.selectedData);
         } else {
@@ -227,7 +226,6 @@ const SubscriptionCreationModal = (props) => {
     }, [])
 
     const loadDefaultValues = (data) => {
-        console.log(data)
         setValue("productName", data.name)
         setValue("category", data.categories.length !== 0 ? data.categories[0].id : '')
         setValue("description", data.description)
@@ -292,7 +290,6 @@ const SubscriptionCreationModal = (props) => {
         //     }
         // ]
 
-        console.log("subscriptionList::::", subscriptionList)
 
         subscriptionList.forEach((item) => {
             item.packages.forEach((packageItem) => {
@@ -300,7 +297,6 @@ const SubscriptionCreationModal = (props) => {
             })
         })
 
-        console.log("subscriptionList::::", list)
 
         return list;
     }

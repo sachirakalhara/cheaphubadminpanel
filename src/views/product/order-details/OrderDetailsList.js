@@ -131,7 +131,6 @@ const OrderDetailsList = ({orderInfo}) => {
                     setData(res.data.content)
                     setTotalPages(res.data.totalPages)
                 } else {
-                    console.log(res)
                     customToastMsg(res.message, res.status)
                 }
                 setIsFetched(true)
@@ -145,7 +144,6 @@ const OrderDetailsList = ({orderInfo}) => {
     }, [])
 
     const onSubmit = async data => {
-        console.log(data)
         if (Object.values(data).every(field => field.length > 0)) {
             dispatch(toggleLoading())
             const body = {
@@ -212,7 +210,6 @@ const OrderDetailsList = ({orderInfo}) => {
 
         setSelectedId(item.id)
 
-        console.log(item)
 
         setHeaderTitle("Edit Order Item")
         setShow(!show)

@@ -70,7 +70,6 @@ export const isEmptyObject = (obj) => {
 }
 
 export const onFileError = (error) => {
-    console.log("error:::::::::::")
     notifyMessage(error.message);
 };
 

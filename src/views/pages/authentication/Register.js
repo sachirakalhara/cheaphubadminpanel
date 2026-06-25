@@ -73,7 +73,7 @@ const Register = () => {
             history.push('/')
           }
         })
-        .catch(err => console.log(err))
+        .catch(() => {})
     } else {
       for (const key in data) {
         if (data[key].length === 0) {

@@ -145,7 +145,6 @@ const MaterialsRequirements = () => {
                             weight: roundNumber(Number(item.articleWeightWithFallout) / 1000).toString()
                         })
                     })
-                    console.log(list)
                     setCsvData(list)
                 }
             })

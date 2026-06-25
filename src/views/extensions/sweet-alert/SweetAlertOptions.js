@@ -43,7 +43,6 @@ const SweetAlertOptions = () => {
       }
     }).then(function (result) {
       if (result.dismiss === Swal.DismissReason.timer) {
-        console.log('I was closed by the timer')
       }
     })
   }

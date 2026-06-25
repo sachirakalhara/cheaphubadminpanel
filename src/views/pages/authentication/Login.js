@@ -77,7 +77,6 @@ const Login = () => {
             dispatch(toggleLoading())
             await UserAuthService.authUser(body)
                 .then(async res => {
-                    console.log(res);
                     if (!res.success) {
                         customToastMsg(res.message, 0)
                         dispatch(toggleLoading())

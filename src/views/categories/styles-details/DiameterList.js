@@ -118,7 +118,6 @@ const DiameterList = ({componentList, components}) => {
     }, [])
 
     const onSubmit = async data => {
-        console.log(data)
         if (Object.values(data).every(field => field.length > 0)) {
             dispatch(toggleLoading())
             const body = {
@@ -174,7 +173,6 @@ const DiameterList = ({componentList, components}) => {
     }
 
     const updateForm = (item) => {
-        console.log(item)
         setValue("components", item.styleComponent.component.id.toString())
         setValue("knittingDia", item.knittingDiameter.id.toString())
         setValue("smv", item.smv.toString())
@@ -241,7 +239,6 @@ const DiameterList = ({componentList, components}) => {
 
 
     const onSelect = async (selectedOption, type) => {
-        console.log(selectedOption, type)
 
         if (type === 'size') {
             setValue("size", await selectedOption.value)

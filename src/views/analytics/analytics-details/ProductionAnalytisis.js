@@ -203,7 +203,6 @@ const ProductionAnalysis = () => {
                 if (res.success) {
                     groupList(res.data)
                     const list = []
-                    console.log(type)
                     res.data.map(item => {
                         list.push({
                             date: moment(item.date).format(type === 'DAILY' ? 'YYYY-MM-DD' : type === 'MONTHLY' ? 'YYYY-MM' : 'YYYY'),

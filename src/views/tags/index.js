@@ -150,7 +150,6 @@ const MachineryList = () => {
         await TagsServices.filterTags(data)
             .then(res => {
                 if (res.success) {
-                    console.log(res)
                     setStore({allData: res.data.tag_list, data: res.data.tag_list, params, total: 0})
                 } else {
                     customToastMsg(res.message, 0,'',()=>{

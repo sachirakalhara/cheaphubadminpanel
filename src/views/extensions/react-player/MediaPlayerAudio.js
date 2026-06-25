@@ -109,7 +109,7 @@ const MediaPlayerAudio = () => {
               muted={muted}
               onPlay={handlePlay}
               onPause={handlePause}
-              onSeek={e => console.log('onSeek', e)}
+              onSeek={() => {}}
               onProgress={handleProgress}
               onDuration={handleDuration}
             />

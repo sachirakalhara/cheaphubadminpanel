@@ -44,7 +44,6 @@ const ChatLog = props => {
     // ** If user chat is not empty scrollToBottom
     useEffect(() => {
         const chatDetailsLen = Object.keys(chatDetails).length
-        console.log(chatDetails)
         if (chatDetailsLen) {
             scrollToBottom()
         }

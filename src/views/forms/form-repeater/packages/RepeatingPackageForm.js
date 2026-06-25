@@ -51,7 +51,6 @@ const RepeatingPackageForm = (props) => {
 
     const getFormatterRepeatArray = (array) => {
 
-        console.log("array???????????????????????", array)
         let list = [];
 
         if (props.isManageMode) {
@@ -98,7 +97,6 @@ const RepeatingPackageForm = (props) => {
                 errors: {},
             }]
         }
-        console.log("list???????????????????????", list)
         return list;
     }
 
@@ -247,7 +245,6 @@ const RepeatingPackageForm = (props) => {
         e.preventDefault();
         if (validateFields(index)) {
             const formData = packages[index];
-            console.log('Submitting Form:', formData);
 
             let data = new FormData()
 
@@ -289,7 +286,6 @@ const RepeatingPackageForm = (props) => {
 
                             //array should be update when pkg. id  === res.data.package.id
 
-                            console.log("selectedObj", selectedObj)
                             updatedPackages[selectedObj].id = res.data.package.id;
                             // updatedPackages[selectedObj].subscription = res.data.package.subscription.id;
                             updatedPackages[selectedObj].subscription = formData.subscription;

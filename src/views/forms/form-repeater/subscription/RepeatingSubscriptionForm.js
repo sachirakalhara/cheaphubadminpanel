@@ -58,7 +58,6 @@ const RepeatingSubscriptionForm = (props) => {
             })
         }
 
-        console.log("list???????????????????????", list)
         return list;
     }
 
@@ -75,7 +74,6 @@ const RepeatingSubscriptionForm = (props) => {
             .then(res => {
                 if (res.success) {
                     const formattedList = getFormatterRepeatArray(res.data.contribution_product.subscriptions);
-                    console.log("formattedList", formattedList)
 
                     if (isIncreased) {
                         increaseCount(formattedList, selectedObj);
@@ -158,7 +156,6 @@ const RepeatingSubscriptionForm = (props) => {
         if (validateFields(index)) {
             // Perform save operation (e.g., send data to backend)
             const formData = subscriptions[index];
-            console.log('Submitting Form:', formData);
 
 
             let data = new FormData();
@@ -209,7 +206,6 @@ const RepeatingSubscriptionForm = (props) => {
         }
         ContributionProductService.removeSubscriptionItemById(data, id)
             .then(res => {
-                console.log("res", res)
                 if (res.success) {
                     customToastMsg("Subscription was successfully deleted", 1);
                     getContributionProductDetails(false);

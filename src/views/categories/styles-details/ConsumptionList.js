@@ -317,7 +317,6 @@ const ConsumptionList = ({componentList, components, styleData, sizesList, selec
     }
 
     const onSubmit = async data => {
-        console.log(colors)
         if (Object.values(data).every(field => field.length > 0)) {
             const body = {
                 size: selectedSize,

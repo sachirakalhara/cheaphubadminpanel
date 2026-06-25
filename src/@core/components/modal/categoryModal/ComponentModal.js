@@ -23,7 +23,6 @@ const ComponentModal = (props) => {
     const deleteForm = e => {
         e.preventDefault()
         e.target.closest('.repeater-wrapper').remove()
-        console.log(e.target)
     }
 
     return (

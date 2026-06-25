@@ -73,7 +73,6 @@ const SecurityTabContent = () => {
         }
         await AuthServices.changeUserPassword(body)
             .then(res => {
-                console.log(res)
                 if (res.success) {
                     customToastMsg("Password Changed!", 1, "Your password has been changed successfully.Use your new password to login.")
                 } else {

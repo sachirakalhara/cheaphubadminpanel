@@ -375,10 +375,8 @@ const ProductionRejection = () => {
     const onSubmit = async data => {
 
         const keys = Object.keys(data)
-        console.log(keys)
 
         if (data.production.length === 0 && data.rejection.length === 0 && data.productionWeight.length === 0) {
-            console.log('invalid')
         } else {
             if (data.production.length === 0) {
                 delete data[keys[keys.length - 3]]
@@ -545,7 +543,6 @@ const ProductionRejection = () => {
         let toDate = !isEmpty(picker[1]) ? moment(picker[1]).format('YYYY-MM-DD') : ''
 
         const data = e !== null ? e.value : ""
-        console.log(data)
 
 
         switch (type) {

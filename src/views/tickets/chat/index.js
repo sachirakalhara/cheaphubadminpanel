@@ -111,7 +111,6 @@ const AppChat = () => {
         OrderResourcesServices.getOrderByOrderId(id)
             .then((res) => {
                 if (res.success) {
-                    console.log(res.data);
                     setProductItems(res.data.order.order_items);
                     dispatch(toggleLoading());
                 } else {
@@ -167,7 +166,6 @@ const AppChat = () => {
 
         TicketServices.changeTicketStatus(body)
             .then((res) => {
-                console.log(res)
                 if (res.success) {
                     dispatch(toggleLoading())
                     notifyMessage(res.message, 1);

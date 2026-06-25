@@ -105,7 +105,6 @@ const TicketScreen = () => {
             .then(res => {
                 if (res.success) {
                     dispatch(toggleLoading());
-                    console.log(res)
                     setStore({data: res.data?.data ?? [], total: res.data?.last_page ?? 0});
                 } else {
                     dispatch(toggleLoading());

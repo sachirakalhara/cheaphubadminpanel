@@ -42,7 +42,6 @@ const ChatLog = props => {
     // ** If user chat is not empty scrollToBottom
     useEffect(() => {
         const chatDetailsLen = Object.keys(chatDetails).length
-        console.log(chatDetails)
         if (chatDetailsLen) {
             scrollToBottom()
         }
@@ -137,7 +136,6 @@ const ChatLog = props => {
     const handleSendMsg = e => {
         e.preventDefault()
         if (msg.length) {
-            console.log('msg', msg)
             replyCallback(msg)
             setMsg('')
         }

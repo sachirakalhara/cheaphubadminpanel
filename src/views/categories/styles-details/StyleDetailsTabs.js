@@ -42,8 +42,6 @@ const OrderDetailsTab = ({active, toggleTab, componentList, components, data, ba
                             name: `newObj${i}`
                         })
                     })
-                    console.log(list)
-                    console.log(array)
 
                     const nonmatched = list.filter(function (val) {
                         return array.map(function (e) {
@@ -51,7 +49,6 @@ const OrderDetailsTab = ({active, toggleTab, componentList, components, data, ba
                         }).indexOf(val.label) === -1
                     })
 
-                    console.log(nonmatched)
 
                 } else {
                     customToastMsg(res.data.title, res.status)

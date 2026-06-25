@@ -66,7 +66,6 @@ const Router = () => {
    ** Final Route Component Checks for Login & User Role and then redirects to the route
    */
   const FinalRoute = props => {
-    console.log('____________________________________________________________________________________')
     const route = props.route
     let action, resource
 
@@ -76,7 +75,6 @@ const Router = () => {
       resource = route.meta.resource ? route.meta.resource : null
     }
 
-    console.log('____________________________________________________________________________________admin')
 
     if (
       (!isUserLoggedIn() && route.meta === undefined) ||

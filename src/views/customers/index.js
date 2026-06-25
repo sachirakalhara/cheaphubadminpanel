@@ -73,7 +73,6 @@ const CustomerList = () => {
 
             })
             .catch(error => {
-                console.log(error)
             })
     }
 
@@ -85,7 +84,6 @@ const CustomerList = () => {
         }
         CustomerResourcesServices.getAllCustomers(body, page)
             .then(response => {
-                console.log(response)
                 if (response.success) {
                     setStore({
                         data: response.data?.user_list,
@@ -97,7 +95,6 @@ const CustomerList = () => {
                 setIsFetched(true)
             })
             .catch(error => {
-                console.log(error)
             })
     }
 

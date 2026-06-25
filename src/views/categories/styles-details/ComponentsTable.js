@@ -144,7 +144,6 @@ const ComponentsTable = ({componentList, components}) => {
                         <Button
                             color='primary' outline
                             onClick={() => {
-                                console.log(col)
                                 setSelectedSingleCompo(col)
                                 setSingleComEdit(true)
                             }}
@@ -243,10 +242,8 @@ const ComponentsTable = ({componentList, components}) => {
             let access = true
 
             for (const item of selectedComponentList) {
-                console.log(item)
 
                 if (item.ratio === "") {
-                    console.log('not access')
                     access = false
                 }
             }

@@ -264,7 +264,6 @@ const InvoiceList = () => {
         await CategoryServices.getAllCategories()
             .then(res => {
                 if (res.success) {
-                    console.log(res)
                     const list = []
                     if (res.data.length>0) res.data.category_list.map((items,index) => {
                         list.push({
@@ -376,7 +375,6 @@ const InvoiceList = () => {
     }
 
     const onSubmit = async data => {
-        console.log(data)
         if (Object.values(data).every(field => field.length > 0)) {
             // const body = {
             //     poNumber: data.poNumber,
@@ -422,7 +420,6 @@ const InvoiceList = () => {
                 }
             }
 
-            console.log(data)
         }
     }
 
@@ -438,7 +435,6 @@ const InvoiceList = () => {
                 break
             case 'DATE':
                 setPicker(e)
-                console.log(e)
                 date = e
                 break
             case 'CUSTOMER':
@@ -500,7 +496,6 @@ const InvoiceList = () => {
                     rotation
                 )
 
-                console.log(':::::::::::::::::::::::::::::::::::============================',croppedImage)
                 await setProductCroppedImage(croppedImage)
             } catch (e) {
                 console.error(e)
@@ -511,11 +506,9 @@ const InvoiceList = () => {
     const handleChangeFileShare = async (file, type) => {
         if (isImageFile(file.name)) {
             if (type === types.PRODUCT_IMAGE) {
-                console.log(isImageFile(file.name))
                 setProductImageIsCropVisible(true);
                 setProductImageName(file.name);
                 let imageDataUrl = await fileReader(file);
-                console.log(imageDataUrl)
                 setProductImageSrc(imageDataUrl);
                 setValue("productImageName", file.name)
             }

@@ -168,7 +168,6 @@ const OrdersScreen = () => {
         setIsFetched(false)
         OrderResourcesServices.filterOrderList(body, page)
             .then(response => {
-                console.log(response)
                 if (response.success) {
                     setStore({
                         data: response.data?.order_list ?? [],

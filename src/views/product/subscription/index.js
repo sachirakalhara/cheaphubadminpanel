@@ -291,7 +291,6 @@ const SubscriptionProductList = () => {
     const deleteProduct = (id) => {
         ContributionProductService.deleteContributionProduct(id)
             .then(async res => {
-                console.log(res)
                 if (res.success) {
                     await searchContributionProduct({
                         searchKey: searchKey,
