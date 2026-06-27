@@ -11,7 +11,7 @@ import {SlideDown} from 'react-slidedown'
 // ** Reactstrap Imports
 import {Row, Col, Card, CardHeader, CardBody, CardText, Form, Label, Input, Button, FormFeedback} from 'reactstrap'
 import * as ContributionProductService from "../../../../services/contribution-products";
-import {customToastMsg} from "../../../../utility/Utils";
+import {customToastMsg, customSweetAlert} from "../../../../utility/Utils";
 import qs from "qs";
 import {formDataToJson} from "../../../../utility/commonFun";
 
@@ -216,11 +216,17 @@ const RepeatingSubscriptionForm = (props) => {
     }
 
     const deleteForm = (e, index, id) => {
+        e.preventDefault();
 
         if (id !== null) {
-            deleteItemByServer(id);
+            customSweetAlert(
+                'Are you sure you want to delete this subscription/variant? This action cannot be undone.',
+                0,
+                () => {
+                    deleteItemByServer(id);
+                }
+            )
         } else {
-            e.preventDefault();
             const updatedSubscriptions = [...subscriptions];
             updatedSubscriptions.splice(index, 1);
             setSubscriptions(updatedSubscriptions);
