@@ -19,6 +19,7 @@ const CouponCreationModal = (props) => {
     };
 
     const watchCampaignEnabled = props.watch ? props.watch('campaignEnabled') : false;
+    const watchCampaignAudience = props.watch ? props.watch('campaignAudience') : '';
 
     return (
         <Modal show={props.show} toggle={props.toggle}
@@ -256,12 +257,31 @@ const CouponCreationModal = (props) => {
                                         <option value="">Select audience...</option>
                                         <option value="all_customers">All registered customers</option>
                                         <option value="purchased_customers">Customers with at least one purchase</option>
+                                        <option value="inactive_customers">Inactive customers (no orders in N days)</option>
                                     </Input>
                                 )}
                             />
                             {props.errors.campaignAudience &&
                                 <FormFeedback className="d-block">Please select an audience</FormFeedback>}
                         </Col>
+
+                        {watchCampaignAudience === 'inactive_customers' && (
+                            <Col md={6} xs={12}>
+                                <Label className='form-label mb-1'>Inactive Days</Label>
+                                <Controller
+                                    name="campaignInactiveDays"
+                                    control={props.control}
+                                    render={({field}) => (
+                                        <Input {...field} type="number" min={1} placeholder="60"
+                                               invalid={props.errors.campaignInactiveDays && true}
+                                               autoComplete="off"/>
+                                    )}
+                                />
+                                {props.errors.campaignInactiveDays &&
+                                    <FormFeedback className="d-block">Please enter the number of inactive days</FormFeedback>}
+                                <small className="text-muted">Customers who purchased before but not in the last N days</small>
+                            </Col>
+                        )}
 
                         <Col md={6} xs={12}>
                             <Label className='form-label mb-1'>Email Subject</Label>

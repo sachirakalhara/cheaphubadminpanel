@@ -22,6 +22,7 @@ const defaultValues = {
     scheduledEnd: '',
     campaignEnabled: false,
     campaignAudience: '',
+    campaignInactiveDays: '',
     campaignSubject: '',
 };
 
@@ -173,6 +174,10 @@ const CouponList = () => {
                 setError('campaignAudience', {type: 'required'});
                 return;
             }
+            if (data.campaignEnabled && data.campaignAudience === 'inactive_customers' && (!data.campaignInactiveDays || Number(data.campaignInactiveDays) < 1)) {
+                setError('campaignInactiveDays', {type: 'required'});
+                return;
+            }
             if (data.campaignEnabled && !data.campaignSubject) {
                 setError('campaignSubject', {type: 'required'});
                 return;
@@ -193,6 +198,9 @@ const CouponList = () => {
             if (data.campaignEnabled) {
                 body.campaign_audience = data.campaignAudience;
                 body.campaign_subject = data.campaignSubject;
+                if (data.campaignAudience === 'inactive_customers') {
+                    body.campaign_inactive_days = Number(data.campaignInactiveDays);
+                }
             }
 
             if (isEditMode) {
@@ -326,6 +334,7 @@ const CouponList = () => {
         setValue('scheduledEnd', data.scheduled_end || '');
         setValue('campaignEnabled', data.campaign_email_enabled || false);
         setValue('campaignAudience', data.campaign_audience || '');
+        setValue('campaignInactiveDays', data.campaign_inactive_days || '');
         setValue('campaignSubject', data.campaign_subject || '');
 
         setCampaignStatus(data.campaign_email_enabled ? {
