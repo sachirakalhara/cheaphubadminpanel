@@ -115,6 +115,15 @@ const CustomerList = () => {
         // {name: 'Total Spend ($)', selector: row => row.total_spend},
         {name: 'Purchases ($)', selector: row => row.user_spend, center: true},
         {
+            name: 'Status',
+            center: true,
+            cell: row => (
+                <Badge pill color={row.is_disabled ? 'light-danger' : 'light-success'}>
+                    {row.is_disabled ? 'Disabled' : 'Active'}
+                </Badge>
+            )
+        },
+        {
             name: "",
             minWidth: "100px",
             cell: row => (

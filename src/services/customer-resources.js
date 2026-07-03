@@ -52,3 +52,29 @@ export async function getCustomerDetails(id) {
 
     return await ApiService.callApi(apiObject)
 }
+
+export async function disableCustomer(id) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/customer/${id}/disable`
+    apiObject.body = null
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}
+
+export async function enableCustomer(id) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `super-admin/customer/${id}/enable`
+    apiObject.body = null
+    apiObject.multipart = false
+
+    return await ApiService.callApi(apiObject)
+}

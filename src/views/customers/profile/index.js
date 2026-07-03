@@ -1,12 +1,12 @@
 import React, {Fragment, useEffect, useState} from "react";
 import BreadCrumbs from "../../../@core/components/breadcrumbs";
-import {Badge, Card, CardBody, Col, Input, InputGroup, InputGroupText, Row} from "reactstrap";
+import {Alert, Badge, Button, Card, CardBody, Col, Input, InputGroup, InputGroupText, Row} from "reactstrap";
 import {ArrowRight, ChevronDown, Hash} from "react-feather";
 import Flatpickr from "react-flatpickr";
 import {Link, useLocation} from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
-import {customStyles, customToastMsg, emptyUI} from "../../../utility/Utils";
+import {customStyles, customSweetAlert, customToastMsg, emptyUI} from "../../../utility/Utils";
 import * as CustomerResourcesServices from "../../../services/customer-resources";
 import * as OrderResourcesServices from "../../../services/order-resources";
 import {defaultImageBinder, formDataDateConverter, valueFormatEditor} from "../../../utility/commonFun";
@@ -69,6 +69,29 @@ const CustomerProfile = () => {
     const handleView = (row) => {
         setSelectedRow(row);
         setModalOpen(true);
+    };
+
+    const toggleDisabled = () => {
+        const isDisabled = userData?.is_disabled;
+        customSweetAlert(
+            isDisabled
+                ? 'Are you sure you want to enable this customer account? They will be able to log in again.'
+                : 'Are you sure you want to disable this customer account? They will not be able to log in and will be excluded from campaign emails.',
+            0,
+            async () => {
+                const action = isDisabled
+                    ? CustomerResourcesServices.enableCustomer(navigationParam.id)
+                    : CustomerResourcesServices.disableCustomer(navigationParam.id);
+                await action.then(res => {
+                    if (res.success) {
+                        customToastMsg(res.message, 1);
+                        getUserDetails(navigationParam);
+                    } else {
+                        customToastMsg(res.message, res.status);
+                    }
+                })
+            }
+        )
     };
 
     const columns = [
@@ -145,12 +168,35 @@ const CustomerProfile = () => {
             <BreadCrumbs breadCrumbTitle='Customer' breadCrumbParent='Customer' breadCrumbActive={'Kavinda'}/>
             <Card className='invoice-preview-card'>
                 <CardBody className='invoice-padding'>
+                    {userData?.is_disabled === true && (
+                        <Alert color='danger' className='mb-2'>
+                            <div className='alert-body'>
+                                This customer account is <strong>disabled</strong> — they cannot log in and are
+                                excluded from announcement and coupon emails. Their data and order history are
+                                preserved.
+                            </div>
+                        </Alert>
+                    )}
                     <div className='d-flex justify-content-between flex-md-row flex-column invoice-spacing mt-0'>
                         <div className='w-100'>
-                            <div className='logo-wrapper d-flex d-inline mb-1 align-items-center'>
-                                <img src={defaultImageBinder(userData?.profile_photo)} width={50} height={50}
-                                     alt={'logo'} className="rounded-circle overflow-hidden"/>
-                                <h3 className='text-primary invoice-logo ms-1 mt-25'>{valueFormatEditor(userData?.display_name)}</h3>
+                            <div className='logo-wrapper d-flex d-inline mb-1 align-items-center justify-content-between'>
+                                <div className='d-flex align-items-center'>
+                                    <img src={defaultImageBinder(userData?.profile_photo)} width={50} height={50}
+                                         alt={'logo'} className="rounded-circle overflow-hidden"/>
+                                    <h3 className='text-primary invoice-logo ms-1 mt-25'>{valueFormatEditor(userData?.display_name)}</h3>
+                                    {userData?.is_disabled !== undefined && (
+                                        <Badge pill color={userData?.is_disabled ? 'light-danger' : 'light-success'}
+                                               className='ms-1 mt-25'>
+                                            {userData?.is_disabled ? 'Disabled' : 'Active'}
+                                        </Badge>
+                                    )}
+                                </div>
+                                {userData?.is_disabled !== undefined && (
+                                    <Button color={userData?.is_disabled ? 'success' : 'danger'} outline
+                                            onClick={toggleDisabled}>
+                                        {userData?.is_disabled ? 'Enable Account' : 'Disable Account'}
+                                    </Button>
+                                )}
                             </div>
                             <Row className="align-items-center">
                                 <Col lg={8}>
