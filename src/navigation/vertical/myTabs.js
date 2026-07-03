@@ -1,5 +1,5 @@
 // ** Icons Import
-import {Home, Circle, Layers, Umbrella, File, FileText, CloudRain, Printer, Mail} from 'react-feather'
+import {Home, Circle, Layers, Umbrella, File, FileText, CloudRain, Printer, Mail, Settings} from 'react-feather'
 import React from "react"
 import img from '@src/assets/images/sideBar/orders.svg'
 import img1 from '@src/assets/images/sideBar/customer.svg'
@@ -76,6 +76,12 @@ export default [
         title: 'Announcements',
         icon: <Mail size={20} style={{marginRight: 15}}/>,
         navLink: '/announcements'
+    },
+    {
+        id: 'settings',
+        title: 'Settings',
+        icon: <Settings size={20} style={{marginRight: 15}}/>,
+        navLink: '/settings'
     }
 
 ]

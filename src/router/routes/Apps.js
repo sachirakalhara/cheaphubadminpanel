@@ -265,6 +265,10 @@ const AppRoutes = [
     component: lazy(() => import('../../views/announcements'))
   },
   {
+    path: '/settings',
+    component: lazy(() => import('../../views/settings'))
+  },
+  {
     path: '/tickets/chat-box/:name',
     appLayout: true,
     className: 'chat-application',
