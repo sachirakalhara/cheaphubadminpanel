@@ -163,13 +163,19 @@ const ProductDetails = () => {
                                                                                 </tr>
                                                                                 </thead>
                                                                                 <tbody>
+                                                                                {/* Each row shows the serial RETIRED by that replacement:
+                                                                                    the originally issued serial for the first event, then the
+                                                                                    previous replacement's serial for later events. The currently
+                                                                                    active serial is shown above, not in the history. */}
                                                                                 {serialItem.removed_product_replacement_serials.map((historyItem, k) => (
                                                                                     <tr key={k}>
                                                                                         <td className="text-center">
-                                                                                            {formDataDateTimeConverter(historyItem.updated_at)}
+                                                                                            {formDataDateTimeConverter(historyItem.created_at)}
                                                                                         </td>
                                                                                         <td className="text-center">
-                                                                                            {historyItem.product_replacement_serial.serial}
+                                                                                            {k === 0
+                                                                                                ? (serialItem.original_serial || '—')
+                                                                                                : serialItem.removed_product_replacement_serials[k - 1]?.product_replacement_serial?.serial || '—'}
                                                                                         </td>
                                                                                     </tr>
                                                                                 ))}
