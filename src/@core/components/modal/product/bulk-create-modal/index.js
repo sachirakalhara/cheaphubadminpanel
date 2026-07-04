@@ -130,7 +130,9 @@ const BulCreationModal = (props) => {
         setValue("productImageName", data.image)
 
         setValue("serialList", data.serial)
-        setValue("serviceInfo", data.service_info)
+        // Older builds saved a missing value as the literal string "null" —
+        // never seed the editor with it.
+        setValue("serviceInfo", data.service_info && data.service_info !== 'null' && data.service_info !== 'undefined' ? data.service_info : '')
         setValue("minimumQty", data.minimum_quantity.toString())
         setValue("maximumQty", data.maximum_quantity.toString())
         setValue("cryptoRadio", data.payment_method.includes("crypto"))
@@ -304,7 +306,8 @@ const BulCreationModal = (props) => {
         data.append('serial', bulkType === "serial_based" ? getValues('serialList') : "")
         data.append('minimum_quantity', getValues('minimumQty'))
         data.append('maximum_quantity', getValues('maximumQty'))
-        data.append('service_info', getValues('serviceInfo'))
+        // FormData turns null/undefined into the literal strings "null"/"undefined" — always send a string.
+        data.append('service_info', getValues('serviceInfo') || '')
         data.append('visibility', visibilityMode)
         data.append('bulk_type', bulkType)
         data.append('is_manually_out_of_stock', getValues('isManuallyOutOfStock') ? 1 : 0)
@@ -650,7 +653,7 @@ const BulCreationModal = (props) => {
                     </Col>
                     <Row tag='form' className='gy-1 pt-2' onSubmit={handleSubmit(onSubmitDeliveryDetails)}>
 
-                        {productType === 1 ? (
+                        {productType === 1 && (
                             <Col md={12} xs={12}>
                                 <Label className='form-label mb-1' for='serialList'>
                                     Serials list <span style={{color: 'red'}}>*</span>
@@ -666,27 +669,29 @@ const BulCreationModal = (props) => {
                                 />
                                 {errors.serialList && <FormFeedback>Please enter a valid serials List</FormFeedback>}
                             </Col>
-                        ) : (
-                            <Col md={12} xs={12}>
-                                <Label className='form-label mb-1' for='serviceInfo'>
-                                    Service Info <span style={{color: 'red'}}>*</span>
-                                </Label>
-                                <Controller
-                                    name='serviceInfo'
-                                    control={control}
-                                    render={({field}) => (
-                                        <HtmlEditor
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            placeholder='Service Info'
-                                            invalid={errors.serviceInfo && true}
-                                        />
-                                    )}
-                                />
-                                {errors.serviceInfo &&
-                                    <div style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please enter valid service info</div>}
-                            </Col>
                         )}
+
+                        <Col md={12} xs={12}>
+                            <Label className='form-label mb-1' for='serviceInfo'>
+                                Service Info {productType === 2
+                                    ? <span style={{color: 'red'}}>*</span>
+                                    : <small className='text-muted'>(optional)</small>}
+                            </Label>
+                            <Controller
+                                name='serviceInfo'
+                                control={control}
+                                render={({field}) => (
+                                    <HtmlEditor
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        placeholder='Service Info'
+                                        invalid={errors.serviceInfo && true}
+                                    />
+                                )}
+                            />
+                            {errors.serviceInfo &&
+                                <div style={{fontSize: '12px', color: '#EA5455', marginTop: 4}}>Please enter valid service info</div>}
+                        </Col>
 
                         {productType === 1 && (
                             <>
