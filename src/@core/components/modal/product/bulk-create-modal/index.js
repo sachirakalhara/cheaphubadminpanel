@@ -614,43 +614,33 @@ const BulCreationModal = (props) => {
                             When enabled, this product will show as out of stock on the store and cannot be purchased — even if stock is available.
                         </small>
                     </Col>
-                    <Col lg={4} sm={12}
-                         className={'program-modal-text-input-filed program-modal-row'}>
-                        <label className='program-modal-label'>Product Type
-                        </label>
-                        <div className='program-modal-radio-btn-group'
-                             style={!props.isEditMode ? {} : {pointerEvents: 'none', opacity: 0.5}}>
-                            <Radio
-                                label='Serials Based'
-                                className="program-modal-radio-btn"
-                                checked={productType === 1}
-                                onChange={() => {
-                                    setProductType(1);
-                                    setValue('serialList', '');
-                                    setValue('serviceInfo', '');
-                                    setBulkType("serial_based");
+                    {/* Service-based bulk is deprecated — service delivery now lives on
+                        subscriptions. New bulk products are always serial-based, so the
+                        type choice is hidden on create; it stays visible (read-only) in
+                        edit mode so legacy service-based products still display correctly. */}
+                    {props.isEditMode && (
+                        <Col lg={4} sm={12}
+                             className={'program-modal-text-input-filed program-modal-row'}>
+                            <label className='program-modal-label'>Product Type
+                            </label>
+                            <div className='program-modal-radio-btn-group'
+                                 style={{pointerEvents: 'none', opacity: 0.5}}>
+                                <Radio
+                                    label='Serials Based'
+                                    className="program-modal-radio-btn"
+                                    checked={productType === 1}
+                                    onChange={() => {}}
+                                />
 
-                                    setValue("minimumQty", "")
-                                    setValue("maximumQty", "")
-                                }}
-                            />
-
-                            <Radio
-                                label='Service Based'
-                                className={"program-modal-radio-btn"}
-                                checked={productType === 2}
-                                onChange={() => {
-                                    setProductType(2);
-                                    setValue('serialList', '');
-                                    setValue('serviceInfo', '');
-                                    setBulkType("service_based");
-
-                                    setValue("minimumQty", "0")
-                                    setValue("maximumQty", "0")
-                                }}
-                            />
-                        </div>
-                    </Col>
+                                <Radio
+                                    label='Service Based'
+                                    className={"program-modal-radio-btn"}
+                                    checked={productType === 2}
+                                    onChange={() => {}}
+                                />
+                            </div>
+                        </Col>
+                    )}
                     <Row tag='form' className='gy-1 pt-2' onSubmit={handleSubmit(onSubmitDeliveryDetails)}>
 
                         {productType === 1 && (
