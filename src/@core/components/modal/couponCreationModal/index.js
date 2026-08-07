@@ -181,6 +181,31 @@ const CouponCreationModal = (props) => {
                         <FormFeedback>Please enter a max discount</FormFeedback>}
                 </Col>
 
+                {/* ── Status ── */}
+                <Col xs={12} className="mt-1">
+                    <Controller
+                        name="isActive"
+                        control={props.control}
+                        render={({field}) => (
+                            <div className="form-check form-switch">
+                                <Input
+                                    type="switch"
+                                    id="isActive"
+                                    checked={field.value}
+                                    onChange={(e) => field.onChange(e.target.checked)}
+                                />
+                                <Label for="isActive" className="form-check-label fw-bold">
+                                    Active
+                                </Label>
+                            </div>
+                        )}
+                    />
+                    <small className="text-muted">
+                        Turn off to stop customers using this coupon. It stays in the list and can be
+                        switched back on at any time.
+                    </small>
+                </Col>
+
                 {/* ── Schedule Section ── */}
                 <Col xs={12} className="mt-2">
                     <hr/>

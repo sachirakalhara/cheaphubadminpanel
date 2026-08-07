@@ -17,6 +17,7 @@ const defaultValues = {
     maxDiscount: '',
     bulkProducts: false,
     subscriptionProducts: false,
+    isActive: true,
     scheduledStart: '',
     scheduledEnd: '',
     campaignEnabled: false,
@@ -190,7 +191,8 @@ const CouponList = () => {
                 // Already d-m-Y in every path (from the API when untouched, from
                 // the picker when changed), so no conversion is needed.
                 "expiry_date": data.expirationDate,
-                "coupon_code": data.couponCode
+                "coupon_code": data.couponCode,
+                "is_active": data.isActive ? 1 : 0
             };
 
             if (data.scheduledStart) body.scheduled_start = data.scheduledStart;
@@ -333,6 +335,7 @@ const CouponList = () => {
 
         setValue('scheduledStart', data.scheduled_start || '');
         setValue('scheduledEnd', data.scheduled_end || '');
+        setValue('isActive', data.is_active ?? true);
         setValue('campaignEnabled', data.campaign_email_enabled || false);
         setValue('campaignAudience', data.campaign_audience || '');
         setValue('campaignInactiveDays', data.campaign_inactive_days || '');
