@@ -145,6 +145,11 @@ const CouponCreationModal = (props) => {
                                     onChange={([date], dateStr) => {
                                         onChange(dateStr);
                                     }}
+                                    // Pin to d-m-Y so the field holds ONE format everywhere:
+                                    // what the API returns, what editDateFormatter expects, and
+                                    // what the backend saves. Without this, flatpickr defaults to
+                                    // Y-m-d and picking a date produced an unparseable value.
+                                    options={{dateFormat: 'd-m-Y'}}
                                     name={name}
                                 />
                             );

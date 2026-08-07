@@ -9,7 +9,6 @@ import {useForm} from 'react-hook-form';
 import {customSweetAlert, customToastMsg, emptyUI, getCustomDateTimeStamp} from '../../utility/Utils';
 import CouponCreationModal from "../../@core/components/modal/couponCreationModal";
 import * as CouponsServices from "../../services/coupon-code-resources";
-import {backendDateFormatter, editDateFormatter} from "../../utility/commonFun";
 
 const defaultValues = {
     couponCode: '',
@@ -188,7 +187,9 @@ const CouponList = () => {
                 "product_type": getProductTypeStatus(data),
                 "discount_percentage": Number(data.discount),
                 "max_discount_amount": Number(data.maxDiscount),
-                "expiry_date": isEditMode ? backendDateFormatter(editDateFormatter(data.expirationDate)) : backendDateFormatter(data.expirationDate),
+                // Already d-m-Y in every path (from the API when untouched, from
+                // the picker when changed), so no conversion is needed.
+                "expiry_date": data.expirationDate,
                 "coupon_code": data.couponCode
             };
 
