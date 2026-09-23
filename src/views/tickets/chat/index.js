@@ -82,9 +82,9 @@ const AppChat = () => {
                     if (res.data[0]) {
                         res.data[0].comments.map((item) => {
                             if (item.user.user_level_id === 2) {
-                                list.push({senderId: 2, message: item.message, time: item.created_at});
+                                list.push({senderId: 2, message: item.message, time: item.created_at, attachmentUrl: item.attachment_url});
                             } else {
-                                list.push({senderId: 11, message: item.message, time: item.created_at});
+                                list.push({senderId: 11, message: item.message, time: item.created_at, attachmentUrl: item.attachment_url});
                             }
                         })
                     }
@@ -143,6 +143,40 @@ const AppChat = () => {
                     dispatch(toggleLoading())
                     notifyMessage(res.message, res.status);
                 }
+            })
+    }
+
+    // Image messages: upload + save happen in one request. Resolves true on
+    // success so the chat input can clear; on failure nothing is saved and the
+    // input keeps the preview for a retry.
+    const replyWithAttachmentHandler = (msg, file) => {
+        const formData = new FormData()
+        formData.append('id', ticketDetails?.id)
+        formData.append('message', msg)
+        formData.append('attachment', file)
+
+        return TicketServices.createTicketCommentWithAttachment(formData)
+            .then((res) => {
+                if (res.success) {
+                    setChatList({
+                        "chat": {
+                            "id": 1,
+                            chat: [...chatList.chat.chat, {
+                                senderId: 11,
+                                message: msg,
+                                time: new Date(),
+                                attachmentUrl: res.data?.comment?.attachment_url
+                            }]
+                        }
+                    })
+                    return true
+                }
+                notifyMessage('Failed to upload image. Please try again.', 0)
+                return false
+            })
+            .catch(() => {
+                notifyMessage('Failed to upload image. Please try again.', 0)
+                return false
             })
     }
 
@@ -301,6 +335,7 @@ const AppChat = () => {
                                 replyCallback={(e) => {
                                     replyHandler(e)
                                 }}
+                                replyWithAttachmentCallback={replyWithAttachmentHandler}
                                 ticketDetails={ticketDetails}
                             />
                         </div>

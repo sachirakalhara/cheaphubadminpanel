@@ -64,3 +64,17 @@ export async function changeTicketStatus(body) {
 
     return await ApiService.callApi(apiObject)
 }
+// Same endpoint as createTicketComment, sent as multipart so an image file can
+// ride along. Used only when a message has an attachment.
+export async function createTicketCommentWithAttachment(body) {
+    const apiObject = {}
+    apiObject.method = 'POST'
+    apiObject.authentication = true
+    apiObject.isBasicAuth = false
+    apiObject.urlencoded = false
+    apiObject.endpoint = `ticket/comment`
+    apiObject.body = body
+    apiObject.multipart = true
+
+    return await ApiService.callApi(apiObject)
+}
