@@ -25,8 +25,8 @@ import {
 
 // Image attachments: must match the backend rule on ticket/comment.
 const ATTACHMENT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const ATTACHMENT_MAX_BYTES = 5 * 1024 * 1024
-const ATTACHMENT_ERROR = 'Please select an image under 5MB (jpg, png, webp, gif)'
+const ATTACHMENT_MAX_BYTES = 2 * 1024 * 1024
+const ATTACHMENT_ERROR = 'Please select an image under 2MB (jpg, png, webp, gif)'
 
 const ChatLog = props => {
     // ** Props & Store
