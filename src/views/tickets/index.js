@@ -116,6 +116,15 @@ const TicketScreen = () => {
 
     const columns = [
         {name: 'Ticket Number', selector: row => row.ticket_number},
+        {
+            name: 'Order Number',
+            cell: row => row.order?.id ? (
+                <Link to={`/order/${row.order.order_id}?id=${row.order.id}`}
+                      target='_blank' rel='noopener noreferrer'>
+                    {row.order.order_id}
+                </Link>
+            ) : (row.order?.order_id || '-')
+        },
         {name: 'Subject', selector: row => row.subject},
         {
             name: 'Status',

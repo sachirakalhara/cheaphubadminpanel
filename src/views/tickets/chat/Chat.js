@@ -4,6 +4,7 @@ import React, {useState, useEffect, useRef} from 'react'
 
 // ** Custom Components
 import Avatar from '@components/avatar'
+import logo from '../../../assets/images/logo/logo.png'
 
 // ** Store & Actions
 import {sendMsg} from './store'
@@ -136,12 +137,21 @@ const ChatLog = props => {
                         })}
                     >
                         <div className='chat-avatar'>
-                            <Avatar
-                                imgWidth={36}
-                                imgHeight={36}
-                                className='box-shadow-1 cursor-pointer'
-                                img={"https://thumbs.dreamstime.com/b/braka-avatar-fotografii-placeholder-profilowa-ikona-124557887.jpg"}
-                            />
+                            {item.senderId === 11 ? (
+                                <Avatar
+                                    imgWidth={36}
+                                    imgHeight={36}
+                                    className='box-shadow-1 bg-white'
+                                    img={logo}
+                                />
+                            ) : (
+                                <Avatar
+                                    color='light-primary'
+                                    className='box-shadow-1'
+                                    content={(props.ticketDetails?.customer?.display_name || 'Customer').trim() || 'Customer'}
+                                    initials
+                                />
+                            )}
                         </div>
 
                         <div className='chat-body'>

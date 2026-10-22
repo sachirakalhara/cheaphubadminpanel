@@ -127,7 +127,12 @@ export const backendDateFormatter = (date) => {
 // Plain text from a stored HTML description (drops tags and <!-- --> comments).
 export const stripHtml = (html) => {
     if (!html) return ''
-    return (new DOMParser().parseFromString(html, 'text/html').body.textContent || '').trim()
+    const toText = (s) => new DOMParser().parseFromString(s, 'text/html').body.textContent || ''
+    let text = toText(html)
+    // Some descriptions are stored HTML-escaped (&lt;h3&gt;), so one pass only
+    // turns them back into literal tags. Parse again if markup is still there.
+    if (/<\/?[a-z!][^>]*>/i.test(text)) text = toText(text)
+    return text.trim()
 }
 
 export const editDateFormatter=(dateString)=>{
