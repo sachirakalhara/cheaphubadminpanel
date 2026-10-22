@@ -4,7 +4,7 @@ import ReactPaginate from "react-paginate";
 import DataTable from "react-data-table-component";
 import {ArrowRight, ChevronDown, Plus, X} from "react-feather";
 import {customStyles, customToastMsg, emptyUI, getCustomDateTimeStamp} from "../../utility/Utils";
-import {Link} from "react-router-dom";
+import {Link, useHistory, useLocation} from "react-router-dom";
 import * as TicketServices from "../../services/tickets";
 import {toggleLoading} from "../../redux/loading";
 import {useDispatch} from "react-redux";
@@ -78,18 +78,31 @@ const TicketScreen = () => {
         total: 0
     });
 
-    const [currentPage, setCurrentPage] = useState(1);
+    // Filters live in the address (?status=open&page=2&search=...) so going
+    // back from a ticket, refreshing or bookmarking keeps them.
+    const history = useHistory();
+    const location = useLocation();
+    const initialQuery = new URLSearchParams(location.search);
+
+    const [currentPage, setCurrentPage] = useState(Number(initialQuery.get('page')) || 1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isFetched, setIsFetched] = useState(false);
     const [val, setVal] = useState('')
-    const [statusValue, setStatusValue] = useState('');
-    const [searchKey, setSearchKey] = useState('');
+    const [statusValue, setStatusValue] = useState(initialQuery.get('status') || '');
+    const [searchKey, setSearchKey] = useState(initialQuery.get('search') || '');
 
+    const syncUrl = (search, page, status) => {
+        const query = new URLSearchParams();
+        if (status) query.set('status', status);
+        if (page > 1) query.set('page', page);
+        if (search) query.set('search', search);
+        const qs = query.toString();
+        // replace (not push) so Back still leaves the list in one step.
+        history.replace({pathname: location.pathname, search: qs ? `?${qs}` : ''});
+    };
 
     useEffect(() => {
-        setSearchKey('');
-        setCurrentPage(1);
-        getAllTickets('', 1);
+        getAllTickets(searchKey, currentPage, statusValue);
     }, []);
 
     const getAllTickets = async (val, page, status = '') => {
@@ -180,12 +193,14 @@ const TicketScreen = () => {
     const handlePagination = page => {
         setCurrentPage(page.selected + 1);
         const pageNumber = page.selected + 1;
+        syncUrl(searchKey, pageNumber, statusValue);
         getAllTickets(searchKey, pageNumber, statusValue);
     };
 
     const handleSearch = value => {
         setSearchKey(value);
         setCurrentPage(1);
+        syncUrl(value, 1, statusValue);
         getAllTickets(value, 1, statusValue);
     };
 
@@ -193,12 +208,14 @@ const TicketScreen = () => {
         const status = e.target.value;
         setStatusValue(status);
         setCurrentPage(1);
+        syncUrl(searchKey, 1, status);
         getAllTickets(searchKey, 1, status);
     };
 
     const handleClearSearch = () => {
         setSearchKey('');
         setCurrentPage(1);
+        syncUrl('', 1, statusValue);
         getAllTickets('', 1, statusValue);
     };
 
