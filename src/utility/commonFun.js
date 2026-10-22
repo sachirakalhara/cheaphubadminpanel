@@ -124,6 +124,12 @@ export const backendDateFormatter = (date) => {
 
 };
 
+// Plain text from a stored HTML description (drops tags and <!-- --> comments).
+export const stripHtml = (html) => {
+    if (!html) return ''
+    return (new DOMParser().parseFromString(html, 'text/html').body.textContent || '').trim()
+}
+
 export const editDateFormatter=(dateString)=>{
     const [day, month, year] = dateString.split("-");
     return new Date(`${year}-${month}-${day}`);

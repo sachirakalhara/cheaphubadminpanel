@@ -18,7 +18,14 @@ import Modal from "../../../@core/components/modal";
 
 const OrderDetails = () => {
     const location = useLocation();
-    const navigationParam = location.state;
+    const {orderNumber} = useParams();
+    // Opened from the order list: the row arrives as router state. Opened in a
+    // new tab (e.g. from a ticket) there is no state, so read it from the URL:
+    // /order/<order_id>?id=<numeric id>.
+    const navigationParam = location.state || {
+        id: Number(new URLSearchParams(location.search).get('id')),
+        order_id: orderNumber
+    };
     const dispatch = useDispatch()
 
     const [store, setStore] = useState({
@@ -276,7 +283,14 @@ const OrderDetails = () => {
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">
                                 <CardText tag="h5">Name</CardText>
                                 <CardText tag="h6"
-                                          className='text-black-50'>{dataBinder(orderDetails?.user_id?.display_name)}</CardText>
+                                          className='text-black-50'>
+                                    {orderDetails?.user_id?.id ? (
+                                        <Link to={`/customer/${encodeURIComponent(orderDetails.user_id.display_name || 'customer')}?id=${orderDetails.user_id.id}`}
+                                              target='_blank' rel='noopener noreferrer'>
+                                            {dataBinder(orderDetails.user_id.display_name)}
+                                        </Link>
+                                    ) : dataBinder(orderDetails?.user_id?.display_name)}
+                                </CardText>
                             </div>
 
                             <div className="d-inline-flex w-100 align-items-center justify-content-between">

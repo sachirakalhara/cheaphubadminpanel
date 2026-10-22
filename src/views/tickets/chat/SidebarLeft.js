@@ -19,7 +19,8 @@ import {X, Search, CheckSquare, Bell, User, Trash} from 'react-feather'
 // ** Reactstrap Imports
 import {CardText, InputGroup, InputGroupText, Badge, Input, Button, Label, CardBody, Row, Col, Card} from 'reactstrap'
 import logo from "../../../assets/images/logo/logo.png";
-import {setCurrencyWithSymbol, tableDataDateTimeConverter} from "../../../utility/commonFun"
+import {setCurrencyWithSymbol, stripHtml, tableDataDateTimeConverter} from "../../../utility/commonFun"
+import {Link} from "react-router-dom"
 import 'react-perfect-scrollbar/dist/css/styles.css';
 
 const SidebarLeft = props => {
@@ -52,13 +53,25 @@ const SidebarLeft = props => {
                                             className="fw-bold text-black">Ticket Number: </span>{ticketDetails?.ticket_number}
                                         </p>
                                         <p className='card-text mb-25'><span
-                                            className="fw-bold text-black">Order Number: </span>{ticketDetails?.order?.order_id}
+                                            className="fw-bold text-black">Order Number: </span>{ticketDetails?.order?.id ? (
+                                            <Link to={`/order/${ticketDetails.order.order_id}?id=${ticketDetails.order.id}`}
+                                                  target='_blank' rel='noopener noreferrer'>
+                                                {ticketDetails.order.order_id}
+                                            </Link>
+                                        ) : ticketDetails?.order?.order_id}
                                         </p>
                                         <p className='card-text mb-25'><span
-                                            className="fw-bold text-black">Customer Name: </span> {ticketDetails?.customer?.display_name}
+                                            className="fw-bold text-black">Customer Name: </span> {ticketDetails?.customer?.id ? (
+                                            <Link to={`/customer/${encodeURIComponent(ticketDetails.customer.display_name || 'customer')}?id=${ticketDetails.customer.id}`}
+                                                  target='_blank' rel='noopener noreferrer'>
+                                                {ticketDetails.customer.display_name}
+                                            </Link>
+                                        ) : ticketDetails?.customer?.display_name}
                                         </p>
                                         <p className='card-text mb-25'><span
-                                            className="fw-bold text-black">Email: </span> {ticketDetails?.customer?.email}
+                                            className="fw-bold text-black">Email: </span> {ticketDetails?.customer?.email ? (
+                                            <a href={`mailto:${ticketDetails.customer.email}`}>{ticketDetails.customer.email}</a>
+                                        ) : null}
                                         </p>
                                         <p className='card-text mb-25'><span
                                             className="fw-bold text-black">Created At: </span> {tableDataDateTimeConverter(ticketDetails?.created_at)}
@@ -88,7 +101,7 @@ const SidebarLeft = props => {
                                                     <p className='card-text mb-25 three-lines'>
                           <span
                               className="fw-bold text-black">Description: </span>
-                                                        {item.contribution_product.description}
+                                                        {stripHtml(item.contribution_product.description)}
                                                     </p>
 
                                                     <p className='card-text mb-25 three-lines'>
@@ -117,12 +130,12 @@ const SidebarLeft = props => {
                                                     <p className='card-text mb-25 three-lines'>
                           <span
                               className="fw-bold text-black">Description: </span>
-                                                        {item.bulk_product.description}
+                                                        {stripHtml(item.bulk_product.description)}
                                                     </p>
 
                                                     <p className='card-text mb-0'>
                           <span
-                              className="fw-bold text-black">Price: </span> {setCurrencyWithSymbol(item.package.price)}
+                              className="fw-bold text-black">Price: </span> {setCurrencyWithSymbol(item.bulk_product.price)}
                                                     </p>
                                                 </>
                                             )}

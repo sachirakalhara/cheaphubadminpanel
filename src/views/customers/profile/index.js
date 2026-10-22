@@ -15,7 +15,12 @@ import Modal from "../../../@core/components/modal";
 
 const CustomerProfile = () => {
     const location = useLocation();
-    const navigationParam = location.state;
+    // Opened from the customer list: the row arrives as router state. Opened in
+    // a new tab (e.g. from a ticket or order) there is no state, so read the id
+    // from the URL: /customer/<name>?id=<user id>.
+    const navigationParam = location.state || {
+        id: Number(new URLSearchParams(location.search).get('id'))
+    };
 
     const [store, setStore] = useState({
         data: [],
