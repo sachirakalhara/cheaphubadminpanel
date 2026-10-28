@@ -9,6 +9,7 @@ import * as TicketServices from "../../services/tickets";
 import {toggleLoading} from "../../redux/loading";
 import {useDispatch} from "react-redux";
 import {tableDataDateTimeConverter} from "../../utility/commonFun";
+import {getOrderSubscriptionSummary} from "../../utility/orderSubscriptionStatus";
 
 const CustomHeader = ({
                           onOrderTextChange,
@@ -131,12 +132,20 @@ const TicketScreen = () => {
         {name: 'Ticket Number', selector: row => row.ticket_number},
         {
             name: 'Order Number',
-            cell: row => row.order?.id ? (
-                <Link to={`/order/${row.order.order_id}?id=${row.order.id}`}
-                      target='_blank' rel='noopener noreferrer'>
-                    {row.order.order_id}
-                </Link>
-            ) : (row.order?.order_id || '-')
+            cell: row => {
+                const summary = getOrderSubscriptionSummary(row.order, row.order?.items)
+                return (
+                    <div>
+                        {row.order?.id ? (
+                            <Link to={`/order/${row.order.order_id}?id=${row.order.id}`}
+                                  target='_blank' rel='noopener noreferrer'>
+                                {row.order.order_id}
+                            </Link>
+                        ) : (row.order?.order_id || '-')}
+                        {summary && <Badge color={summary.color} className='ms-50'>{summary.label}</Badge>}
+                    </div>
+                )
+            }
         },
         {name: 'Subject', selector: row => row.subject},
         {

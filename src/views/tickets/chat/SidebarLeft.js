@@ -21,6 +21,7 @@ import {CardText, InputGroup, InputGroupText, Badge, Input, Button, Label, CardB
 import logo from "../../../assets/images/logo/logo.png";
 import {setCurrencyWithSymbol, stripHtml, tableDataDateTimeConverter} from "../../../utility/commonFun"
 import {Link} from "react-router-dom"
+import LinkedOrderStatus from "./LinkedOrderStatus"
 import 'react-perfect-scrollbar/dist/css/styles.css';
 
 const SidebarLeft = props => {
@@ -89,6 +90,8 @@ const SidebarLeft = props => {
                                             {ticketDetails?.status === 'open' ? "Resolve" : "Resolved"}
                                         </Button>
                                     </Col>
+
+                                    <LinkedOrderStatus order={ticketDetails?.order} items={props.productItems}/>
 
                                     {props.productItems.map((item, index) => (
                                         <Col lg={12} className="mt-2 pt-2 separator" key={index}>

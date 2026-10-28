@@ -4,6 +4,7 @@ import React, {Fragment, useState, useEffect} from 'react'
 // ** Chat App Component Imports
 import Chat from './Chat'
 import Sidebar from './SidebarLeft'
+import LinkedOrderStatus from './LinkedOrderStatus'
 
 // ** Third Party Components
 import classnames from 'classnames'
@@ -271,6 +272,8 @@ const AppChat = () => {
                                         {ticketDetails?.status === 'open' ? "Resolve" : "Resolved"}
                                     </Button>
                                 </Col>
+
+                                <LinkedOrderStatus order={ticketDetails?.order} items={productItems}/>
 
                                 {productItems.map((item, index) => (
                                     <Col lg={12} className="mt-2 pt-2 separator" key={index}>
