@@ -61,6 +61,7 @@ const SidebarLeft = props => {
                                             </Link>
                                         ) : ticketDetails?.order?.order_id}
                                         </p>
+                                        <LinkedOrderStatus order={ticketDetails?.order} items={props.productItems}/>
                                         <p className='card-text mb-25'><span
                                             className="fw-bold text-black">Customer Name: </span> {ticketDetails?.customer?.id ? (
                                             <Link to={`/customer/${encodeURIComponent(ticketDetails.customer.display_name || 'customer')}?id=${ticketDetails.customer.id}`}
@@ -90,8 +91,6 @@ const SidebarLeft = props => {
                                             {ticketDetails?.status === 'open' ? "Resolve" : "Resolved"}
                                         </Button>
                                     </Col>
-
-                                    <LinkedOrderStatus order={ticketDetails?.order} items={props.productItems}/>
 
                                     {props.productItems.map((item, index) => (
                                         <Col lg={12} className="mt-2 pt-2 separator" key={index}>
